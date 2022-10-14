@@ -4,7 +4,13 @@ const app = express();
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
-const {clientDatabase} = require("./database/connectionDatabase");
+
+
+// const {clientDatabase} = require("./database/connectionDatabase");
+
+
+const { sequelize } = require("./database/connectionDatabaseSequelize");
+
 
 app.set("port", process.env.SV_PORT);
 app.disable("x-powered-by");
@@ -16,8 +22,19 @@ app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(require("./routers/auth"));
 
-const server = app.listen(app.get("port"), () => {
-    console.log(`Server on port ${app.get("port")}`);
-});
+async function main() {
+    try {
+        await sequelize.authenticate();
+        console.log('Connection has been stablished successfully.');
+        app.listen(app.get("port"), () => {
+            console.log(`Server on port ${app.get("port")}`);
+        });
+    } catch( error ) {
+        console.error("Unable to connect to the database", error)
+    }    
+}
 
-module.exports = {server};
+
+
+main();
+
