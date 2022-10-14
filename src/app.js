@@ -14,7 +14,6 @@ app.disable("etag");
 app.use(morgan("dev"));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
-
 app.use(require("./routers/auth"));
 
 const server = app.listen(app.get("port"), () => {
