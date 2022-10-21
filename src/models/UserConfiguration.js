@@ -2,32 +2,30 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { User } = require("./User");
 
-const Account = sequelize.define("Cuenta", {
-    correo: {
-        type: DataTypes.STRING,
-        primaryKey: true
-    },
-    contraseña: {
-        type: DataTypes.STRING
+const UserConfiguration = sequelize.define("ConfiguracionUsuario", {
+    tipo_privacidad: {
+        type: DataTypes.ENUM("PUBLICO", "PRIVADO")
     },
     id_usuario: {
-        type: DataTypes.BIGINT
+        type: DataTypes.STRING
     }
 }, {
     timestamps: false,
     freezeTableName: true
 });
 
-Account.hasOne(User, {
+UserConfiguration.removeAttribute("id");
+
+UserConfiguration.hasOne(User, {
     foreignKey: "id",
     sourceKey: "id_usuario",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
-User.belongsTo(Account, {
+User.belongsTo(UserConfiguration, {
     foreignKey: "id",
     targetKey: "id_usuario"
 });
 
-module.exports = {Account};
+module.exports = {UserConfiguration};
