@@ -11,7 +11,8 @@ const Account = sequelize.define("Cuenta", {
         type: DataTypes.STRING
     },
     id_usuario: {
-        type: DataTypes.BIGINT
+        type: DataTypes.BIGINT,
+        allowNull: false
     }
 }, {
     timestamps: false,
@@ -22,7 +23,6 @@ Account.hasOne(User, {
     foreignKey: "id",
     sourceKey: "id_usuario",
     onDelete: "CASCADE",
-    onUpdate: "CASCADE"
 });
 
 User.belongsTo(Account, {

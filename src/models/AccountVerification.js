@@ -14,6 +14,9 @@ const AccountVerification = sequelize.define("VerificacionCuenta", {
     },
     correo_cuenta: {
         type: DataTypes.STRING,
+    },
+    id_usuario: {
+        type: DataTypes.BIGINT
     }
 }, {
     timestamps: false,
@@ -23,15 +26,15 @@ const AccountVerification = sequelize.define("VerificacionCuenta", {
 AccountVerification.removeAttribute("id");
 
 AccountVerification.hasOne(Account, {
-    foreignKey: "correo",
-    sourceKey: "correo_cuenta",
+    foreignKey: "id_usuario",
+    sourceKey: "id_usuario",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
 Account.belongsTo(AccountVerification, {
-    foreignKey: "correo",
-    targetKey: "correo_cuenta"
+    foreignKey: "id_usuario",
+    targetKey: "id_usuario"
 });
 
 module.exports = {AccountVerification};

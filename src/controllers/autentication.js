@@ -1,37 +1,71 @@
 const { User } = require("../models/User");
-const { Accounts } = require("../models/Account");
+const { Account } = require("../models/Account");
+const { AccountVerification } = require("../models/AccountVerification");
+const { UserConfiguration } = require("../models/UserConfiguration");
+const { generateRandomCode } = require("../helpers/generateCode");
 
-const getUser = (request, response) => {
-    response.send("Getting user")
-}
+
 
 const createUser = async (request, response) => {
     const { password, email, name, presentation, username } = request.body;
-    let confirmationCode = "PLEASE GENERATE ME";
-    // const newUser = new User({
-    //     name,
-    //     presentation,
-    //     username,
-    //     Accounts: {
-    //         contraseña,
-    //         correo,
-    //         id,
-    //     }
-    // });
-    // const newAccount = new Accounts.create({
-    //     contraseña,
-    //     correo,
-    //     id,
-    //     User: {
-    //         name,
-    //         presentation,
-    //         username
-    //     } 
-    // });
+    let confirmationCode = generateRandomCode(8);
+    try {
+        const newUser = await User.create({
+            nombre: name,
+            presentacion: presentation,
+            usuario: username,
+        }).then( user => {
+            let userID = user.id;
+            const newAccount = Account.create({
+                correo: email,
+                contraseña: password,
+                id_usuario: userID
+            });
+            const newAccountVerification = AccountVerification.create({
+                codigo_verificacion: confirmationCode,
+                intentos_realizados: 0,
+                estado_cuenta: "NO_BLOQUEADO",
+                correo_cuenta: email,
+                id_usuario: userID
+            });
+            const newUserConfiguration = UserConfiguration.create({
+                tipo_privacidad: "PUBLICO",
+                id_usuario: userID
+            })
+        });
+        // const newUser = await User.create({
+        //     nombre: name,
+        //     presentacion: presentation,
+        //     usuario: username,
+        //     Account: {
+        //         correo: email,
+        //         contraseña: password,
+        //     }
+        // }, {
+        //     include: [Account]
+        // });
 
-    console.log(request.body);
+        // const newAccount = await Account.create({
+        //     correo: email,
+        //     contraseña: password,
+        //     User: {
+        //         nombre: name,
+        //         presentacion: presentation,
+        //         usuario: username
+        //     }
+        // },{
+        //     include: [User]
+        // });
+
+
+
+
+        // User.create(newUser).then( result => console.log(result.id));
+
+    } catch (error) {
+        return response.status(400).json({ message: error.message });
+    }
     response.send("Hola");
-
 }
 
-module.exports = {createUser, getUser}
+module.exports = { createUser }
