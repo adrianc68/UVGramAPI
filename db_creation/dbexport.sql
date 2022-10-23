@@ -248,6 +248,30 @@ CREATE TYPE public."TipoPrivacidad" AS ENUM (
 
 ALTER TYPE public."TipoPrivacidad" OWNER TO dev;
 
+--
+-- Name: enum_ConfiguracionUsuario_tipo_privacidad; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_ConfiguracionUsuario_tipo_privacidad" AS ENUM (
+    'PUBLICO',
+    'PRIVADO'
+);
+
+
+ALTER TYPE public."enum_ConfiguracionUsuario_tipo_privacidad" OWNER TO dev;
+
+--
+-- Name: enum_VerificacionCuenta_estado_cuenta; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_VerificacionCuenta_estado_cuenta" AS ENUM (
+    'BLOQUEADO',
+    'NO_BLOQUEADO'
+);
+
+
+ALTER TYPE public."enum_VerificacionCuenta_estado_cuenta" OWNER TO dev;
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -257,8 +281,8 @@ SET default_table_access_method = heap;
 --
 
 CREATE TABLE public."ConfiguracionUsuario" (
-    "tipoPrivacidad" public."TipoPrivacidad" NOT NULL,
-    id bigint
+    tipo_privacidad public."TipoPrivacidad",
+    id_usuario bigint
 );
 
 
@@ -271,7 +295,7 @@ ALTER TABLE public."ConfiguracionUsuario" OWNER TO dev;
 CREATE TABLE public."Cuenta" (
     "contraseña" character varying(120) NOT NULL,
     correo character varying(340) NOT NULL,
-    id bigint
+    id_usuario bigint NOT NULL
 );
 
 
@@ -297,9 +321,10 @@ ALTER TABLE public."Usuario" OWNER TO dev;
 
 CREATE TABLE public."VerificacionCuenta" (
     codigo_verificacion character varying(8),
-    intentos_realizados integer,
-    estado_cuenta public."TipoEstadoCuenta",
-    correo character varying(340)
+    intentos_realizados integer NOT NULL,
+    estado_cuenta public."TipoEstadoCuenta" NOT NULL,
+    correo_cuenta character varying(340) NOT NULL,
+    id_usuario bigint
 );
 
 
@@ -323,7 +348,7 @@ ALTER TABLE public.usuario_id_seq OWNER TO dev;
 -- Data for Name: ConfiguracionUsuario; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."ConfiguracionUsuario" ("tipoPrivacidad", id) FROM stdin;
+COPY public."ConfiguracionUsuario" (tipo_privacidad, id_usuario) FROM stdin;
 \.
 
 
@@ -331,11 +356,7 @@ COPY public."ConfiguracionUsuario" ("tipoPrivacidad", id) FROM stdin;
 -- Data for Name: Cuenta; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Cuenta" ("contraseña", correo, id) FROM stdin;
-1234	angeladriancamalgarcia@hotmail.com	2
-1234	dbuchy98@hotmail.com	3
-1234	carlosgabriellira@hotmail.com	4
-1234	luisapulido@hotmail.com	5
+COPY public."Cuenta" ("contraseña", correo, id_usuario) FROM stdin;
 \.
 
 
@@ -344,10 +365,6 @@ COPY public."Cuenta" ("contraseña", correo, id) FROM stdin;
 --
 
 COPY public."Usuario" (nombre, presentacion, usuario, id) FROM stdin;
-Adrian	\N	adrianc68	2
-Brandon	\N	dbuchy98	3
-Carlos Gabriel	\N	jlira99	4
-Luisa Pulido	\N	luisapulido	5
 \.
 
 
@@ -355,7 +372,7 @@ Luisa Pulido	\N	luisapulido	5
 -- Data for Name: VerificacionCuenta; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."VerificacionCuenta" (codigo_verificacion, intentos_realizados, estado_cuenta, correo) FROM stdin;
+COPY public."VerificacionCuenta" (codigo_verificacion, intentos_realizados, estado_cuenta, correo_cuenta, id_usuario) FROM stdin;
 \.
 
 
@@ -363,7 +380,7 @@ COPY public."VerificacionCuenta" (codigo_verificacion, intentos_realizados, esta
 -- Name: usuario_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.usuario_id_seq', 5, true);
+SELECT pg_catalog.setval('public.usuario_id_seq', 3, true);
 
 
 --
@@ -371,7 +388,7 @@ SELECT pg_catalog.setval('public.usuario_id_seq', 5, true);
 --
 
 ALTER TABLE ONLY public."Cuenta"
-    ADD CONSTRAINT "PK_Cuenta" PRIMARY KEY (correo);
+    ADD CONSTRAINT "PK_Cuenta" PRIMARY KEY (id_usuario);
 
 
 --
@@ -386,14 +403,21 @@ ALTER TABLE ONLY public."Usuario"
 -- Name: IXFK_ConfiguracionUsuario_Usuario; Type: INDEX; Schema: public; Owner: dev
 --
 
-CREATE INDEX "IXFK_ConfiguracionUsuario_Usuario" ON public."ConfiguracionUsuario" USING btree (id);
+CREATE INDEX "IXFK_ConfiguracionUsuario_Usuario" ON public."ConfiguracionUsuario" USING btree (id_usuario);
 
 
 --
 -- Name: IXFK_Cuenta_Usuario; Type: INDEX; Schema: public; Owner: dev
 --
 
-CREATE INDEX "IXFK_Cuenta_Usuario" ON public."Cuenta" USING btree (id);
+CREATE INDEX "IXFK_Cuenta_Usuario" ON public."Cuenta" USING btree (id_usuario);
+
+
+--
+-- Name: IXFK_VerificacionCuenta_Cuenta; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_VerificacionCuenta_Cuenta" ON public."VerificacionCuenta" USING btree (id_usuario);
 
 
 --
@@ -401,7 +425,7 @@ CREATE INDEX "IXFK_Cuenta_Usuario" ON public."Cuenta" USING btree (id);
 --
 
 ALTER TABLE ONLY public."ConfiguracionUsuario"
-    ADD CONSTRAINT "FK_ConfiguracionUsuario_Usuario" FOREIGN KEY (id) REFERENCES public."Usuario"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT "FK_ConfiguracionUsuario_Usuario" FOREIGN KEY (id_usuario) REFERENCES public."Usuario"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -409,7 +433,7 @@ ALTER TABLE ONLY public."ConfiguracionUsuario"
 --
 
 ALTER TABLE ONLY public."Cuenta"
-    ADD CONSTRAINT "FK_Cuenta_Usuario" FOREIGN KEY (id) REFERENCES public."Usuario"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT "FK_Cuenta_Usuario" FOREIGN KEY (id_usuario) REFERENCES public."Usuario"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -417,7 +441,7 @@ ALTER TABLE ONLY public."Cuenta"
 --
 
 ALTER TABLE ONLY public."VerificacionCuenta"
-    ADD CONSTRAINT "FK_VerificacionCuenta_Cuenta" FOREIGN KEY (correo) REFERENCES public."Cuenta"(correo) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT "FK_VerificacionCuenta_Cuenta" FOREIGN KEY (id_usuario) REFERENCES public."Cuenta"(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
