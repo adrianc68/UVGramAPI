@@ -27,7 +27,7 @@ Account.hasOne(User, {
 
 User.belongsTo(Account, {
     foreignKey: "id",
-    targetKey: "id_usuario"
+    targetKey: "id_usuario", 
 });
 
 module.exports = {Account};
