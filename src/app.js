@@ -6,7 +6,6 @@ const helmet = require("helmet");
 const cors = require("cors");
 const { sequelize } = require("./database/connectionDatabaseSequelize");
 
-
 app.set("port", process.env.SV_PORT);
 
 //middlewares

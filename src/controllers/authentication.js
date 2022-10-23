@@ -4,6 +4,8 @@ const { AccountVerification } = require("../models/AccountVerification");
 const { UserConfiguration } = require("../models/UserConfiguration");
 const { generateRandomCode } = require("../helpers/generateCode");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
+const { httpResponse } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 
 const createUser = async (request, response) => {
     const { password, email, name, presentation, username } = request.body;
@@ -37,30 +39,41 @@ const createUser = async (request, response) => {
     } catch (error) {
         await t.rollback();
     }
+    console.log(request);
     response.send("Added successfully");
 }
 
 const deleteUserByUsername = async (request, response) => {
     const { username } = request.body;
     const t = await sequelize.transaction();
+    let message;
     try {
         const user = await User.destroy({
             where: {
                 usuario: username
             }
-        }).then( function(rowDeleted) {
-            if(rowDeleted === 1) {
-                console.log("Delected successfully");
+        }).then((rowDeleted) => {
+            message = rowDeleted + " entity(s) was removed";
+        }, (err) => {
+            console.log("Error from promise: " + err);
+            logger.info(err);
+            message = {
+                message: "Internal server error",
+                error: err
             }
-        }, function(error) {
-            console.log(err);
         });
-
         await t.commit();
-    } catch(error) {
+    } catch (err) {
+        console.log("Error from trycatch" + err);
+        message = {
+            message: "Catch error",
+            error: err
+        }
+        logger.warn(err);
         await t.rollback();
     }
-    response.send("Removed succesfully");
+    response.send(message);
 }
+
 
 module.exports = { createUser, deleteUserByUsername }
