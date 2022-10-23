@@ -37,7 +37,30 @@ const createUser = async (request, response) => {
     } catch (error) {
         await t.rollback();
     }
-    response.send("Hola");
+    response.send("Added successfully");
 }
 
-module.exports = { createUser }
+const deleteUserByUsername = async (request, response) => {
+    const { username } = request.body;
+    const t = await sequelize.transaction();
+    try {
+        const user = await User.destroy({
+            where: {
+                usuario: username
+            }
+        }).then( function(rowDeleted) {
+            if(rowDeleted === 1) {
+                console.log("Delected successfully");
+            }
+        }, function(error) {
+            console.log(err);
+        });
+
+        await t.commit();
+    } catch(error) {
+        await t.rollback();
+    }
+    response.send("Removed succesfully");
+}
+
+module.exports = { createUser, deleteUserByUsername }
