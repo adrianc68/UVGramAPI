@@ -19,7 +19,7 @@ app.use(morgan("dev"));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
-app.use(require("./routers/autentication"));
+app.use(require("./routers/authentication"));
 
 async function main() {
 
