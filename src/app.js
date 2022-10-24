@@ -5,11 +5,11 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
 const { sequelize } = require("./database/connectionDatabaseSequelize");
+const { logger } = require("./helpers/logger");
 
 app.set("port", process.env.SV_PORT);
 
 //middlewares
-
 app.disable("x-powered-by");
 app.use(helmet());
 app.use(cors());
@@ -21,14 +21,13 @@ app.use(express.json());
 app.use(require("./routers/authentication"));
 
 async function main() {
-
     try {
         await sequelize.sync({ force: false });
         app.listen(app.get("port"), () => {
-            console.log(`Server on port ${app.get("port")}`);
+            logger.info(`Server on port ${app.get("port")}`);
         });
     } catch( error ) {
-        console.error("Unable to connect to the database", error)
+        logger.fatal(error);
     }    
 }
 

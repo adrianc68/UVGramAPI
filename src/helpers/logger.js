@@ -1,18 +1,18 @@
 const winston = require('winston');
 const { combine, timestamp, colorize, align, printf, errors, prettyPrint } = winston.format;
 
-const consoleFormat = printf((info) => `\n\n [${info.timestamp}] ${info.level}: ${info.message} '\n ${info.stack} \n\n`);
+const consoleFormat = printf((info) => `\n\n [${info.timestamp}] ${info.level}: ${info.message}` + (info.stack === undefined ? "\n" : `'\n ${info.stack} \n\n`));
 const logLevels = {
     levels: {
-        fatal: 0,
-        error: 1,
-        warn: 2,
-        info: 3,
-        debug: 4,
-        trace: 5,
+        fatal: 0, // Statements representing the most severe of error conditions, assumedly resulting in program termination.
+        error: 1, // Statements that describe non-fatal errors in the application; quite often for loggin handled exceptions.
+        warn: 2,  // Statements that describe potentially harmful events or states in the program.
+        info: 3,  // Statements concerning program state, representing program events or behavior tracking.
+        debug: 4, // Fine-grained statements concerning program state, typically used for debugging.
+        trace: 5, // Statements that provide context to understand the steps leading up to errors and warnings
     },
     colors: {
-        fatal: 'bold redBG',
+        fatal: 'bold redBG', 
         error: 'bold yellowBG',
         warn: 'blueBG',
         info: 'green',
@@ -25,7 +25,7 @@ winston.addColors( logLevels.colors );
 
 const logger = winston.createLogger({
     levels: logLevels.levels,
-    level: process.env.LOG_LEVEL || 'info',
+    level: process.env.LOG_LEVEL || 'trace',
     format: combine(timestamp({ format: "YYYY-MM-DD hh:mm:ss A" }), errors({ stack: true }), prettyPrint()),
     transports: [
         new winston.transports.Console({

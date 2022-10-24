@@ -1,4 +1,5 @@
 const { Client } = require('pg');
+const { logger } = require('../helpers/logger');
 const {DB_USER, DB_HOST, DB_DATABASE, DB_PASSWORD, DB_PORT} = process.env;
 
 const clientDatabase = new Client({
@@ -11,7 +12,7 @@ const clientDatabase = new Client({
 
 clientDatabase.connect(function(error) {
     if(error) throw error;
-    console.log("succesful connection to the database!")
+    logger.info("Successful connection to the database ");
 })
 
 module.exports = {clientDatabase};

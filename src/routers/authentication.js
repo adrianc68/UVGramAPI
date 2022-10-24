@@ -4,11 +4,8 @@ const { isEmailRegistered, isUsernameRegistered } = require('../controllers/auth
 
 
 router.post("/accounts/create", createUser);
-router.delete("/accounts/delete", deleteUserByUsername);
-router.get("/accounts/username/", isUsernameRegistered );
-router.get("/accounts/email/", isEmailRegistered);
-
-
-
+router.delete("/accounts/username/delete", deleteUserByUsername);
+router.get("/accounts/username/check", isUsernameRegistered);
+router.get("/accounts/email/check", isEmailRegistered);
 
 module.exports = router;

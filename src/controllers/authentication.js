@@ -69,8 +69,7 @@ const deleteUserByUsername = async (request, response) => {
         await t.rollback();
         return httpResponse(response, err);
     }
-    return response.status(StatusCodes.OK).json({ message: "Entity removed succesfully" });
+    return response.status(StatusCodes.OK).json({ message });
 }
-
 
 module.exports = { createUser, deleteUserByUsername }

@@ -13,7 +13,6 @@ const isUsernameRegistered = async (request, response) => {
             where: { usuario: username }
         });
         isUsernameRegistered = (user.length != 0);
-        console.log(isUsernameRegistered);
     } catch (err) {
         return httpResponse(response, err);
     }
