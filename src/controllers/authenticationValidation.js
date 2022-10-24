@@ -13,7 +13,7 @@ const isUsernameRegistered = async (request, response) => {
         isUsernameRegistered = (user.length != 0);
         console.log(isUsernameRegistered);
     } catch (err) {
-        logger.warn(err.message);
+        logger.warn(err);
     }
     response.send(isUsernameRegistered);
 }
@@ -27,7 +27,7 @@ const isEmailRegistered = async (request, response) => {
         });
         isEmailRegistered = (account.length != 0);
     } catch (err) {
-        logger.warn(err.message);
+        logger.warn(err);
     }
     response.send(isEmailRegistered);
 }
