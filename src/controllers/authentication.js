@@ -38,8 +38,8 @@ const createUser = async (request, response) => {
         await t.commit();
     } catch (error) {
         await t.rollback();
+        logger.error("");
     }
-    console.log(request);
     response.send("Added successfully");
 }
 
@@ -54,26 +54,20 @@ const deleteUserByUsername = async (request, response) => {
             }
         }).then((rowDeleted) => {
             message = rowDeleted + " entity(s) was removed";
-        }, (err) => {
-            console.log("Error from promise: " + err);
-            logger.info(err);
-            message = {
-                message: "Internal server error",
-                error: err
-            }
         });
         await t.commit();
     } catch (err) {
-        console.log("Error from trycatch" + err);
         message = {
-            message: "Catch error",
+            message: "Internal server error",
             error: err
         }
-        logger.warn(err);
+        logger.error(err);
         await t.rollback();
     }
     response.send(message);
 }
+
+
 
 
 module.exports = { createUser, deleteUserByUsername }
