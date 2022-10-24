@@ -3,7 +3,6 @@ const { createUser, deleteUserByUsername } = require("../controllers/authenticat
 const { isEmailRegistered, isUsernameRegistered } = require('../controllers/authenticationValidation');
 
 
-
 router.post("/accounts/create", createUser);
 router.delete("/accounts/delete", deleteUserByUsername);
 router.get("/accounts/username/", isUsernameRegistered );

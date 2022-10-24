@@ -3,10 +3,11 @@ const { Account } = require("../models/Account");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { logger } = require("../helpers/logger");
 const { StatusCodes } = require("http-status-codes");
+const { httpResponse } = require("../helpers/httpResponses");
 
 const isUsernameRegistered = async (request, response) => {
     let isUsernameRegistered = false;
-    const { username } = request.body;
+    const { username } = request.body;
     try {
         const user = await User.findAll({
             where: { usuario: username }
@@ -14,9 +15,9 @@ const isUsernameRegistered = async (request, response) => {
         isUsernameRegistered = (user.length != 0);
         console.log(isUsernameRegistered);
     } catch (err) {
-        logger.warn(err);
+        return httpResponse(response, err);
     }
-    response.status(StatusCodes.OK).json(isUsernameRegistered);
+    return response.status(StatusCodes.OK).json(isUsernameRegistered);
 }
 
 const isEmailRegistered = async (request, response) => {
@@ -28,11 +29,10 @@ const isEmailRegistered = async (request, response) => {
         });
         isEmailRegistered = (account.length != 0);
     } catch (err) {
-        logger.warn(err);
+        return httpResponse(response, err);
     }
-    response.status(StatusCodes.OK).json(isEmailRegistered);
+    return response.status(StatusCodes.OK).json(isEmailRegistered);
 }
-
 
 module.exports = { isUsernameRegistered, isEmailRegistered }
 

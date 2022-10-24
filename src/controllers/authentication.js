@@ -5,8 +5,10 @@ const { UserConfiguration } = require("../models/UserConfiguration");
 const { UserRole } = require("../models/UserRole");
 const { generateRandomCode } = require("../helpers/generateCode");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { httpResponse } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
+const { StatusCodes } = require("http-status-codes");
+const { http } = require("winston");
+const { httpResponse } = require("../helpers/httpResponses");
 
 const createUser = async (request, response) => {
     const { password, email, name, presentation, username, phoneNumber, birthdate } = request.body;
@@ -41,13 +43,13 @@ const createUser = async (request, response) => {
             fecha_nacimiento: birthdate,
             id_usuario: userID,
             nombre_completo: null
-        }, { transaction: t});
+        }, { transaction: t });
         await t.commit();
     } catch (err) {
         await t.rollback();
-        logger.error(err);
+        return httpResponse(response, err);
     }
-    response.send("Added successfully");
+    return response.status(StatusCodes.OK).json({ message: "New entity added succesfully" });
 }
 
 const deleteUserByUsername = async (request, response) => {
@@ -64,17 +66,11 @@ const deleteUserByUsername = async (request, response) => {
         });
         await t.commit();
     } catch (err) {
-        message = {
-            message: "Internal server error",
-            error: err
-        }
-        logger.error(err);
         await t.rollback();
+        return httpResponse(response, err);
     }
-    response.send(message);
+    return response.status(StatusCodes.OK).json({ message: "Entity removed succesfully" });
 }
-
-
 
 
 module.exports = { createUser, deleteUserByUsername }
