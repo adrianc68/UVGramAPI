@@ -295,11 +295,25 @@ ALTER TABLE public."ConfiguracionUsuario" OWNER TO dev;
 CREATE TABLE public."Cuenta" (
     "contraseña" character varying(120) NOT NULL,
     correo character varying(340) NOT NULL,
-    id_usuario bigint NOT NULL
+    id_usuario bigint NOT NULL,
+    telefono character varying(15)
 );
 
 
 ALTER TABLE public."Cuenta" OWNER TO dev;
+
+--
+-- Name: RolUsuario; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."RolUsuario" (
+    fecha_nacimiento date NOT NULL,
+    id_usuario bigint NOT NULL,
+    nombre_completo character varying(340)
+);
+
+
+ALTER TABLE public."RolUsuario" OWNER TO dev;
 
 --
 -- Name: Usuario; Type: TABLE; Schema: public; Owner: dev
@@ -356,7 +370,15 @@ COPY public."ConfiguracionUsuario" (tipo_privacidad, id_usuario) FROM stdin;
 -- Data for Name: Cuenta; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Cuenta" ("contraseña", correo, id_usuario) FROM stdin;
+COPY public."Cuenta" ("contraseña", correo, id_usuario, telefono) FROM stdin;
+\.
+
+
+--
+-- Data for Name: RolUsuario; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."RolUsuario" (fecha_nacimiento, id_usuario, nombre_completo) FROM stdin;
 \.
 
 
@@ -380,7 +402,7 @@ COPY public."VerificacionCuenta" (codigo_verificacion, intentos_realizados, esta
 -- Name: usuario_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.usuario_id_seq', 3, true);
+SELECT pg_catalog.setval('public.usuario_id_seq', 1, false);
 
 
 --
@@ -414,6 +436,13 @@ CREATE INDEX "IXFK_Cuenta_Usuario" ON public."Cuenta" USING btree (id_usuario);
 
 
 --
+-- Name: IXFK_RolUsuario_Usuario; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_RolUsuario_Usuario" ON public."RolUsuario" USING btree (id_usuario);
+
+
+--
 -- Name: IXFK_VerificacionCuenta_Cuenta; Type: INDEX; Schema: public; Owner: dev
 --
 
@@ -434,6 +463,14 @@ ALTER TABLE ONLY public."ConfiguracionUsuario"
 
 ALTER TABLE ONLY public."Cuenta"
     ADD CONSTRAINT "FK_Cuenta_Usuario" FOREIGN KEY (id_usuario) REFERENCES public."Usuario"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: RolUsuario FK_RolUsuario_Usuario; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."RolUsuario"
+    ADD CONSTRAINT "FK_RolUsuario_Usuario" FOREIGN KEY (id_usuario) REFERENCES public."Usuario"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
