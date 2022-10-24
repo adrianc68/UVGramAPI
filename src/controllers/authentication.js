@@ -2,13 +2,14 @@ const { User } = require("../models/User");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
 const { UserConfiguration } = require("../models/UserConfiguration");
+const { UserRole } = require("../models/UserRole");
 const { generateRandomCode } = require("../helpers/generateCode");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { httpResponse } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 
 const createUser = async (request, response) => {
-    const { password, email, name, presentation, username } = request.body;
+    const { password, email, name, presentation, username, phoneNumber, birthdate } = request.body;
     let confirmationCode = generateRandomCode(8);
     let userID;
     const t = await sequelize.transaction();
@@ -23,22 +24,28 @@ const createUser = async (request, response) => {
             tipo_privacidad: "PUBLICO",
             id_usuario: userID
         }, { transaction: t });
-        const newAccount = await Account.create({
+        const account = await Account.create({
             correo: email,
             contraseña: password,
-            id_usuario: userID
+            id_usuario: userID,
+            telefono: phoneNumber
         }, { transaction: t });
-        const newAccountVerification = await AccountVerification.create({
+        const accountVerification = await AccountVerification.create({
             codigo_verificacion: confirmationCode,
             intentos_realizados: 0,
             estado_cuenta: "NO_BLOQUEADO",
             correo_cuenta: email,
             id_usuario: userID
         }, { transaction: t });
+        const userRole = await UserRole.create({
+            fecha_nacimiento: birthdate,
+            id_usuario: userID,
+            nombre_completo: null
+        }, { transaction: t});
         await t.commit();
-    } catch (error) {
+    } catch (err) {
         await t.rollback();
-        logger.error("");
+        logger.error(err);
     }
     response.send("Added successfully");
 }

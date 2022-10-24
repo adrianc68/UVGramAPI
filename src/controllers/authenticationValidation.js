@@ -2,6 +2,7 @@ const { User } = require("../models/User");
 const { Account } = require("../models/Account");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { logger } = require("../helpers/logger");
+const { StatusCodes } = require("http-status-codes");
 
 const isUsernameRegistered = async (request, response) => {
     let isUsernameRegistered = false;
@@ -15,7 +16,7 @@ const isUsernameRegistered = async (request, response) => {
     } catch (err) {
         logger.warn(err);
     }
-    response.send(isUsernameRegistered);
+    response.status(StatusCodes.OK).json(isUsernameRegistered);
 }
 
 const isEmailRegistered = async (request, response) => {
@@ -29,7 +30,7 @@ const isEmailRegistered = async (request, response) => {
     } catch (err) {
         logger.warn(err);
     }
-    response.send(isEmailRegistered);
+    response.status(StatusCodes.OK).json(isEmailRegistered);
 }
 
 

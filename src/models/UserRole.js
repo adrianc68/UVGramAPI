@@ -2,19 +2,16 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { User } = require("./User");
 
-const Account = sequelize.define("Cuenta", {
-    correo: {
-        type: DataTypes.STRING,
+const UserRole = sequelize.define("RolUsuario", {
+    fecha_nacimiento: {
+        type: DataTypes.DATE,
         primaryKey: true
-    },
-    contraseña: {
-        type: DataTypes.STRING
     },
     id_usuario: {
         type: DataTypes.BIGINT,
         allowNull: false
     },
-    telefono: {
+    nombre_completo: {
         type: DataTypes.STRING,
         allowNull: true
     },
@@ -23,15 +20,16 @@ const Account = sequelize.define("Cuenta", {
     freezeTableName: true
 });
 
-Account.hasOne(User, {
+UserRole.hasOne(User, {
     foreignKey: "id",
     sourceKey: "id_usuario",
     onDelete: "CASCADE",
+    onUpdate: "CASCADE"
 });
 
-User.belongsTo(Account, {
+User.belongsTo(UserRole, {
     foreignKey: "id",
     targetKey: "id_usuario", 
 });
 
-module.exports = {Account};
+module.exports = {UserRole};
