@@ -12,7 +12,7 @@ const logLevels = {
         trace: 5, // Statements that provide context to understand the steps leading up to errors and warnings
     },
     colors: {
-        fatal: 'bold redBG', 
+        fatal: 'bold redBG',
         error: 'bold yellowBG',
         warn: 'blueBG',
         info: 'green',
@@ -21,7 +21,7 @@ const logLevels = {
     }
 };
 
-winston.addColors( logLevels.colors );
+winston.addColors(logLevels.colors);
 
 const logger = winston.createLogger({
     levels: logLevels.levels,
@@ -30,7 +30,7 @@ const logger = winston.createLogger({
     transports: [
         new winston.transports.Console({
             format: combine(
-                colorize({ all:true}),
+                colorize({ all: true }),
                 timestamp({ format: "YYYY-MM-DD hh:mm:ss A" }),
                 consoleFormat,
             )

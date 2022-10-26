@@ -28,4 +28,4 @@ User.belongsTo(UserConfiguration, {
     targetKey: "id_usuario"
 });
 
-module.exports = {UserConfiguration};
+module.exports = { UserConfiguration };

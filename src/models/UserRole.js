@@ -29,7 +29,7 @@ UserRole.hasOne(User, {
 
 User.belongsTo(UserRole, {
     foreignKey: "id",
-    targetKey: "id_usuario", 
+    targetKey: "id_usuario",
 });
 
-module.exports = {UserRole};
+module.exports = { UserRole };

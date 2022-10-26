@@ -37,4 +37,4 @@ Account.belongsTo(AccountVerification, {
     targetKey: "id_usuario"
 });
 
-module.exports = {AccountVerification};
+module.exports = { AccountVerification };
