@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { check, param, body } = require('express-validator');
-const { httpResponseValidation } = require('../helpers/httpResponses');
+const { httpResponseValidation } = require('../../helpers/httpResponses');
 
 const validateEmailData = [
     check("email")
