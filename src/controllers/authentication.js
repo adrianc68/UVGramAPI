@@ -7,7 +7,6 @@ const { generateRandomCode } = require("../helpers/generateCode");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { logger } = require("../helpers/logger");
 const { StatusCodes } = require("http-status-codes");
-const { http } = require("winston");
 const { httpResponse } = require("../helpers/httpResponses");
 
 const createUser = async (request, response) => {
@@ -49,7 +48,7 @@ const createUser = async (request, response) => {
         await t.rollback();
         return httpResponse(response, err);
     }
-    return response.status(StatusCodes.OK).json({ message: "New entity added succesfully" });
+    return response.status(StatusCodes.OK).json({ message: "New entity was added succesfully" });
 }
 
 const deleteUserByUsername = async (request, response) => {
