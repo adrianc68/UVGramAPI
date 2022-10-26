@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json())
 app.use(handleJSON);
 
-app.use(require("./routers/authentication"));
+app.use(require("./routers/userAccount"));
 
 async function main() {
     try {

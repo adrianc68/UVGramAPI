@@ -37,7 +37,7 @@ const validationisEmailRegisteredWithNext = async (request, response, next) => {
     "use strict";
     let isRegistered = await isEmailRegistered(request, response);
     if (isRegistered) {
-        return response.status(StatusCodes.OK).json({ value: isRegistered, message: "email is already registered" });
+        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "email is already registered" });
     } else {
         return next();
     }
@@ -47,7 +47,7 @@ const validationIsUsernameRegisteredWithNext = async (request, response, next) =
     "use strict";
     let isRegistered = await isUsernameRegistered(request, response);
     if (isRegistered) {
-        return response.status(StatusCodes.OK).json({ value: isRegistered, message: "username is already registered" });
+        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "username is already registered" });
     } else {
         return next();
     }
@@ -57,9 +57,9 @@ const validationIsEmailRegistered = async (request, response) => {
     "use strict";
     let isRegistered = await isEmailRegistered(request, response);
     if (isRegistered) {
-        return response.status(StatusCodes.OK).json({ value: isRegistered, message: "email is already registered" });
+        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "email is already registered" });
     } else {
-        return response.status(StatusCodes.OK).json({ value: isRegistered, message: "email is not registered" });
+        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "email is not registered" });
     }
 }
 
@@ -67,9 +67,9 @@ const validationIsUsernameRegistered = async (request, response) => {
     "use strict";
     let isRegistered = await isUsernameRegistered(request, response);
     if (isRegistered) {
-        return response.status(StatusCodes.OK).json({ value: isRegistered, message: "username is already registered" });
+        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "username is already registered" });
     } else {
-        return response.status(StatusCodes.OK).json({ value: isRegistered, message: "username is not registered" });
+        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "username is not registered" });
     }
 }
 
