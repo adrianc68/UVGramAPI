@@ -6,6 +6,7 @@ const helmet = require("helmet");
 const cors = require("cors");
 const { sequelize } = require("./database/connectionDatabaseSequelize");
 const { logger } = require("./helpers/logger");
+const { handleJSON } = require("./helpers/jsonValidationMiddleware");
 
 app.set("port", process.env.SV_PORT);
 
@@ -15,8 +16,9 @@ app.use(helmet());
 app.use(cors());
 app.disable("etag");
 app.use(morgan("dev"));
-app.use(express.urlencoded({extended: false}));
-app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json())
+app.use(handleJSON);
 
 app.use(require("./routers/authentication"));
 
@@ -26,9 +28,9 @@ async function main() {
         app.listen(app.get("port"), () => {
             logger.info(`Server on port ${app.get("port")}`);
         });
-    } catch( error ) {
+    } catch (error) {
         logger.fatal(error);
-    }    
+    }
 }
 
 main();
