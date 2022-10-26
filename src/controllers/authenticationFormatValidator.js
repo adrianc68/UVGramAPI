@@ -79,7 +79,7 @@ function isValidDate(dateString) {
     return day > 0 && day <= monthLength[month - 1];
 };
 
-const validationAccountData = [
+const formatValidationAccountData = [
     validateNameData,
     validatePresentationData,
     validateUsernameData,
@@ -92,19 +92,19 @@ const validationAccountData = [
     }
 ];
 
-const validationAccountEmail = [
+const formatValidationAccountEmail = [
     validateEmailData,
     (request, response, next) => {
         httpResponseValidation(request, response, next);
     }
 ];
 
-const validationAccountUsername = [
+const formatValidationAccountUsername = [
     validateUsernameData,
     (request, response, next) => {
         httpResponseValidation(request, response, next);
     }
 ];
 
-module.exports = { validationAccountData, validationAccountEmail, validationAccountUsername }
+module.exports = { formatValidationAccountData, formatValidationAccountEmail, formatValidationAccountUsername }
 
