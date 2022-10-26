@@ -8,6 +8,7 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { logger } = require("../helpers/logger");
 const { StatusCodes } = require("http-status-codes");
 const { httpResponse } = require("../helpers/httpResponses");
+const { encondeSHA256 } = require("../helpers/cipher");
 
 const createUser = async (request, response) => {
     const { password, email, name, presentation, username, phoneNumber, birthdate } = request.body;
@@ -27,7 +28,7 @@ const createUser = async (request, response) => {
         }, { transaction: t });
         const account = await Account.create({
             correo: email,
-            contraseña: password,
+            contraseña: encondeSHA256(password),
             id_usuario: userID,
             telefono: phoneNumber
         }, { transaction: t });
