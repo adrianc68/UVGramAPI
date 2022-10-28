@@ -2,36 +2,32 @@ const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/
 const { User } = require("../models/User");
 const { Account } = require("../models/Account");
 
-const isUsernameRegistered = async (request, response) => {
+const isUsernameRegistered = async (username) => {
     let isUsernameRegistered = false;
-    const { username } = request.body;
-    try {
-        const user = await User.findAll({
-            where: { usuario: username }
-        });
-        isUsernameRegistered = (user.length != 0);
-    } catch (err) {
-        return httpResponseInternalServerError(response, err);
-    }
+    const user = await User.findAll({
+        where: { usuario: username }
+    });
+    isUsernameRegistered = (user.length != 0);
     return isUsernameRegistered;
 }
 
-const isEmailRegistered = async (request, response) => {
+const isEmailRegistered = async (email) => {
     let isEmailRegistered = false;
-    const { email } = request.body;
-    try {
-        const account = await Account.findAll({
-            where: { correo: email }
-        });
-        isEmailRegistered = (account.length != 0);
-    } catch (err) {
-        return httpResponseInternalServerError(response, err);
-    }
+    const account = await Account.findAll({
+        where: { correo: email }
+    });
+    isEmailRegistered = (account.length != 0);
     return isEmailRegistered;
 }
 
 const validationisEmailRegisteredWithNext = async (request, response, next) => {
-    let isRegistered = await isEmailRegistered(request, response);
+    let isRegistered;
+    try {
+        const { email } = request.body;
+        isRegistered = await isEmailRegistered(email);
+    } catch (err) {
+        return httpResponseInternalServerError(response, err);
+    }
     if (isRegistered) {
         return httpResponseOk(response, { exist: isRegistered, message: "email is already registered" });
     } else {
@@ -40,7 +36,13 @@ const validationisEmailRegisteredWithNext = async (request, response, next) => {
 }
 
 const validationIsUsernameRegisteredWithNext = async (request, response, next) => {
-    let isRegistered = await isUsernameRegistered(request, response);
+    let isRegistered;
+    try {
+        const { username } = request.body;
+        isRegistered = await isUsernameRegistered(username);
+    } catch (err) {
+        return httpResponseInternalServerError(response, err);
+    }
     if (isRegistered) {
         return httpResponseOk(response, { exist: isRegistered, message: "username is already registered" });
     } else {
@@ -49,7 +51,13 @@ const validationIsUsernameRegisteredWithNext = async (request, response, next) =
 }
 
 const validationIsEmailRegistered = async (request, response) => {
-    let isRegistered = await isEmailRegistered(request, response);
+    let isRegistered;
+    try {
+        const { email } = request.body;
+        isRegistered = await isEmailRegistered(email);
+    } catch (err) {
+        return httpResponseInternalServerError(response, err);
+    }
     let message;
     if (isRegistered) {
         message = "email is already registered";
@@ -60,7 +68,13 @@ const validationIsEmailRegistered = async (request, response) => {
 }
 
 const validationIsUsernameRegistered = async (request, response) => {
-    let isRegistered = await isUsernameRegistered(request, response);
+    let isRegistered;
+    const { username } = request.body;
+    try {
+        isRegistered = await isUsernameRegistered(username);
+    } catch (err) {
+        return httpResponseInternalServerError(response, err);
+    }
     let message;
     if (isRegistered) {
         message = "username is already registered";

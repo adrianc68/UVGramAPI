@@ -5,8 +5,7 @@ const { Op } = require("sequelize");
 const { User } = require("../models/User");
 
 const getAccountExist = async (emailOrUsername) => {
-    let user;
-    user = await User.findAll({
+    const user = await User.findAll({
         where: {
             [Op.or]: [{ usuario: emailOrUsername }, { '$Cuentum.correo$': emailOrUsername }]
         },
