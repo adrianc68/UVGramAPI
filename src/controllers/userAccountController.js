@@ -5,10 +5,8 @@ const { UserConfiguration } = require("../models/UserConfiguration");
 const { UserRole } = require("../models/UserRole");
 const { generateRandomCode } = require("../helpers/generateCode");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { logger } = require("../helpers/logger");
-const { StatusCodes } = require("http-status-codes");
-const { httpResponse } = require("../helpers/httpResponses");
-const { encondeSHA256 } = require("../helpers/cipher");
+const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
+const { encondePassword } = require("../helpers/cipher");
 
 const createUser = async (request, response) => {
     const { password, email, name, presentation, username, phoneNumber, birthdate } = request.body;
@@ -28,7 +26,7 @@ const createUser = async (request, response) => {
         }, { transaction: t });
         const account = await Account.create({
             correo: email,
-            contraseña: encondeSHA256(password),
+            contraseña: encondePassword(password),
             id_usuario: userID,
             telefono: phoneNumber
         }, { transaction: t });
@@ -47,9 +45,9 @@ const createUser = async (request, response) => {
         await t.commit();
     } catch (err) {
         await t.rollback();
-        return httpResponse(response, err);
+        return httpResponseInternalServerError(response, err);
     }
-    return response.status(StatusCodes.OK).json({ message: "New entity was added succesfully" });
+    return httpResponseOk(response, "New entity was added succesfully")
 }
 
 const deleteUserByUsername = async (request, response) => {
@@ -67,9 +65,9 @@ const deleteUserByUsername = async (request, response) => {
         await t.commit();
     } catch (err) {
         await t.rollback();
-        return httpResponse(response, err);
+        return httpResponseInternalServerError(response, err);
     }
-    return response.status(StatusCodes.OK).json({ message });
+    return httpResponseOk(response, message)
 }
 
 module.exports = { createUser, deleteUserByUsername }

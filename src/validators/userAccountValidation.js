@@ -1,9 +1,6 @@
+const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
 const { User } = require("../models/User");
 const { Account } = require("../models/Account");
-const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { logger } = require("../helpers/logger");
-const { StatusCodes } = require("http-status-codes");
-const { httpResponse } = require("../helpers/httpResponses");
 
 const isUsernameRegistered = async (request, response) => {
     let isUsernameRegistered = false;
@@ -14,7 +11,7 @@ const isUsernameRegistered = async (request, response) => {
         });
         isUsernameRegistered = (user.length != 0);
     } catch (err) {
-        return httpResponse(response, err);
+        return httpResponseInternalServerError(response, err);
     }
     return isUsernameRegistered;
 }
@@ -28,49 +25,49 @@ const isEmailRegistered = async (request, response) => {
         });
         isEmailRegistered = (account.length != 0);
     } catch (err) {
-        return httpResponse(response, err);
+        return httpResponseInternalServerError(response, err);
     }
     return isEmailRegistered;
 }
 
 const validationisEmailRegisteredWithNext = async (request, response, next) => {
-    "use strict";
     let isRegistered = await isEmailRegistered(request, response);
     if (isRegistered) {
-        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "email is already registered" });
+        return httpResponseOk(response, { exist: isRegistered, message: "email is already registered" });
     } else {
         return next();
     }
 }
 
 const validationIsUsernameRegisteredWithNext = async (request, response, next) => {
-    "use strict";
     let isRegistered = await isUsernameRegistered(request, response);
     if (isRegistered) {
-        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "username is already registered" });
+        return httpResponseOk(response, { exist: isRegistered, message: "username is already registered" });
     } else {
         return next();
     }
 }
 
 const validationIsEmailRegistered = async (request, response) => {
-    "use strict";
     let isRegistered = await isEmailRegistered(request, response);
+    let message;
     if (isRegistered) {
-        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "email is already registered" });
+        message = "email is already registered";
     } else {
-        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "email is not registered" });
+        message = "email is not registered";
     }
+    return httpResponseOk(response, { exist: isRegistered, message });
 }
 
 const validationIsUsernameRegistered = async (request, response) => {
-    "use strict";
     let isRegistered = await isUsernameRegistered(request, response);
+    let message;
     if (isRegistered) {
-        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "username is already registered" });
+        message = "username is already registered";
     } else {
-        return response.status(StatusCodes.OK).json({ exist: isRegistered, message: "username is not registered" });
+        message = "username is not registered";
     }
+    return httpResponseOk(response, { exist: isRegistered, message });
 }
 
 module.exports = { validationisEmailRegisteredWithNext, validationIsUsernameRegisteredWithNext, validationIsUsernameRegistered, validationIsEmailRegistered }

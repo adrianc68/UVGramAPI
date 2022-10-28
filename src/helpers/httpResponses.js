@@ -10,9 +10,26 @@ const httpResponseValidation = (request, response, next) => {
     return next();
 };
 
-const httpResponse = (response, error) => {
-    logger.fatal(error);
-    return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: "Internal Server Error" });
+const httpResponseOk = (response, message) => {
+    return response.status(StatusCodes.OK).json({ message: message });
 }
 
-module.exports = { httpResponse, httpResponseValidation }
+const httpResponseNotFound = (response, message) => {
+    return response.status(StatusCodes.NOT_FOUND).json({ message: message });
+};
+
+const httpResponseUnauthorized = (response, message) => {
+    logger.warn(message);
+    return response.status(StatusCodes.UNAUTHORIZED).json({ message: message });
+};
+
+const httpResponseBadRequest = (response, error) => {
+    return response.status(StatusCodes.BAD_REQUEST).json({ message: error });
+}
+
+const httpResponseInternalServerError = (response, error) => {
+    logger.fatal(error);
+    return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Internal Server Error" });
+};
+
+module.exports = { httpResponseInternalServerError, httpResponseValidation, httpResponseUnauthorized, httpResponseNotFound, httpResponseOk, httpResponseBadRequest }

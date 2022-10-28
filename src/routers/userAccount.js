@@ -8,5 +8,4 @@ router.delete("/accounts/username/delete", formatValidationAccountUsername, dele
 router.get("/accounts/username/check", formatValidationAccountUsername, validationIsUsernameRegistered);
 router.get("/accounts/email/check", formatValidationAccountEmail, validationIsEmailRegistered);
 
-
 module.exports = router;

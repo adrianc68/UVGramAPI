@@ -11,4 +11,8 @@ function encondeSHA256(lines) {
     return hash.digest('hex');
 }
 
-module.exports = { encondeSHA256 }
+function encondePassword(password) {
+    return encondeSHA256(password);
+}
+
+module.exports = { encondePassword }
