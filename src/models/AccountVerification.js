@@ -12,9 +12,6 @@ const AccountVerification = sequelize.define("VerificacionCuenta", {
     estado_cuenta: {
         type: DataTypes.ENUM("BLOQUEADO", "NO_BLOQUEADO")
     },
-    correo_cuenta: {
-        type: DataTypes.STRING,
-    },
     id_usuario: {
         type: DataTypes.BIGINT
     }

@@ -7,6 +7,7 @@ const { generateRandomCode } = require("../helpers/generateCode");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
 const { encondePassword } = require("../helpers/cipher");
+const { PersonalUserRole } = require("../models/PersonalUserRole");
 
 const createUser = async (request, response) => {
     const { password, email, name, presentation, username, phoneNumber, birthdate } = request.body;
@@ -28,20 +29,24 @@ const createUser = async (request, response) => {
             correo: email,
             contraseña: encondePassword(password),
             id_usuario: userID,
-            telefono: phoneNumber
+            telefono: phoneNumber,
+            fecha_nacimiento: birthdate,
         }, { transaction: t });
         const accountVerification = await AccountVerification.create({
             codigo_verificacion: confirmationCode,
             intentos_realizados: 0,
             estado_cuenta: "NO_BLOQUEADO",
-            correo_cuenta: email,
             id_usuario: userID
         }, { transaction: t });
         const userRole = await UserRole.create({
-            fecha_nacimiento: birthdate,
             id_usuario: userID,
-            nombre_completo: null
         }, { transaction: t });
+        const personalUserRole = await PersonalUserRole.create({
+            facultad: null,
+            programa_educativo: null,
+            sexo: "INDIFERENTE",
+            id_usuario: userID
+        }, { transaction: t});
         await t.commit();
     } catch (err) {
         await t.rollback();

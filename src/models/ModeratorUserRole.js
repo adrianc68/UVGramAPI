@@ -1,31 +1,31 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
-const { User } = require("./User");
+const { UserRole } = require("./UserRole");
 
-const UserRole = sequelize.define("RolUsuario", {
+const ModeratorUserRole = sequelize.define("Moderador", {
+    fecha_cambio: {
+        type: DataTypes.DATE
+    },
     id_usuario: {
         type: DataTypes.BIGINT,
         allowNull: false,
         primaryKey: true
-    },
-    rol_usuario: {
-        type: DataTypes.ENUM("PERSONAL", "EMPRESARIAL", "MODERADOR", "ADMINISTRADOR")
     }
 }, {
     timestamps: false,
     freezeTableName: true
 });
 
-UserRole.hasOne(User, {
-    foreignKey: "id",
+ModeratorUserRole.hasOne(UserRole, {
+    foreignKey: "id_usuario",
     sourceKey: "id_usuario",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
-User.belongsTo(UserRole, {
-    foreignKey: "id",
-    targetKey: "id_usuario",
+UserRole.belongsTo(ModeratorUserRole, {
+    foreignKey: "id_usuario",
+    targetKey: "id_usuario"
 });
 
-module.exports = { UserRole };
+module.exports = { ModeratorUserRole };

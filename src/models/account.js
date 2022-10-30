@@ -5,18 +5,22 @@ const { User } = require("./User");
 const Account = sequelize.define("Cuenta", {
     correo: {
         type: DataTypes.STRING,
-        primaryKey: true
     },
     contraseña: {
         type: DataTypes.STRING
     },
     id_usuario: {
         type: DataTypes.BIGINT,
-        allowNull: false
+        allowNull: false,
+        primaryKey: true
     },
     telefono: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    fecha_nacimiento: {
+        type: DataTypes.DATE,
+        allowNull: false
     },
 }, {
     timestamps: false,

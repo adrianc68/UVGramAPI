@@ -23,6 +23,7 @@ app.use(handleJSON);
 app.use(require("./routers/userAccount"));
 app.use(require("./routers/authentication"));
 
+
 async function main() {
     try {
         await sequelize.sync({ force: false });
