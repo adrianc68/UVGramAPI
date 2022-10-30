@@ -40,13 +40,14 @@ const createUser = async (request, response) => {
         }, { transaction: t });
         const userRole = await UserRole.create({
             id_usuario: userID,
+            rol_usuario: "PERSONAL"
         }, { transaction: t });
         const personalUserRole = await PersonalUserRole.create({
             facultad: null,
             programa_educativo: null,
             sexo: "INDIFERENTE",
             id_usuario: userID
-        }, { transaction: t});
+        }, { transaction: t });
         await t.commit();
     } catch (err) {
         await t.rollback();
