@@ -18,10 +18,13 @@ const httpResponseNotFound = (response, message) => {
     return response.status(StatusCodes.NOT_FOUND).json({ message: message });
 };
 
-const httpResponseUnauthorized = (response, message) => {
-    logger.warn(message);
-    return response.status(StatusCodes.UNAUTHORIZED).json({ message: message });
+const httpResponseUnauthorized = (response) => {
+    return response.status(StatusCodes.UNAUTHORIZED).json({ message: "No authorization to perform this action!" });
 };
+
+const httpResponseErrorToken = (response, error) => {
+    return response.status(StatusCodes.FORBIDDEN).json({ message: error, type: "token" });
+}
 
 const httpResponseBadRequest = (response, error) => {
     return response.status(StatusCodes.BAD_REQUEST).json({ message: error });
@@ -32,4 +35,8 @@ const httpResponseInternalServerError = (response, error) => {
     return response.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: "Internal Server Error" });
 };
 
-module.exports = { httpResponseInternalServerError, httpResponseValidation, httpResponseUnauthorized, httpResponseNotFound, httpResponseOk, httpResponseBadRequest }
+module.exports = {
+    httpResponseInternalServerError, httpResponseValidation, httpResponseUnauthorized,
+    httpResponseNotFound, httpResponseOk, httpResponseBadRequest,
+    httpResponseErrorToken
+}

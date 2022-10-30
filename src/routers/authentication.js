@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { createToken } = require('../controllers/authenticationController');
+const { createToken, authenticateToken } = require('../controllers/authenticationController');
 const { validationLoginData } = require('../validators/authenticationValidation');
 const { formatValidationLogin } = require('../validators/formatValidators/authenticationFormatValidator');
 
