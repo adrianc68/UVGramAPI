@@ -1,7 +1,7 @@
 const winston = require('winston');
 const { combine, timestamp, colorize, align, printf, errors, prettyPrint } = winston.format;
 
-const consoleFormat = printf((info) => `\n\n [${info.timestamp}] ${info.level}: ${info.message}` + (info.stack === undefined ? "\n" : `'\n ${info.stack} \n\n`));
+const consoleFormat = printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}` + (info.stack === undefined ? "" : `${info.stack}`));
 const logLevels = {
     levels: {
         fatal: 0, // Statements representing the most severe of error conditions, assumedly resulting in program termination.

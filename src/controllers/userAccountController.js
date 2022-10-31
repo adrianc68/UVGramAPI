@@ -53,7 +53,7 @@ const createUser = async (request, response) => {
         await t.rollback();
         return httpResponseInternalServerError(response, err);
     }
-    return httpResponseOk(response, "New entity was added succesfully")
+    return httpResponseOk(response, { message: "New entity was added succesfully"})
 }
 
 const deleteUserByUsername = async (request, response) => {

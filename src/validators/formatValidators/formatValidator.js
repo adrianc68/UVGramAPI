@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { check, param, body } = require('express-validator');
+const { check, param, body, header } = require('express-validator');
 const { httpResponseValidation } = require('../../helpers/httpResponses');
 
 const validateEmailData = [
@@ -73,6 +73,23 @@ const validateLoginData = [
         .withMessage("emailOrUsername is required")
 ];
 
+const validateTokenData = [
+    header("authorization")
+        .not()
+        .isEmpty()
+        .withMessage("authorization header is required")
+];
+
+const validateIdData = [
+    header("id")
+        .not()
+        .isEmpty()
+        .withMessage("id header is required")
+        .bail()
+        .isNumeric()
+        .withMessage("id must be integer")
+];
+
 const isValidDate = (dateString) => {
     // Parse the date parts to integers
     var parts = dateString.split("-");
@@ -94,5 +111,5 @@ const isValidDate = (dateString) => {
 module.exports = {
     validateEmailData, validateUsernameData, validateNameData,
     validatePresentationData, validatePasswordData, validatePhoneNumberData,
-    validateBirthdateData, validateLoginData
+    validateBirthdateData, validateLoginData, validateTokenData, validateIdData
 }
