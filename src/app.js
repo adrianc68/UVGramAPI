@@ -5,9 +5,9 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
 const { logger } = require("./helpers/logger");
-const { handleJSON } = require("./helpers/jsonValidationMiddleware");
 const { redisClient } = require("./database/connectionRedis");
 const { sequelize } = require("./database/connectionDatabaseSequelize");
+const { handleJSON } = require("./middleware/jsonValidation");
 
 app.set("port", process.env.SV_PORT);
 // middlewares

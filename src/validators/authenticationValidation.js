@@ -1,7 +1,7 @@
 const { httpResponseInternalServerError, httpResponseNotFound, httpResponseErrorToken, httpResponseForbidden } = require("../helpers/httpResponses");
 const { encondePassword } = require("../helpers/cipher");
 const { blacklistToken, checkToken, verifyToken, TOKEN_STATE } = require("../helpers/token");
-const { getAccountLoginData } = require("../dataaccess/dataAccess");
+const { getAccountLoginData } = require("../dataaccess/UserDataAccess");
 const { logger } = require("../helpers/logger");
 
 const doesExistUser = (user) => {

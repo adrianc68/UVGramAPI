@@ -6,7 +6,7 @@ const crypto = require("crypto");
  * @returns random code as String
  */
 const generateRandomCode = (maxCharacters) => {
-    if(maxCharacters > 64) {
+    if (maxCharacters > 64) {
         maxCharacters = 64;
     }
     const secret = Math.random().toString();

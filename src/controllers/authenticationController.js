@@ -1,4 +1,4 @@
-const { getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/dataAccess");
+const { getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/UserDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const { generateToken, EXPIRATION_TIME, addToken, removeToken, blacklistToken } = require("../helpers/token");
@@ -47,9 +47,6 @@ const refreshTokens = async (request, response) => {
     try {
         let user = await getAccountLoginDataById(id);
         tokens = await generateTokens(user.usuario, user.id, user["RolUsuario.rol_usuario"]);
-
-        logger.trace(tokens.message);
-
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -64,7 +61,7 @@ const logOutToken = async (request, response) => {
     } catch (error) {
         return httpResponseInternalServerError(error);
     }
-    return httpResponseOk(response, { message: "Logout successful"});
+    return httpResponseOk(response, { message: "Logout successful" });
 }
 
 module.exports = { createTokens, refreshTokens, logOutToken }

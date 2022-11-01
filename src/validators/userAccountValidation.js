@@ -1,4 +1,4 @@
-const { isEmailRegistered, isUsernameRegistered } = require("../dataaccess/dataAccess");
+const { isEmailRegistered, isUsernameRegistered } = require("../dataaccess/UserDataAccess");
 const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
 
 const validationisEmailRegisteredWithNext = async (request, response, next) => {

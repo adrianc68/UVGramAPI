@@ -10,14 +10,14 @@ const formatValidationLogin = [
     }
 ];
 
-const formatValidationToken =  [
+const formatValidationToken = [
     validateAuthorizationData,
     validateIdHeaderData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }
 ]
- 
+
 
 module.exports = { formatValidationLogin, formatValidationToken }
 
