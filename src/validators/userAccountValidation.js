@@ -1,24 +1,5 @@
+const { isEmailRegistered, isUsernameRegistered } = require("../dataaccess/dataAccess");
 const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
-const { User } = require("../models/User");
-const { Account } = require("../models/Account");
-
-const isUsernameRegistered = async (username) => {
-    let isUsernameRegistered = false;
-    const user = await User.findAll({
-        where: { usuario: username }
-    });
-    isUsernameRegistered = (user.length != 0);
-    return isUsernameRegistered;
-}
-
-const isEmailRegistered = async (email) => {
-    let isEmailRegistered = false;
-    const account = await Account.findAll({
-        where: { correo: email }
-    });
-    isEmailRegistered = (account.length != 0);
-    return isEmailRegistered;
-}
 
 const validationisEmailRegisteredWithNext = async (request, response, next) => {
     let isRegistered;

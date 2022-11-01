@@ -1,20 +1,20 @@
 const router = require('express').Router();
 const { httpResponseValidation } = require('../../helpers/httpResponses');
-const { validatePasswordData, validateLoginData, validateTokenData, validateIdData } = require('./formatValidator');
+const { validatePasswordData, validateLoginData, validateAuthorizationData, validateIdHeaderData } = require('./formatValidator');
 
 const formatValidationLogin = [
     validateLoginData,
     validatePasswordData,
     (request, response, next) => {
-        httpResponseValidation(request, response, next);
+        return httpResponseValidation(request, response, next);
     }
 ];
 
 const formatValidationToken =  [
-    validateTokenData,
-    validateIdData,
+    validateAuthorizationData,
+    validateIdHeaderData,
     (request, response, next) => {
-        httpResponseValidation(request, response, next);
+        return httpResponseValidation(request, response, next);
     }
 ]
  

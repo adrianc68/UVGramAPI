@@ -32,7 +32,6 @@ const httpResponseOk = (response, message) => {
         message
     };
     return response.status(StatusCodes.OK).json(payload);
-
 }
 /**
  * 404 Not Found
@@ -107,9 +106,8 @@ const httpResponseNotImplement = (response, message) => {
  * @param {*} message message to send the HTTP response.
  */
 const httpResponseBadRequest = (response, message) => {
-    logger.warn(message);
     let payload = {
-        message
+        error: message.message
     };
     return response.status(StatusCodes.BAD_REQUEST).json(payload);
 

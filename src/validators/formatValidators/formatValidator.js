@@ -73,14 +73,17 @@ const validateLoginData = [
         .withMessage("emailOrUsername is required")
 ];
 
-const validateTokenData = [
+const validateAuthorizationData = [
     header("authorization")
         .not()
         .isEmpty()
         .withMessage("authorization header is required")
+        .bail()
+        .matches(/^Bearer\s{1}([^ ]+)$/)
+        .withMessage("Bearer token is invalid")
 ];
 
-const validateIdData = [
+const validateIdHeaderData = [
     header("id")
         .not()
         .isEmpty()
@@ -111,5 +114,5 @@ const isValidDate = (dateString) => {
 module.exports = {
     validateEmailData, validateUsernameData, validateNameData,
     validatePresentationData, validatePasswordData, validatePhoneNumberData,
-    validateBirthdateData, validateLoginData, validateTokenData, validateIdData
+    validateBirthdateData, validateLoginData, validateAuthorizationData, validateIdHeaderData
 }

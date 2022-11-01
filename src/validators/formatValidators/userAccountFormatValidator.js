@@ -12,21 +12,21 @@ const formatValidationAccountData = [
     validateEmailData,
     validateBirthdateData,
     (request, response, next) => {
-        httpResponseValidation(request, response, next);
+        return httpResponseValidation(request, response, next);
     }
 ];
 
 const formatValidationAccountEmail = [
     validateEmailData,
     (request, response, next) => {
-        httpResponseValidation(request, response, next);
+        return httpResponseValidation(request, response, next);
     }
 ];
 
 const formatValidationAccountUsername = [
     validateUsernameData,
     (request, response, next) => {
-        httpResponseValidation(request, response, next);
+        return httpResponseValidation(request, response, next);
     }
 ];
 
