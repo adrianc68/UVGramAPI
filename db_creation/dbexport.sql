@@ -254,6 +254,18 @@ CREATE TYPE public."TipoEstadoCuenta" AS ENUM (
 ALTER TYPE public."TipoEstadoCuenta" OWNER TO dev;
 
 --
+-- Name: TipoEstadoSesion; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."TipoEstadoSesion" AS ENUM (
+    'BLOQUEADO',
+    'NO_BLOQUEADO'
+);
+
+
+ALTER TYPE public."TipoEstadoSesion" OWNER TO dev;
+
+--
 -- Name: TipoPrivacidad; Type: TYPE; Schema: public; Owner: dev
 --
 
@@ -405,6 +417,19 @@ CREATE TABLE public."Empresarial" (
 ALTER TABLE public."Empresarial" OWNER TO dev;
 
 --
+-- Name: IntentoInicioSesion; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."IntentoInicioSesion" (
+    intentos_realizados integer NOT NULL,
+    estado_sesion public."TipoEstadoSesion" NOT NULL,
+    mac_address character varying(17) NOT NULL
+);
+
+
+ALTER TABLE public."IntentoInicioSesion" OWNER TO dev;
+
+--
 -- Name: Moderador; Type: TABLE; Schema: public; Owner: dev
 --
 
@@ -457,12 +482,22 @@ CREATE TABLE public."Usuario" (
 ALTER TABLE public."Usuario" OWNER TO dev;
 
 --
+-- Name: VerificacionCodigo; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."VerificacionCodigo" (
+    codigo_verificacion character varying(8) NOT NULL,
+    id character varying(128) NOT NULL
+);
+
+
+ALTER TABLE public."VerificacionCodigo" OWNER TO dev;
+
+--
 -- Name: VerificacionCuenta; Type: TABLE; Schema: public; Owner: dev
 --
 
 CREATE TABLE public."VerificacionCuenta" (
-    codigo_verificacion character varying(8),
-    intentos_realizados integer NOT NULL,
     estado_cuenta public."TipoEstadoCuenta" NOT NULL,
     id_usuario bigint
 );
@@ -517,6 +552,15 @@ COPY public."Empresarial" (categoria, ciudad, codigo_postal, direccion_postal, c
 
 
 --
+-- Data for Name: IntentoInicioSesion; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."IntentoInicioSesion" (intentos_realizados, estado_sesion, mac_address) FROM stdin;
+0	NO_BLOQUEADO	00:1b:63:84:45:e6
+\.
+
+
+--
 -- Data for Name: Moderador; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
@@ -549,10 +593,18 @@ COPY public."Usuario" (nombre, presentacion, usuario, id) FROM stdin;
 
 
 --
+-- Data for Name: VerificacionCodigo; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."VerificacionCodigo" (codigo_verificacion, id) FROM stdin;
+\.
+
+
+--
 -- Data for Name: VerificacionCuenta; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."VerificacionCuenta" (codigo_verificacion, intentos_realizados, estado_cuenta, id_usuario) FROM stdin;
+COPY public."VerificacionCuenta" (estado_cuenta, id_usuario) FROM stdin;
 \.
 
 
@@ -572,6 +624,14 @@ ALTER TABLE ONLY public."Cuenta"
 
 
 --
+-- Name: IntentoInicioSesion PK_IntentoInicioSesion; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."IntentoInicioSesion"
+    ADD CONSTRAINT "PK_IntentoInicioSesion" PRIMARY KEY (mac_address);
+
+
+--
 -- Name: RolUsuario PK_RolUsuario; Type: CONSTRAINT; Schema: public; Owner: dev
 --
 
@@ -585,6 +645,14 @@ ALTER TABLE ONLY public."RolUsuario"
 
 ALTER TABLE ONLY public."Usuario"
     ADD CONSTRAINT "PK_Usuario" PRIMARY KEY (id);
+
+
+--
+-- Name: VerificacionCodigo PK_VerificacionCodigo; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."VerificacionCodigo"
+    ADD CONSTRAINT "PK_VerificacionCodigo" PRIMARY KEY (id);
 
 
 --
