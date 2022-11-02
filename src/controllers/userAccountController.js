@@ -1,10 +1,8 @@
-const { deleteUserByUsername, createUser } = require("../dataaccess/UserDataAccess");
-const { generateRandomCode } = require("../helpers/generateCode");
+const { deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
 
 const addUser = async (request, response) => {
-    const { password, email, name, presentation, username, phoneNumber, birthdate } = request.body;
-    let confirmationCode = generateRandomCode(8);
+    const { password, email, name, presentation, username, phoneNumber, birthdate, verificationCode } = request.body;
     const user = {
         password,
         email,
@@ -12,12 +10,11 @@ const addUser = async (request, response) => {
         presentation,
         username,
         phoneNumber,
-        birthdate,
-        confirmationCode
+        birthdate
     }
-    let userID;
     try {
         message = await createUser(user);
+        await removeVerificationCode(username);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -35,4 +32,18 @@ const removeUserByUsername = async (request, response) => {
     return httpResponseOk(response, message)
 }
 
-module.exports = { addUser, removeUserByUsername }
+const createVerificationCode = async (request, response) => {
+    let { username } = request.body;
+    let isVerificationCodeGenerated = false;
+    try {
+        isVerificationCodeGenerated = await generateCodeVerification(username);
+        // SEND THE VERIFICATION CODE TO EMAIL!!!!
+        // BY NOW RETURN THE CODE TO CLIENT
+    } catch (error) {
+        await removeVerificationCode(isVerificationCodeGenerated);
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, { isGenerated: isVerificationCodeGenerated });
+}
+
+module.exports = { addUser, removeUserByUsername, createVerificationCode }

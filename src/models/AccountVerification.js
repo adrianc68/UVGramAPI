@@ -3,12 +3,6 @@ const { DataTypes } = require("sequelize");
 const { Account } = require("./Account");
 
 const AccountVerification = sequelize.define("VerificacionCuenta", {
-    codigo_verificacion: {
-        type: DataTypes.STRING
-    },
-    intentos_realizados: {
-        type: DataTypes.INTEGER
-    },
     estado_cuenta: {
         type: DataTypes.ENUM("BLOQUEADO", "NO_BLOQUEADO")
     },

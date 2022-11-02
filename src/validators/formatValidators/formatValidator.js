@@ -73,7 +73,14 @@ const validateLoginData = [
         .withMessage("emailOrUsername is required")
 ];
 
-const validateAuthorizationData = [
+const validateVerificationCodeData = [
+    body("verificationCode")
+    .not()
+    .isEmpty()
+    .withMessage("verificationCode is required")
+];
+
+const validateAuthorizationHeaderData = [
     header("authorization")
         .not()
         .isEmpty()
@@ -114,5 +121,6 @@ const isValidDate = (dateString) => {
 module.exports = {
     validateEmailData, validateUsernameData, validateNameData,
     validatePresentationData, validatePasswordData, validatePhoneNumberData,
-    validateBirthdateData, validateLoginData, validateAuthorizationData, validateIdHeaderData
+    validateBirthdateData, validateLoginData, validateAuthorizationHeaderData,
+     validateIdHeaderData, validateVerificationCodeData
 }

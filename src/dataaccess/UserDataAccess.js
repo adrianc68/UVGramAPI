@@ -1,12 +1,14 @@
 const { Op } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { encondePassword } = require("../helpers/cipher");
+const { encondePassword, encodeStringSHA256 } = require("../helpers/cipher");
+const { generateRandomCode } = require("../helpers/generateCode");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
 const { PersonalUserRole } = require("../models/PersonalUserRole");
 const { User } = require("../models/User");
 const { UserConfiguration } = require("../models/UserConfiguration");
 const { UserRole } = require("../models/UserRole");
+const { VerificationCode } = require("../models/VerificationCode");
 
 const getAccountLoginData = async (emailOrUsername) => {
     const user = await User.findAll({
@@ -108,8 +110,6 @@ const createUser = async (user) => {
             fecha_nacimiento: birthdate,
         }, { transaction: t });
         const accountVerification = await AccountVerification.create({
-            codigo_verificacion: confirmationCode,
-            intentos_realizados: 0,
             estado_cuenta: "NO_BLOQUEADO",
             id_usuario: userID
         }, { transaction: t });
@@ -131,7 +131,67 @@ const createUser = async (user) => {
     return "New entity was added";
 }
 
+const generateCodeVerification = async (username) => {
+    const id = encodeStringSHA256(username);
+    const code = generateRandomCode(8);
+    let verificationData;
+    const t = await sequelize.transaction();
+    try {
+        verificationData = await VerificationCode.create({
+            codigo_verificacion: code,
+            id
+        }, { transaction: t });
+        await t.commit();
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return code;
+}
+
+const isVerificationCodeGenerated = async (username) => {
+    let isCodeGenerated = false;
+    const id = encodeStringSHA256(username);
+    let verificationData = await VerificationCode.findAll({
+        where: { id }
+    });
+    isCodeGenerated = (verificationData.length != 0);
+    return isCodeGenerated;
+}
+
+const removeVerificationCode = async (username) => {
+    let isRemoved = false;
+    const t = await sequelize.transaction();
+    try {
+        let verificationData = await VerificationCode.destroy({
+            where: {
+                id: encodeStringSHA256(username)
+            }
+        }, { transaction: t });
+        await t.commit();
+        isRemoved = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isRemoved;
+}
+
+const doesVerificationCodeMatches = async (username, verificationCode) => {
+    let doesMatches = false;
+    let verificationData = await VerificationCode.findAll({
+        where: {
+            id: encodeStringSHA256(username),
+            codigo_verificacion: verificationCode
+        }
+    });
+    doesMatches = (verificationData.length != 0);
+    return doesMatches;
+}
+
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
-    getAccountLoginDataById, deleteUserByUsername, createUser
+    getAccountLoginDataById, deleteUserByUsername, createUser,
+    generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
+    doesVerificationCodeMatches
 }

@@ -1,9 +1,9 @@
 const router = require('express').Router();
 const { httpResponseValidation } = require('../../helpers/httpResponses');
 const { validateNameData, validatePresentationData, validateUsernameData, validatePasswordData,
-    validatePhoneNumberData, validateEmailData, validateBirthdateData } = require('./formatValidator');
+    validatePhoneNumberData, validateEmailData, validateBirthdateData, validateVerificationCodeData } = require('./formatValidator');
 
-const formatValidationAccountData = [
+const formatValidationUserAccountData = [
     validateNameData,
     validatePresentationData,
     validateUsernameData,
@@ -30,5 +30,15 @@ const formatValidationAccountUsername = [
     }
 ];
 
-module.exports = { formatValidationAccountData, formatValidationAccountEmail, formatValidationAccountUsername }
+const formatValidationVerificationCode = [
+    validateVerificationCodeData,
+    (request, response, next) => {
+        return httpResponseValidation(request, response, next);
+    }
+]
+
+module.exports = {
+    formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername,
+    formatValidationVerificationCode
+}
 
