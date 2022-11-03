@@ -1,32 +1,52 @@
+
 const { getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/UserDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
-const { generateToken, EXPIRATION_TIME, addToken, removeToken, blacklistToken } = require("../helpers/token");
+const { addToken, removeToken, blacklistToken, generateRefreshToken, generateAccessToken, verifyToken } = require("../helpers/token");
 
-const generateTokens = async (username, id, userRole) => {
+const generateTokens = async (username, userId, userRole) => {
     let accessToken;
     let refreshToken;
-    let payload = {
-        id, username, userRole
-    }
     try {
-        accessToken = await generateToken(payload, EXPIRATION_TIME.INSTANT);
-        await addToken(id, accessToken);
-        refreshToken = await generateToken(payload, EXPIRATION_TIME.LONG_TIME);
-        await addToken(id, refreshToken);
+        let payloadAccessToken = {
+            id: userId,
+            username,
+            userRole,
+        };
+        refreshToken = await generateRefreshToken(payloadAccessToken);
+        accessToken = await generateAccessToken(payloadAccessToken, refreshToken.jti);
+        await addToken(refreshToken.jti, refreshToken.token);
+        await addToken(accessToken.jti, accessToken.token);
     } catch (error) {
-        removeToken(id, accessToken);
-        removeToken(id, refreshToken);
+        removeToken(accessToken.jti);
+        removeToken(refreshToken.jti);
         throw new Error(error);
     }
     let tokensCreated = {
-        body: {
-            id,
-            accessToken,
-            refreshToken
-        }
+        refreshToken,
+        accessToken
     }
     return tokensCreated;
+}
+
+const refreshAccessToken = async (username, userId, userRole, refreshTokenJti) => {
+    let accessToken;
+    try {
+        let payloadAccessToken = {
+            userId,
+            username,
+            userRole,
+        };
+        accessToken = await generateAccessToken(payloadAccessToken, refreshTokenJti);
+        await addToken(accessToken.jti, accessToken.token);
+    } catch (error) {
+        removeToken(accessToken.jti);
+        throw new Error(error);
+    }
+    let tokenCreated = {
+        accessToken
+    }
+    return tokenCreated;
 }
 
 const createTokens = async (request, response) => {
@@ -42,15 +62,17 @@ const createTokens = async (request, response) => {
 }
 
 const refreshTokens = async (request, response) => {
-    let { id } = request.headers;
-    let tokens;
+    let token;
+    let { refreshTokenId } = request.headers;
+    let refreshToken = (request.headers.authorization).split(" ")[1];
     try {
-        let user = await getAccountLoginDataById(id);
-        tokens = await generateTokens(user.usuario, user.id, user["RolUsuario.rol_usuario"]);
+        let refreshTokenData = await verifyToken(refreshToken);
+        let user = await getAccountLoginDataById(refreshTokenData.id);
+        token = await refreshAccessToken(user.usuario, user.id, user["RolUsuario.rol_usuario"], refreshTokenId);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, tokens);
+    return httpResponseOk(response, token);
 }
 
 const logOutToken = async (request, response) => {

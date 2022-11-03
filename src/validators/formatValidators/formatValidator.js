@@ -1,5 +1,4 @@
-const router = require('express').Router();
-const { check, param, body, header } = require('express-validator');
+const { check, param, body, header, oneOf } = require('express-validator');
 const { httpResponseValidation } = require('../../helpers/httpResponses');
 
 const validateEmailData = [
@@ -75,9 +74,9 @@ const validateLoginData = [
 
 const validateVerificationCodeData = [
     body("verificationCode")
-    .not()
-    .isEmpty()
-    .withMessage("verificationCode is required")
+        .not()
+        .isEmpty()
+        .withMessage("verificationCode is required")
 ];
 
 const validateAuthorizationHeaderData = [
@@ -90,14 +89,44 @@ const validateAuthorizationHeaderData = [
         .withMessage("Bearer token is invalid")
 ];
 
-const validateIdHeaderData = [
-    header("id")
+const validateAccessTokenParameterData = [
+    header("accessToken")
         .not()
         .isEmpty()
-        .withMessage("id header is required")
+        .withMessage("accessToken header is required")
         .bail()
-        .isNumeric()
-        .withMessage("id must be integer")
+        .matches(/^Bearer\s{1}([^ ]+)$/)
+        .withMessage("Bearer token is invalid")
+]
+
+const validateRefreshTokenParameterData = [
+    header("refreshToken")
+        .not()
+        .isEmpty()
+        .withMessage("refreshToken header is required")
+        .bail()
+        .matches(/^Bearer\s{1}([^ ]+)$/)
+        .withMessage("Bearer token is invalid")
+]
+
+const validateAccessTokenIdHeaderData = [
+    header("accessTokenId")
+        .not()
+        .isEmpty()
+        .withMessage("accessTokenId header is required")
+        .bail()
+        .matches(/^([\w\d-_]+)$/)
+        .withMessage("accessTokenId is invalid")
+];
+
+const validateRefreshTokenIdHeaderData = [
+    header("refreshTokenId")
+        .not()
+        .isEmpty()
+        .withMessage("refreshTokenId header is required")
+        .bail()
+        .matches(/^([\w\d-_]+)$/)
+        .withMessage("refreshTokenId is invalid")
 ];
 
 const isValidDate = (dateString) => {
@@ -122,5 +151,6 @@ module.exports = {
     validateEmailData, validateUsernameData, validateNameData,
     validatePresentationData, validatePasswordData, validatePhoneNumberData,
     validateBirthdateData, validateLoginData, validateAuthorizationHeaderData,
-     validateIdHeaderData, validateVerificationCodeData
+    validateAccessTokenIdHeaderData, validateRefreshTokenIdHeaderData, validateVerificationCodeData,
+    validateAccessTokenParameterData, validateRefreshTokenParameterData
 }

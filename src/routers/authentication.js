@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { createTokens, refreshTokens, logOutToken } = require('../controllers/authenticationController');
 const { validationLoginData, validationAccesTokenData, validationRefreshTokenData } = require('../validators/authenticationValidation');
-const { formatValidationLogin, formatValidationToken } = require('../validators/formatValidators/authenticationFormatValidator');
+const { formatValidationLogin, formatValidationAccessToken, formatValidationRefreshToken, formatValidationRefreshAndAccessToken } = require('../validators/formatValidators/authenticationFormatValidator');
 
 router.post("/authentication/login",
     formatValidationLogin,
@@ -10,18 +10,18 @@ router.post("/authentication/login",
 );
 
 router.post("/authentication/refresh",
-    formatValidationToken,
+    formatValidationRefreshToken,
     validationRefreshTokenData,
     refreshTokens
 );
 
 router.post("/authentication/logout",
-    formatValidationToken,
+    formatValidationRefreshToken,
     logOutToken
 );
 
 router.post("/authentication/testing",
-    formatValidationToken,
+    formatValidationAccessToken,
     validationAccesTokenData
 );
 

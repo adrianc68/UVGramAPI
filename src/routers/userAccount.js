@@ -23,11 +23,11 @@ router.get("/accounts/username/check",
     formatValidationAccountUsername,
     validationIsUsernameRegistered
 );
+
 router.get("/accounts/email/check",
     formatValidationAccountEmail,
     validationIsEmailRegistered
 );
-
 
 router.delete("/accounts/username/delete",
     formatValidationAccountUsername,

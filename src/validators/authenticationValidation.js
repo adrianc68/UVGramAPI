@@ -64,22 +64,21 @@ const validationAccesTokenData = async (request, response, next) => {
 }
 
 const validationRefreshTokenData = async (request, response, next) => {
-    let { id } = request.headers;
+    let { refreshtokenid: refreshTokenId } = request.headers;
     let refreshToken = (request.headers.authorization).split(" ")[1];
     let value;
     try {
-        value = await checkToken(id, refreshToken);
+        value = await checkToken(refreshTokenId, refreshToken);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    if (!value || value.toUpperCase() == TOKEN_STATE.NIL) {
-        return httpResponseErrorToken(response, "token does not exist");
-    } else if (value.toUpperCase() == TOKEN_STATE.INVALID) {
-        return httpResponseErrorToken(response, "token has expired");
+    if (!value || value.split(" ")[0] == TOKEN_STATE.NIL) {
+        return httpResponseErrorToken(response, "token does not exist.");
+    } else if (value.split(" ")[0] == TOKEN_STATE.INVALID) {
+        return httpResponseErrorToken(response, "token has expired.");
     }
     try {
         await verifyToken(refreshToken);
-        await blacklistToken(id, refreshToken);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
