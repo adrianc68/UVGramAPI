@@ -1,7 +1,5 @@
-
 const { getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/UserDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 const { addToken, removeToken, blacklistToken, generateRefreshToken, generateAccessToken, verifyToken } = require("../helpers/token");
 
 const generateTokens = async (username, userId, userRole) => {
@@ -76,14 +74,19 @@ const refreshTokens = async (request, response) => {
 }
 
 const logOutToken = async (request, response) => {
-    let { id } = request.headers;
-    let { accessToken } = (request.headers.authorization).split(" ")[1];;
+    let refreshToken = (request.headers.authorization).split(" ")[1];
+    let { refreshtokenid: refreshTokenId } = request.headers;
+    let { accesstokenid: accessTokenId, accesstoken: accessToken } = request.headers;
+    accessToken = accessToken.split(" ")[1];
     try {
-        await blacklistToken(id, accessToken);
+        await blacklistToken(accessTokenId, accessToken);
+        await blacklistToken(refreshTokenId, refreshToken);
+        await removeToken(accessTokenId);
+        await removeToken(refreshTokenId);
     } catch (error) {
-        return httpResponseInternalServerError(error);
+        return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, { message: "Logout successful" });
+    return httpResponseOk(response, { message: "logout successful" });
 }
 
 module.exports = { createTokens, refreshTokens, logOutToken }

@@ -84,7 +84,6 @@ const removeToken = async (key) => {
     await redisClient.del(key);
 }
 
-
 module.exports = {
     generateRefreshToken, generateAccessToken, verifyToken,
     addToken, checkToken, blacklistToken,

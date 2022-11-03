@@ -29,6 +29,8 @@ const formatValidationRefreshToken = [
 const formatValidationRefreshAndAccessToken = [
     validateAuthorizationHeaderData,
     validateRefreshTokenIdHeaderData,
+    validateAccessTokenParameterData,
+    validateAccessTokenIdHeaderData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }

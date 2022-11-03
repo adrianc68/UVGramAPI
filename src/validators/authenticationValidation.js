@@ -40,26 +40,26 @@ const validationLoginData = async (request, response, next) => {
 }
 
 const validationAccesTokenData = async (request, response, next) => {
-    let { id } = request.headers;
-    let accessToken = (request.headers.authorization).split(" ")[1];
+    let { accesstokenid: accessTokenId } = request.headers;
+    let accessToken = request.headers.authorization;
+    accessToken = accessToken.split(" ")[1];
 
     let value;
     try {
-        value = await checkToken(id, accessToken);
+        value = await checkToken(accessTokenId, accessToken);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    if (!value || value.toUpperCase() == TOKEN_STATE.NIL) {
-        return httpResponseErrorToken(response, "token does not exist");
-    } else if (value.toUpperCase() == TOKEN_STATE.INVALID) {
-        return httpResponseErrorToken(response, "token has expired");
+    if (!value || value.split(" ")[0] == TOKEN_STATE.NIL) {
+        return httpResponseErrorToken(response, "access token does not exist.");
+    } else if (value.split(" ")[0] == TOKEN_STATE.INVALID) {
+        return httpResponseErrorToken(response, "access token has expired.");
     }
     try {
         await verifyToken(accessToken);
     } catch (error) {
-        return httpResponseErrorToken(response, error);
+        return httpResponseInternalServerError(response, error);
     }
-    return response.send("Access guaranted by TOKEN");
     return next();
 }
 
@@ -73,9 +73,9 @@ const validationRefreshTokenData = async (request, response, next) => {
         return httpResponseInternalServerError(response, error);
     }
     if (!value || value.split(" ")[0] == TOKEN_STATE.NIL) {
-        return httpResponseErrorToken(response, "token does not exist.");
+        return httpResponseErrorToken(response, "refresh token does not exist.");
     } else if (value.split(" ")[0] == TOKEN_STATE.INVALID) {
-        return httpResponseErrorToken(response, "token has expired.");
+        return httpResponseErrorToken(response, "refresh token has expired.");
     }
     try {
         await verifyToken(refreshToken);
@@ -85,7 +85,12 @@ const validationRefreshTokenData = async (request, response, next) => {
     return next();
 }
 
-module.exports = { validationLoginData, validationAccesTokenData, validationRefreshTokenData }
+const sayHello = (request, response) => {
+    return response.send("Welcome! Now you can get the resources");
+}
+
+
+module.exports = { validationLoginData, validationAccesTokenData, validationRefreshTokenData, sayHello }
 
 
 
