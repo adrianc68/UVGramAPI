@@ -1,6 +1,6 @@
 const { getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/UserDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
-const { addToken, removeToken, blacklistToken, generateRefreshToken, generateAccessToken, verifyToken } = require("../helpers/token");
+const { addToken, removeToken, generateRefreshToken, generateAccessToken, verifyToken } = require("../helpers/token");
 
 const generateTokens = async (username, userId, userRole) => {
     let accessToken;
@@ -74,13 +74,9 @@ const refreshTokens = async (request, response) => {
 }
 
 const logOutToken = async (request, response) => {
-    // let accessToken = (request.headers.authorization).split(" ")[1];
-    // let refreshToken  = (request.headers.refreshtoken).split(" ")[1];
     let refreshTokenId = request.headers.refreshtokenid;
     let accessTokenId = request.headers.accesstokenid;
     try {
-        // await blacklistToken(accessTokenId, accessToken);
-        // await blacklistToken(refreshTokenId, refreshToken);
         await removeToken(accessTokenId);
         await removeToken(refreshTokenId);
     } catch (error) {

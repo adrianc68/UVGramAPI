@@ -8,9 +8,12 @@ const validateEmailData = [
         .isEmpty()
         .withMessage("email is required")
         .bail()
+        .isLength({ min: 3, max: 254 })
+        .withMessage("email allowed length: {min: 3, max: 254}")
+        .bail()
         .isEmail()
         .normalizeEmail()
-        .withMessage("email is invalid")
+        .withMessage("email format is not valid. format allowed hello@example.com")
 ];
 
 const validateUsernameData = [
@@ -19,23 +22,29 @@ const validateUsernameData = [
         .isEmpty()
         .withMessage("username is required")
         .bail()
+        .isLength({ min: 3, max: 30 })
+        .withMessage("username must have the allowed length: {min: 3, max: 30}")
         .matches(/^[\w\d]+(\.([\w\d]+))*$/)
-        .withMessage("username is invalid. Can include numbers, letter, period and underscore")
+        .withMessage("username is not valid, must have allowed characters: words, numbers and one space beteween words")
 ];
 
 const validateNameData = [
     check("name")
-        .not()
-        .isEmpty()
-        .withMessage("name is required")
+        .optional({ nullable: true })
+        .bail()
+        .isLength({ min: 3, max: 64 })
+        .withMessage("name must have the allowed length: {min: 3, max: 64}")
         .bail()
         .matches(/^[a-zA-Z]+(\ ([a-zA-Z]+))*$/)
-        .withMessage("name is invalid. Can only contain letters")
+        .withMessage("name is not valid, must have allowed characters: a-zA-Z and one space between words")
 ];
 
 const validatePresentationData = [
     check("presentation")
-        .trim()
+        .optional({ nullable: true })
+        .bail()
+        .isLength({ min: 0, max: 150 })
+        .withMessage("presentation must have the allowed length: {min: 0, max: 150}")
 ];
 
 const validatePasswordData = [
@@ -44,14 +53,16 @@ const validatePasswordData = [
         .isEmpty()
         .withMessage("password is required")
         .bail()
-        .isLength({ min: 6 })
-        .withMessage("password must be 6 or more characters")
+        .isLength({ min: 6, max: 128 })
+        .withMessage("password must have the allowed length: {min: 6, max: 128}")
 ];
 
 const validatePhoneNumberData = [
     check("phoneNumber")
-        .isLength({ min: 8 })
-        .withMessage("phone number must be 8 or more characters")
+        .isLength({ min: 8, max: 15 })
+        .withMessage("phoneNumber must have the allowed length: {min: 8, max: 15}")
+        .matches(/^[\d]*$/)
+        .withMessage("phoneNumber must have the allowed characters: digits")
 ];
 
 const validateBirthdateData = [
@@ -70,6 +81,8 @@ const validateLoginData = [
         .not()
         .isEmpty()
         .withMessage("emailOrUsername is required")
+        .isLength({ min: 3, max: 254})
+        .withMessage("emailOrUsername must have the allowed length: {min: 3, max: 254}")
 ];
 
 const validateVerificationCodeData = [
@@ -77,6 +90,8 @@ const validateVerificationCodeData = [
         .not()
         .isEmpty()
         .withMessage("verificationCode is required")
+        .isLength({min: 8, max: 8})
+        .withMessage("verificationCode must have the allowed length: {min: 8, max:8}")
 ];
 
 const validateAuthorizationHeaderData = [
