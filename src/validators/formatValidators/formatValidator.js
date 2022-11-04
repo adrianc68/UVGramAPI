@@ -81,7 +81,7 @@ const validateLoginData = [
         .not()
         .isEmpty()
         .withMessage("emailOrUsername is required")
-        .isLength({ min: 3, max: 254})
+        .isLength({ min: 3, max: 254 })
         .withMessage("emailOrUsername must have the allowed length: {min: 3, max: 254}")
 ];
 
@@ -90,7 +90,7 @@ const validateVerificationCodeData = [
         .not()
         .isEmpty()
         .withMessage("verificationCode is required")
-        .isLength({min: 8, max: 8})
+        .isLength({ min: 8, max: 8 })
         .withMessage("verificationCode must have the allowed length: {min: 8, max:8}")
 ];
 
@@ -160,7 +160,6 @@ const isValidDate = (dateString) => {
     // Check the range of the day
     return day > 0 && day <= monthLength[month - 1];
 }
-
 
 module.exports = {
     validateEmailData, validateUsernameData, validateNameData,
