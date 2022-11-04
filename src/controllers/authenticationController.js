@@ -61,7 +61,7 @@ const createTokens = async (request, response) => {
 
 const refreshTokens = async (request, response) => {
     let token;
-    let { refreshTokenId } = request.headers;
+    let refreshTokenId = request.headers.refreshtokenid;
     let refreshToken = (request.headers.authorization).split(" ")[1];
     try {
         let refreshTokenData = await verifyToken(refreshToken);
@@ -74,13 +74,13 @@ const refreshTokens = async (request, response) => {
 }
 
 const logOutToken = async (request, response) => {
-    let refreshToken = (request.headers.authorization).split(" ")[1];
-    let { refreshtokenid: refreshTokenId } = request.headers;
-    let { accesstokenid: accessTokenId, accesstoken: accessToken } = request.headers;
-    accessToken = accessToken.split(" ")[1];
+    // let accessToken = (request.headers.authorization).split(" ")[1];
+    // let refreshToken  = (request.headers.refreshtoken).split(" ")[1];
+    let refreshTokenId = request.headers.refreshtokenid;
+    let accessTokenId = request.headers.accesstokenid;
     try {
-        await blacklistToken(accessTokenId, accessToken);
-        await blacklistToken(refreshTokenId, refreshToken);
+        // await blacklistToken(accessTokenId, accessToken);
+        // await blacklistToken(refreshTokenId, refreshToken);
         await removeToken(accessTokenId);
         await removeToken(refreshTokenId);
     } catch (error) {

@@ -40,10 +40,8 @@ const validationLoginData = async (request, response, next) => {
 }
 
 const validationAccesTokenData = async (request, response, next) => {
-    let { accesstokenid: accessTokenId } = request.headers;
-    let accessToken = request.headers.authorization;
-    accessToken = accessToken.split(" ")[1];
-
+    let accessTokenId = request.headers.accesstokenid;
+    let accessToken = (request.headers.authorization).split(" ")[1];
     let value;
     try {
         value = await checkToken(accessTokenId, accessToken);
@@ -58,13 +56,13 @@ const validationAccesTokenData = async (request, response, next) => {
     try {
         await verifyToken(accessToken);
     } catch (error) {
-        return httpResponseInternalServerError(response, error);
+        return httpResponseErrorToken(response, "token is not valid");
     }
     return next();
 }
 
 const validationRefreshTokenData = async (request, response, next) => {
-    let { refreshtokenid: refreshTokenId } = request.headers;
+    let refreshTokenId = request.headers.refreshtokenid;
     let refreshToken = (request.headers.authorization).split(" ")[1];
     let value;
     try {
@@ -80,7 +78,7 @@ const validationRefreshTokenData = async (request, response, next) => {
     try {
         await verifyToken(refreshToken);
     } catch (error) {
-        return httpResponseInternalServerError(response, error);
+        return httpResponseErrorToken(response, "token is not valid");
     }
     return next();
 }
