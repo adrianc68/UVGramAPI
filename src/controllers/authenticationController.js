@@ -64,6 +64,7 @@ const refreshTokens = async (request, response) => {
     let refreshTokenId = request.headers.refreshtokenid;
     let refreshToken = (request.headers.authorization).split(" ")[1];
     try {
+        // FIX THIS <- Bug here <- Debug HERE
         let refreshTokenData = await verifyToken(refreshToken);
         let user = await getAccountLoginDataById(refreshTokenData.id);
         token = await refreshAccessToken(user.usuario, user.id, user["RolUsuario.rol_usuario"], refreshTokenId);

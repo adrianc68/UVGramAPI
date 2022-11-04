@@ -597,6 +597,7 @@ COPY public."Usuario" (nombre, presentacion, usuario, id) FROM stdin;
 --
 
 COPY public."VerificacionCodigo" (codigo_verificacion, id) FROM stdin;
+e2fcd018	2441646acee0e0ad7578892fb3ff6a97c48ecd450d789a9ab55824840c997b6f
 \.
 
 
