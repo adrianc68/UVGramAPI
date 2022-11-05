@@ -71,7 +71,7 @@ const httpResponseUnauthorized = (response, message) => {
 const httpResponseErrorToken = (response, message) => {
     let payload = {
         message,
-        type: "token"
+        errorType: "token"
     };
     return response.status(StatusCodes.FORBIDDEN).json(payload);
 }

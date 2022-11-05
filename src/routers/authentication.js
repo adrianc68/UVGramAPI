@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { createTokens, refreshTokens, logOutToken } = require('../controllers/authenticationController');
-const { validationLoginData, validationAccesTokenData, validationRefreshTokenData, sayHello } = require('../validators/authenticationValidation');
-const { formatValidationLogin, formatValidationAccessToken, formatValidationRefreshToken, formatValidationRefreshAndAccessToken } = require('../validators/formatValidators/authenticationFormatValidator');
+const { validationLoginData, validationAccesTokenData, validationRefreshTokenData, sayHello, validationLogoutTokensData } = require('../validators/authenticationValidation');
+const { formatValidationLogin, formatValidationAuthorizationToken, formatValidationRefreshTokenAsParameter, formatValidationOptionalAccessToken } = require('../validators/formatValidators/authenticationFormatValidator');
 
 router.post("/authentication/login",
     formatValidationLogin,
@@ -10,20 +10,21 @@ router.post("/authentication/login",
 );
 
 router.post("/authentication/refresh",
-    formatValidationRefreshToken,
+    formatValidationAuthorizationToken,
+    formatValidationOptionalAccessToken,
     validationRefreshTokenData,
     refreshTokens
 );
 
 router.post("/authentication/logout",
-    formatValidationRefreshAndAccessToken,
-    validationAccesTokenData,
-    validationRefreshTokenData,
+    formatValidationAuthorizationToken,
+    formatValidationRefreshTokenAsParameter,
+    validationLogoutTokensData,
     logOutToken
 );
 
 router.post("/authentication/testing",
-    formatValidationAccessToken,
+    formatValidationAuthorizationToken,
     validationAccesTokenData,
     sayHello
 );

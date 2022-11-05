@@ -1,6 +1,6 @@
 const { httpResponseInternalServerError, httpResponseNotFound, httpResponseErrorToken, httpResponseForbidden } = require("../helpers/httpResponses");
 const { encondePassword } = require("../helpers/cipher");
-const { blacklistToken, checkToken, verifyToken, TOKEN_STATE } = require("../helpers/token");
+const { checkToken, verifyToken, TOKEN_STATE } = require("../helpers/token");
 const { getAccountLoginData } = require("../dataaccess/UserDataAccess");
 const { logger } = require("../helpers/logger");
 
@@ -18,6 +18,26 @@ const doesPasswordMatch = (passwordA, passwordB) => {
         doesPasswordMatch = true;
     }
     return doesPasswordMatch;
+}
+
+const getTokenExist = async (token) => {
+    let value;
+    try {
+        value = await checkToken(token);
+    } catch (error) {
+        throw new Error(error, "token not found")
+    }
+    if (!value || value == TOKEN_STATE.NIL) {
+        throw new Error("token does not exist");
+    } else if (value.split(" ")[0] == TOKEN_STATE.INVALID) {
+        throw new Error("token has expired")
+    }
+    try {
+        await verifyToken(token);
+    } catch (error) {
+        throw new Error(error, "token is not valid");
+    }
+    return value;
 }
 
 const validationLoginData = async (request, response, next) => {
@@ -40,45 +60,42 @@ const validationLoginData = async (request, response, next) => {
 }
 
 const validationAccesTokenData = async (request, response, next) => {
-    let accessTokenId = request.headers.accesstokenid;
     let accessToken = (request.headers.authorization).split(" ")[1];
     let value;
     try {
-        value = await checkToken(accessTokenId, accessToken);
+        await getTokenExist(accessToken);
     } catch (error) {
-        return httpResponseInternalServerError(response, error);
-    }
-    if (!value || value.split(" ")[0] == TOKEN_STATE.NIL) {
-        return httpResponseErrorToken(response, "access token does not exist.");
-    } else if (value.split(" ")[0] == TOKEN_STATE.INVALID) {
-        return httpResponseErrorToken(response, "access token has expired.");
-    }
-    try {
-        await verifyToken(accessToken);
-    } catch (error) {
-        return httpResponseErrorToken(response, "token is not valid");
+        const payload = { error: error.message, token: "accessToken" }
+        return httpResponseErrorToken(response, payload);
     }
     return next();
 }
 
 const validationRefreshTokenData = async (request, response, next) => {
-    let refreshTokenId = request.headers.refreshtokenid;
     let refreshToken = (request.headers.authorization).split(" ")[1];
-    let value;
     try {
-        value = await checkToken(refreshTokenId, refreshToken);
+        await getTokenExist(refreshToken);
     } catch (error) {
-        return httpResponseInternalServerError(response, error);
+        const payload = { error: error.message, token: "refreshToken" }
+        return httpResponseErrorToken(response, payload);
     }
-    if (!value || value.split(" ")[0] == TOKEN_STATE.NIL) {
-        return httpResponseErrorToken(response, "refresh token does not exist.");
-    } else if (value.split(" ")[0] == TOKEN_STATE.INVALID) {
-        return httpResponseErrorToken(response, "refresh token has expired.");
+    return next();
+}
+
+const validationLogoutTokensData = async (request, response, next) => {
+    let accessToken = (request.headers.authorization).split(" ")[1];
+    let refreshToken = (request.headers.refreshtoken).split(" ")[1];
+    try {
+        await getTokenExist(refreshToken);
+    } catch (error) {
+        const payload = { error: error.message, token: "refreshToken" }
+        return httpResponseErrorToken(response, payload);
     }
     try {
-        await verifyToken(refreshToken);
+        await getTokenExist(accessToken);
     } catch (error) {
-        return httpResponseErrorToken(response, "token is not valid");
+        const payload = { error: error.message, token: "accessToken" }
+        return httpResponseErrorToken(response, payload);
     }
     return next();
 }
@@ -87,8 +104,10 @@ const sayHello = (request, response) => {
     return response.send("Welcome! Now you can get the resources");
 }
 
-
-module.exports = { validationLoginData, validationAccesTokenData, validationRefreshTokenData, sayHello }
+module.exports = {
+    validationLoginData, validationAccesTokenData, validationRefreshTokenData,
+    sayHello, validationLogoutTokensData
+}
 
 
 

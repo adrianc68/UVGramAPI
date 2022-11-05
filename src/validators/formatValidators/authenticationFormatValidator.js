@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const { httpResponseValidation } = require('../../helpers/httpResponses');
-const { validatePasswordData, validateLoginData, validateAuthorizationHeaderData, validateAccessTokenIdHeaderData, validateRefreshTokenIdHeaderData, validateAccessTokenParameterData, validateAccessTokenIdOptionalHeaderData, validateRefreshTokenParameterData } = require('./formatValidator');
+const { validatePasswordData, validateLoginData, validateAuthorizationHeaderData, validateRefreshTokenParameterData, validateAccessTokenParameterData, validateOptionalAccessTokenParameterData } = require('./formatValidator');
 
 const formatValidationLogin = [
     validateLoginData,
@@ -10,34 +10,44 @@ const formatValidationLogin = [
     }
 ];
 
-const formatValidationAccessToken = [
-    validateAuthorizationHeaderData,
-    validateAccessTokenIdHeaderData,
+const formatValidationAccessTokenAsParameter = [
+    validateAccessTokenParameterData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }
-]
+];
 
-const formatValidationRefreshToken = [
-    validateAuthorizationHeaderData,
-    validateRefreshTokenIdHeaderData,
+const formatValidationRefreshTokenAsParameter = [
+    validateRefreshTokenParameterData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }
-]
+];
 
 const formatValidationRefreshAndAccessToken = [
     validateAuthorizationHeaderData,
-    validateAccessTokenIdHeaderData,
     validateRefreshTokenParameterData,
-    validateRefreshTokenIdHeaderData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }
-]
+];
+
+const formatValidationAuthorizationToken = [
+    validateAuthorizationHeaderData,
+    (request, response, next) => {
+        return httpResponseValidation(request, response, next);
+    }
+];
+
+const formatValidationOptionalAccessToken = [
+    validateOptionalAccessTokenParameterData,
+    (request, response, next) => {
+        return httpResponseValidation(request, response, next);
+    }
+];
 
 module.exports = {
-    formatValidationLogin, formatValidationAccessToken, formatValidationRefreshToken,
-    formatValidationRefreshAndAccessToken
+    formatValidationRefreshAndAccessToken, formatValidationAccessTokenAsParameter, formatValidationRefreshTokenAsParameter,
+    formatValidationLogin, formatValidationAuthorizationToken, formatValidationOptionalAccessToken
 }
 

@@ -1,5 +1,4 @@
-const { check, param, body, header, oneOf } = require('express-validator');
-const { httpResponseValidation } = require('../../helpers/httpResponses');
+const { check, body, header } = require('express-validator');
 
 const validateEmailData = [
     check("email")
@@ -101,7 +100,7 @@ const validateAuthorizationHeaderData = [
         .withMessage("authorization header is required")
         .bail()
         .matches(/^Bearer\s{1}([^ ]+)$/)
-        .withMessage("Bearer token is invalid")
+        .withMessage("Bearer token is not valid, you must provide a valid token format")
 ];
 
 const validateAccessTokenParameterData = [
@@ -111,8 +110,8 @@ const validateAccessTokenParameterData = [
         .withMessage("accessToken header is required")
         .bail()
         .matches(/^Bearer\s{1}([^ ]+)$/)
-        .withMessage("Bearer token is invalid")
-]
+        .withMessage("Bearer token is not valid, you must provide a valid token format")
+];
 
 const validateRefreshTokenParameterData = [
     header("refreshToken")
@@ -121,27 +120,18 @@ const validateRefreshTokenParameterData = [
         .withMessage("refreshToken header is required")
         .bail()
         .matches(/^Bearer\s{1}([^ ]+)$/)
-        .withMessage("Bearer token is invalid")
-]
-
-const validateAccessTokenIdHeaderData = [
-    header("accessTokenId")
-        .not()
-        .isEmpty()
-        .withMessage("accessTokenId header is required")
-        .bail()
-        .matches(/^([\w\d-_]+)$/)
-        .withMessage("accessTokenId is invalid")
+        .withMessage("Bearer token is not valid, you must provide a valid token format")
 ];
 
-const validateRefreshTokenIdHeaderData = [
-    header("refreshTokenId")
+const validateOptionalAccessTokenParameterData = [
+    header("accessToken")
+        .optional({ nullable: false })
         .not()
         .isEmpty()
-        .withMessage("refreshTokenId header is required")
+        .withMessage("accessToken header is optional, but is not allowed to be empty")
         .bail()
-        .matches(/^([\w\d-_]+)$/)
-        .withMessage("refreshTokenId is invalid")
+        .matches(/^Bearer\s{1}([^ ]+)$/)
+        .withMessage("Bearer token is not valid, you must provide a valid token format")
 ];
 
 const isValidDate = (dateString) => {
@@ -164,7 +154,7 @@ const isValidDate = (dateString) => {
 module.exports = {
     validateEmailData, validateUsernameData, validateNameData,
     validatePresentationData, validatePasswordData, validatePhoneNumberData,
-    validateBirthdateData, validateLoginData, validateAuthorizationHeaderData,
-    validateAccessTokenIdHeaderData, validateRefreshTokenIdHeaderData, validateVerificationCodeData,
-    validateAccessTokenParameterData, validateRefreshTokenParameterData
+    validateBirthdateData, validateLoginData, validateVerificationCodeData,
+    validateAuthorizationHeaderData, validateAccessTokenParameterData, validateRefreshTokenParameterData,
+    validateOptionalAccessTokenParameterData
 }

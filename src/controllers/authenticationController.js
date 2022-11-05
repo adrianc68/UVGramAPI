@@ -13,16 +13,16 @@ const generateTokens = async (username, userId, userRole) => {
         };
         refreshToken = await generateRefreshToken(payloadAccessToken);
         accessToken = await generateAccessToken(payloadAccessToken, refreshToken.jti);
-        await addToken(refreshToken.jti, refreshToken.token);
-        await addToken(accessToken.jti, accessToken.token);
+        await addToken(refreshToken.token, refreshToken.jti);
+        await addToken(accessToken.token, accessToken.jti);
     } catch (error) {
         removeToken(accessToken.jti);
         removeToken(refreshToken.jti);
         throw new Error(error);
     }
     let tokensCreated = {
-        refreshToken,
-        accessToken
+        refreshToken: refreshToken.token,
+        accessToken: accessToken.token
     }
     return tokensCreated;
 }
@@ -36,7 +36,7 @@ const refreshAccessToken = async (username, userId, userRole, refreshTokenJti) =
             userRole,
         };
         accessToken = await generateAccessToken(payloadAccessToken, refreshTokenJti);
-        await addToken(accessToken.jti, accessToken.token);
+        await addToken(accessToken.token, accessToken.jti);
     } catch (error) {
         removeToken(accessToken.jti);
         throw new Error(error);
@@ -60,26 +60,25 @@ const createTokens = async (request, response) => {
 }
 
 const refreshTokens = async (request, response) => {
-    let token;
-    let refreshTokenId = request.headers.refreshtokenid;
+    let newRefreshtoken;
     let refreshToken = (request.headers.authorization).split(" ")[1];
     try {
-        // FIX THIS <- Bug here <- Debug HERE
         let refreshTokenData = await verifyToken(refreshToken);
         let user = await getAccountLoginDataById(refreshTokenData.id);
-        token = await refreshAccessToken(user.usuario, user.id, user["RolUsuario.rol_usuario"], refreshTokenId);
+        newRefreshtoken = await refreshAccessToken(user.usuario, user.id, user["RolUsuario.rol_usuario"], refreshTokenData.jti);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, token);
+    const payload = { accessToken: newRefreshtoken.accessToken.token }
+    return httpResponseOk(response, payload);
 }
 
 const logOutToken = async (request, response) => {
-    let refreshTokenId = request.headers.refreshtokenid;
-    let accessTokenId = request.headers.accesstokenid;
+    let accessToken = (request.headers.authorization).split(" ")[1];
+    let refreshToken = (request.headers.refreshtoken).split(" ")[1];
     try {
-        await removeToken(accessTokenId);
-        await removeToken(refreshTokenId);
+        await removeToken(accessToken);
+        await removeToken(refreshToken);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
