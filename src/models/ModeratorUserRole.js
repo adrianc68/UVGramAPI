@@ -2,11 +2,11 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { UserRole } = require("./UserRole");
 
-const ModeratorUserRole = sequelize.define("Moderador", {
-    fecha_cambio: {
+const ModeratorUserRole = sequelize.define("Moderator", {
+    update_date: {
         type: DataTypes.DATE
     },
-    id_usuario: {
+    id_user: {
         type: DataTypes.BIGINT,
         allowNull: false,
         primaryKey: true
@@ -17,15 +17,15 @@ const ModeratorUserRole = sequelize.define("Moderador", {
 });
 
 ModeratorUserRole.hasOne(UserRole, {
-    foreignKey: "id_usuario",
-    sourceKey: "id_usuario",
+    foreignKey: "id_user",
+    sourceKey: "id_user",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
 UserRole.belongsTo(ModeratorUserRole, {
-    foreignKey: "id_usuario",
-    targetKey: "id_usuario"
+    foreignKey: "id_user",
+    targetKey: "id_user"
 });
 
 module.exports = { ModeratorUserRole };

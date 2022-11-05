@@ -1,19 +1,19 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 
-const User = sequelize.define("Usuario", {
+const User = sequelize.define("User", {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true
     },
-    nombre: {
+    name: {
         type: DataTypes.STRING
     },
-    presentacion: {
+    presentation: {
         type: DataTypes.STRING
     },
-    usuario: {
+    username: {
         type: DataTypes.STRING
     }
 }, {

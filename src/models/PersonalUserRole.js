@@ -3,16 +3,16 @@ const { DataTypes } = require("sequelize");
 const { UserRole } = require("./UserRole");
 
 const PersonalUserRole = sequelize.define("Personal", {
-    facultad: {
+    faculty: {
         type: DataTypes.STRING
     },
-    programa_educativo: {
+    career: {
         type: DataTypes.STRING
     },
-    sexo: {
+    gender: {
         type: DataTypes.ENUM("MASCULINO", "FEMENINO", "INDIFERENTE")
     },
-    id_usuario: {
+    id_user: {
         type: DataTypes.BIGINT,
         allowNull: false,
         primaryKey: true
@@ -23,15 +23,15 @@ const PersonalUserRole = sequelize.define("Personal", {
 });
 
 PersonalUserRole.hasOne(UserRole, {
-    foreignKey: "id_usuario",
-    sourceKey: "id_usuario",
+    foreignKey: "id_user",
+    sourceKey: "id_user",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
 UserRole.belongsTo(PersonalUserRole, {
-    foreignKey: "id_usuario",
-    targetKey: "id_usuario"
+    foreignKey: "id_user",
+    targetKey: "id_user"
 });
 
 module.exports = { PersonalUserRole };

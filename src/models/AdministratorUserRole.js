@@ -2,11 +2,11 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { UserRole } = require("./UserRole");
 
-const AdministratorUserRole = sequelize.define("Administrador", {
-    fecha_creacion: {
+const AdministratorUserRole = sequelize.define("Administrator", {
+    update_date: {
         type: DataTypes.DATE
     },
-    id_usuario: {
+    id_user: {
         type: DataTypes.BIGINT,
         allowNull: false,
         primaryKey: true
@@ -17,15 +17,15 @@ const AdministratorUserRole = sequelize.define("Administrador", {
 });
 
 AdministratorUserRole.hasOne(UserRole, {
-    foreignKey: "id_usuario",
-    sourceKey: "id_usuario",
+    foreignKey: "id_user",
+    sourceKey: "id_user",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
 UserRole.belongsTo(AdministratorUserRole, {
-    foreignKey: "id_usuario",
-    targetKey: "id_usuario"
+    foreignKey: "id_user",
+    targetKey: "id_user"
 });
 
 module.exports = { AdministratorUserRole };

@@ -1,11 +1,11 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 
-const VerificationCode = sequelize.define("VerificacionCodigo", {
-    codigo_verificacion: {
+const VerificationCode = sequelize.define("VerificationCode", {
+    verification_code: {
         type: DataTypes.STRING
     },
-    id: {
+    username: {
         type: DataTypes.STRING,
         allowNull: false,
         primaryKey: true

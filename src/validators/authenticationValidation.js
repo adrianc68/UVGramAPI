@@ -25,7 +25,7 @@ const validationLoginData = async (request, response, next) => {
     try {
         await getAccountLoginData(emailOrUsername).then(user => {
             if (doesExistUser(user)) {
-                if (doesPasswordMatch(encondePassword(password), user["Cuentum.contraseña"])) {
+                if (doesPasswordMatch(encondePassword(password), user["Account.password"])) {
                     return next();
                 } else {
                     return httpResponseForbidden(response, "password does not match");

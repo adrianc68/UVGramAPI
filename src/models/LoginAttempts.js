@@ -1,11 +1,11 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 
-const AttemptsLogin = sequelize.define("IntentoInicioSesion", {
-    intentos_realizados: {
+const LoginAttempts = sequelize.define("LoginAttempts", {
+    attempts: {
         type: DataTypes.STRING
     },
-    estado_sesion: {
+    session_state: {
         type: DataTypes.ENUM("BLOQUEADO", "NO_BLOQUEADO"),
         allowNull: false,
         primaryKey: true
@@ -20,4 +20,4 @@ const AttemptsLogin = sequelize.define("IntentoInicioSesion", {
     freezeTableName: true
 });
 
-module.exports = { AttemptsLogin };
+module.exports = { LoginAttempts };

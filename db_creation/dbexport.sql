@@ -170,13 +170,6 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: DATABASE postgres; Type: COMMENT; Schema: -; Owner: dev
---
-
-COMMENT ON DATABASE postgres IS 'default administrative connection database';
-
-
---
 -- PostgreSQL database dump complete
 --
 
@@ -225,10 +218,22 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: TipoCategoria; Type: TYPE; Schema: public; Owner: dev
+-- Name: AccountStatusType; Type: TYPE; Schema: public; Owner: dev
 --
 
-CREATE TYPE public."TipoCategoria" AS ENUM (
+CREATE TYPE public."AccountStatusType" AS ENUM (
+    'BLOQUEADO',
+    'NO_BLOQUEADO'
+);
+
+
+ALTER TYPE public."AccountStatusType" OWNER TO dev;
+
+--
+-- Name: CategoryType; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."CategoryType" AS ENUM (
     'BLOG_PERSONAL',
     'PRODUCTO_O_SERVICIO',
     'ARTE',
@@ -239,49 +244,50 @@ CREATE TYPE public."TipoCategoria" AS ENUM (
 );
 
 
-ALTER TYPE public."TipoCategoria" OWNER TO dev;
+ALTER TYPE public."CategoryType" OWNER TO dev;
 
 --
--- Name: TipoEstadoCuenta; Type: TYPE; Schema: public; Owner: dev
+-- Name: GenderType; Type: TYPE; Schema: public; Owner: dev
 --
 
-CREATE TYPE public."TipoEstadoCuenta" AS ENUM (
-    'BLOQUEADO',
-    'NO_BLOQUEADO'
+CREATE TYPE public."GenderType" AS ENUM (
+    'MASCULINO',
+    'FEMENINO',
+    'INDIFERENTE'
 );
 
 
-ALTER TYPE public."TipoEstadoCuenta" OWNER TO dev;
+ALTER TYPE public."GenderType" OWNER TO dev;
 
 --
--- Name: TipoEstadoSesion; Type: TYPE; Schema: public; Owner: dev
+-- Name: PrivacyType; Type: TYPE; Schema: public; Owner: dev
 --
 
-CREATE TYPE public."TipoEstadoSesion" AS ENUM (
-    'BLOQUEADO',
-    'NO_BLOQUEADO'
-);
-
-
-ALTER TYPE public."TipoEstadoSesion" OWNER TO dev;
-
---
--- Name: TipoPrivacidad; Type: TYPE; Schema: public; Owner: dev
---
-
-CREATE TYPE public."TipoPrivacidad" AS ENUM (
+CREATE TYPE public."PrivacyType" AS ENUM (
     'PUBLICO',
     'PRIVADO'
 );
 
 
-ALTER TYPE public."TipoPrivacidad" OWNER TO dev;
+ALTER TYPE public."PrivacyType" OWNER TO dev;
 
 --
--- Name: TipoRolUsuario; Type: TYPE; Schema: public; Owner: dev
+-- Name: SessionStateType; Type: TYPE; Schema: public; Owner: dev
 --
 
-CREATE TYPE public."TipoRolUsuario" AS ENUM (
+CREATE TYPE public."SessionStateType" AS ENUM (
+    'BLOQUEADO',
+    'NO_BLOQUEADO'
+);
+
+
+ALTER TYPE public."SessionStateType" OWNER TO dev;
+
+--
+-- Name: UserRoleType; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."UserRoleType" AS ENUM (
     'PERSONAL',
     'EMPRESARIAL',
     'MODERADOR',
@@ -289,32 +295,32 @@ CREATE TYPE public."TipoRolUsuario" AS ENUM (
 );
 
 
-ALTER TYPE public."TipoRolUsuario" OWNER TO dev;
+ALTER TYPE public."UserRoleType" OWNER TO dev;
 
 --
--- Name: TipoSexo; Type: TYPE; Schema: public; Owner: dev
+-- Name: enum_AccountVerification_account_status; Type: TYPE; Schema: public; Owner: dev
 --
 
-CREATE TYPE public."TipoSexo" AS ENUM (
+CREATE TYPE public."enum_AccountVerification_account_status" AS ENUM (
+    'BLOQUEADO',
+    'NO_BLOQUEADO'
+);
+
+
+ALTER TYPE public."enum_AccountVerification_account_status" OWNER TO dev;
+
+--
+-- Name: enum_Personal_gender; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_Personal_gender" AS ENUM (
     'MASCULINO',
     'FEMENINO',
     'INDIFERENTE'
 );
 
 
-ALTER TYPE public."TipoSexo" OWNER TO dev;
-
---
--- Name: enum_ConfiguracionUsuario_tipo_privacidad; Type: TYPE; Schema: public; Owner: dev
---
-
-CREATE TYPE public."enum_ConfiguracionUsuario_tipo_privacidad" AS ENUM (
-    'PUBLICO',
-    'PRIVADO'
-);
-
-
-ALTER TYPE public."enum_ConfiguracionUsuario_tipo_privacidad" OWNER TO dev;
+ALTER TYPE public."enum_Personal_gender" OWNER TO dev;
 
 --
 -- Name: enum_Personal_sexo; Type: TYPE; Schema: public; Owner: dev
@@ -344,6 +350,58 @@ CREATE TYPE public."enum_RolUsuario_rol_usuario" AS ENUM (
 ALTER TYPE public."enum_RolUsuario_rol_usuario" OWNER TO dev;
 
 --
+-- Name: enum_RolUsuario_role; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_RolUsuario_role" AS ENUM (
+    'PERSONAL',
+    'EMPRESARIAL',
+    'MODERADOR',
+    'ADMINISTRADOR'
+);
+
+
+ALTER TYPE public."enum_RolUsuario_role" OWNER TO dev;
+
+--
+-- Name: enum_UserConfiguration_privacy; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_UserConfiguration_privacy" AS ENUM (
+    'PUBLICO',
+    'PRIVADO'
+);
+
+
+ALTER TYPE public."enum_UserConfiguration_privacy" OWNER TO dev;
+
+--
+-- Name: enum_UserRole_role; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_UserRole_role" AS ENUM (
+    'PERSONAL',
+    'EMPRESARIAL',
+    'MODERADOR',
+    'ADMINISTRADOR'
+);
+
+
+ALTER TYPE public."enum_UserRole_role" OWNER TO dev;
+
+--
+-- Name: enum_VerificacionCuenta_account_status; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_VerificacionCuenta_account_status" AS ENUM (
+    'BLOQUEADO',
+    'NO_BLOQUEADO'
+);
+
+
+ALTER TYPE public."enum_VerificacionCuenta_account_status" OWNER TO dev;
+
+--
 -- Name: enum_VerificacionCuenta_estado_cuenta; Type: TYPE; Schema: public; Owner: dev
 --
 
@@ -360,96 +418,96 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: Administrador; Type: TABLE; Schema: public; Owner: dev
+-- Name: Account; Type: TABLE; Schema: public; Owner: dev
 --
 
-CREATE TABLE public."Administrador" (
-    fecha_creacion date,
-    id_usuario bigint
+CREATE TABLE public."Account" (
+    password character varying(128) NOT NULL,
+    email character varying(254) NOT NULL,
+    id_user bigint NOT NULL,
+    phone_number character varying(15),
+    birthday date NOT NULL
 );
 
 
-ALTER TABLE public."Administrador" OWNER TO dev;
+ALTER TABLE public."Account" OWNER TO dev;
 
 --
--- Name: ConfiguracionUsuario; Type: TABLE; Schema: public; Owner: dev
+-- Name: AccountVerification; Type: TABLE; Schema: public; Owner: dev
 --
 
-CREATE TABLE public."ConfiguracionUsuario" (
-    tipo_privacidad public."TipoPrivacidad",
-    id_usuario bigint
+CREATE TABLE public."AccountVerification" (
+    account_status public."AccountStatusType" NOT NULL,
+    id_user bigint
 );
 
 
-ALTER TABLE public."ConfiguracionUsuario" OWNER TO dev;
+ALTER TABLE public."AccountVerification" OWNER TO dev;
 
 --
--- Name: Cuenta; Type: TABLE; Schema: public; Owner: dev
+-- Name: Administrator; Type: TABLE; Schema: public; Owner: dev
 --
 
-CREATE TABLE public."Cuenta" (
-    "contraseña" character varying(120) NOT NULL,
-    correo character varying(340) NOT NULL,
-    id_usuario bigint NOT NULL,
-    telefono character varying(15),
-    fecha_nacimiento date NOT NULL
+CREATE TABLE public."Administrator" (
+    update_date date,
+    id_user bigint
 );
 
 
-ALTER TABLE public."Cuenta" OWNER TO dev;
+ALTER TABLE public."Administrator" OWNER TO dev;
 
 --
--- Name: Empresarial; Type: TABLE; Schema: public; Owner: dev
+-- Name: Business; Type: TABLE; Schema: public; Owner: dev
 --
 
-CREATE TABLE public."Empresarial" (
-    categoria public."TipoCategoria",
-    ciudad character varying(340),
-    codigo_postal character varying(16),
-    direccion_postal character varying(420),
-    correo_contacto character varying(340),
-    telefono_contacto character varying(15),
-    nombre_completo character varying(340),
-    id_usuario bigint
+CREATE TABLE public."Business" (
+    category public."CategoryType",
+    city character varying(340),
+    postal_code character varying(16),
+    postal_address character varying(420),
+    contact_email character varying(340),
+    phone_contact character varying(15),
+    organization_name character varying(340),
+    id_user bigint
 );
 
 
-ALTER TABLE public."Empresarial" OWNER TO dev;
+ALTER TABLE public."Business" OWNER TO dev;
 
 --
--- Name: IntentoInicioSesion; Type: TABLE; Schema: public; Owner: dev
+-- Name: LoginAttempts; Type: TABLE; Schema: public; Owner: dev
 --
 
-CREATE TABLE public."IntentoInicioSesion" (
-    intentos_realizados integer NOT NULL,
-    estado_sesion public."TipoEstadoSesion" NOT NULL,
+CREATE TABLE public."LoginAttempts" (
+    attempts integer,
+    session_state public."SessionStateType",
     mac_address character varying(17) NOT NULL
 );
 
 
-ALTER TABLE public."IntentoInicioSesion" OWNER TO dev;
+ALTER TABLE public."LoginAttempts" OWNER TO dev;
 
 --
--- Name: Moderador; Type: TABLE; Schema: public; Owner: dev
+-- Name: Moderator; Type: TABLE; Schema: public; Owner: dev
 --
 
-CREATE TABLE public."Moderador" (
-    fecha_cambio date,
-    id_usuario bigint
+CREATE TABLE public."Moderator" (
+    update_date date,
+    id_user bigint
 );
 
 
-ALTER TABLE public."Moderador" OWNER TO dev;
+ALTER TABLE public."Moderator" OWNER TO dev;
 
 --
 -- Name: Personal; Type: TABLE; Schema: public; Owner: dev
 --
 
 CREATE TABLE public."Personal" (
-    facultad character varying(50),
-    programa_educativo character varying(50),
-    sexo public."TipoSexo",
-    id_usuario bigint
+    faculty character varying(50),
+    career character varying(50),
+    gender public."GenderType",
+    id_user bigint
 );
 
 
@@ -460,34 +518,95 @@ ALTER TABLE public."Personal" OWNER TO dev;
 --
 
 CREATE TABLE public."RolUsuario" (
-    id_usuario bigint NOT NULL,
-    rol_usuario public."TipoRolUsuario"
+    id_user bigint NOT NULL,
+    role public."enum_RolUsuario_role"
 );
 
 
 ALTER TABLE public."RolUsuario" OWNER TO dev;
 
 --
+-- Name: User; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."User" (
+    name character varying(64) NOT NULL,
+    presentation character varying(150),
+    username character varying(30) NOT NULL,
+    id bigint DEFAULT nextval(('"user_id_seq"'::text)::regclass) NOT NULL
+);
+
+
+ALTER TABLE public."User" OWNER TO dev;
+
+--
+-- Name: UserConfiguration; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."UserConfiguration" (
+    privacy public."PrivacyType",
+    id_user bigint
+);
+
+
+ALTER TABLE public."UserConfiguration" OWNER TO dev;
+
+--
+-- Name: UserRole; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."UserRole" (
+    id_user bigint NOT NULL,
+    role public."UserRoleType"
+);
+
+
+ALTER TABLE public."UserRole" OWNER TO dev;
+
+--
 -- Name: Usuario; Type: TABLE; Schema: public; Owner: dev
 --
 
 CREATE TABLE public."Usuario" (
-    nombre character varying(120) NOT NULL,
-    presentacion character varying(1200),
-    usuario character varying(120) NOT NULL,
-    id bigint DEFAULT nextval(('"usuario_id_seq"'::text)::regclass) NOT NULL
+    id integer NOT NULL,
+    nombre character varying(255),
+    presentacion character varying(255),
+    usuario character varying(255)
 );
 
 
 ALTER TABLE public."Usuario" OWNER TO dev;
 
 --
+-- Name: Usuario_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
+--
+
+CREATE SEQUENCE public."Usuario_id_seq"
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public."Usuario_id_seq" OWNER TO dev;
+
+--
+-- Name: Usuario_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dev
+--
+
+ALTER SEQUENCE public."Usuario_id_seq" OWNED BY public."Usuario".id;
+
+
+--
 -- Name: VerificacionCodigo; Type: TABLE; Schema: public; Owner: dev
 --
 
 CREATE TABLE public."VerificacionCodigo" (
-    codigo_verificacion character varying(8) NOT NULL,
-    id character varying(128) NOT NULL
+    verification_code character varying(255),
+    username character varying(255) NOT NULL,
+    create_time character varying(255) NOT NULL
 );
 
 
@@ -498,7 +617,7 @@ ALTER TABLE public."VerificacionCodigo" OWNER TO dev;
 --
 
 CREATE TABLE public."VerificacionCuenta" (
-    estado_cuenta public."TipoEstadoCuenta" NOT NULL,
+    estado_cuenta public."enum_VerificacionCuenta_estado_cuenta",
     id_usuario bigint
 );
 
@@ -506,10 +625,23 @@ CREATE TABLE public."VerificacionCuenta" (
 ALTER TABLE public."VerificacionCuenta" OWNER TO dev;
 
 --
--- Name: usuario_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
+-- Name: VerificationCode; Type: TABLE; Schema: public; Owner: dev
 --
 
-CREATE SEQUENCE public.usuario_id_seq
+CREATE TABLE public."VerificationCode" (
+    verification_code character varying(8),
+    username character varying(64) NOT NULL,
+    created_time timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE public."VerificationCode" OWNER TO dev;
+
+--
+-- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
+--
+
+CREATE SEQUENCE public.user_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
@@ -517,54 +649,60 @@ CREATE SEQUENCE public.usuario_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.usuario_id_seq OWNER TO dev;
+ALTER TABLE public.user_id_seq OWNER TO dev;
 
 --
--- Data for Name: Administrador; Type: TABLE DATA; Schema: public; Owner: dev
+-- Name: Usuario id; Type: DEFAULT; Schema: public; Owner: dev
 --
 
-COPY public."Administrador" (fecha_creacion, id_usuario) FROM stdin;
+ALTER TABLE ONLY public."Usuario" ALTER COLUMN id SET DEFAULT nextval('public."Usuario_id_seq"'::regclass);
+
+
+--
+-- Data for Name: Account; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."Account" (password, email, id_user, phone_number, birthday) FROM stdin;
 \.
 
 
 --
--- Data for Name: ConfiguracionUsuario; Type: TABLE DATA; Schema: public; Owner: dev
+-- Data for Name: AccountVerification; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."ConfiguracionUsuario" (tipo_privacidad, id_usuario) FROM stdin;
+COPY public."AccountVerification" (account_status, id_user) FROM stdin;
 \.
 
 
 --
--- Data for Name: Cuenta; Type: TABLE DATA; Schema: public; Owner: dev
+-- Data for Name: Administrator; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Cuenta" ("contraseña", correo, id_usuario, telefono, fecha_nacimiento) FROM stdin;
+COPY public."Administrator" (update_date, id_user) FROM stdin;
 \.
 
 
 --
--- Data for Name: Empresarial; Type: TABLE DATA; Schema: public; Owner: dev
+-- Data for Name: Business; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Empresarial" (categoria, ciudad, codigo_postal, direccion_postal, correo_contacto, telefono_contacto, nombre_completo, id_usuario) FROM stdin;
+COPY public."Business" (category, city, postal_code, postal_address, contact_email, phone_contact, organization_name, id_user) FROM stdin;
 \.
 
 
 --
--- Data for Name: IntentoInicioSesion; Type: TABLE DATA; Schema: public; Owner: dev
+-- Data for Name: LoginAttempts; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."IntentoInicioSesion" (intentos_realizados, estado_sesion, mac_address) FROM stdin;
-0	NO_BLOQUEADO	00:1b:63:84:45:e6
+COPY public."LoginAttempts" (attempts, session_state, mac_address) FROM stdin;
 \.
 
 
 --
--- Data for Name: Moderador; Type: TABLE DATA; Schema: public; Owner: dev
+-- Data for Name: Moderator; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Moderador" (fecha_cambio, id_usuario) FROM stdin;
+COPY public."Moderator" (update_date, id_user) FROM stdin;
 \.
 
 
@@ -572,7 +710,7 @@ COPY public."Moderador" (fecha_cambio, id_usuario) FROM stdin;
 -- Data for Name: Personal; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Personal" (facultad, programa_educativo, sexo, id_usuario) FROM stdin;
+COPY public."Personal" (faculty, career, gender, id_user) FROM stdin;
 \.
 
 
@@ -580,7 +718,31 @@ COPY public."Personal" (facultad, programa_educativo, sexo, id_usuario) FROM std
 -- Data for Name: RolUsuario; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."RolUsuario" (id_usuario, rol_usuario) FROM stdin;
+COPY public."RolUsuario" (id_user, role) FROM stdin;
+\.
+
+
+--
+-- Data for Name: User; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."User" (name, presentation, username, id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: UserConfiguration; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."UserConfiguration" (privacy, id_user) FROM stdin;
+\.
+
+
+--
+-- Data for Name: UserRole; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."UserRole" (id_user, role) FROM stdin;
 \.
 
 
@@ -588,7 +750,7 @@ COPY public."RolUsuario" (id_usuario, rol_usuario) FROM stdin;
 -- Data for Name: Usuario; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Usuario" (nombre, presentacion, usuario, id) FROM stdin;
+COPY public."Usuario" (id, nombre, presentacion, usuario) FROM stdin;
 \.
 
 
@@ -596,8 +758,7 @@ COPY public."Usuario" (nombre, presentacion, usuario, id) FROM stdin;
 -- Data for Name: VerificacionCodigo; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."VerificacionCodigo" (codigo_verificacion, id) FROM stdin;
-e2fcd018	2441646acee0e0ad7578892fb3ff6a97c48ecd450d789a9ab55824840c997b6f
+COPY public."VerificacionCodigo" (verification_code, username, create_time) FROM stdin;
 \.
 
 
@@ -610,170 +771,217 @@ COPY public."VerificacionCuenta" (estado_cuenta, id_usuario) FROM stdin;
 
 
 --
--- Name: usuario_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
+-- Data for Name: VerificationCode; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.usuario_id_seq', 1, false);
-
-
---
--- Name: Cuenta PK_Cuenta; Type: CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."Cuenta"
-    ADD CONSTRAINT "PK_Cuenta" PRIMARY KEY (id_usuario);
+COPY public."VerificationCode" (verification_code, username, created_time) FROM stdin;
+06e13160	702e38c68a150dca176400050eb5c208914140b565d1d80e4ed908629cca83e5	2022-11-05 04:06:47.96076
+\.
 
 
 --
--- Name: IntentoInicioSesion PK_IntentoInicioSesion; Type: CONSTRAINT; Schema: public; Owner: dev
+-- Name: Usuario_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-ALTER TABLE ONLY public."IntentoInicioSesion"
-    ADD CONSTRAINT "PK_IntentoInicioSesion" PRIMARY KEY (mac_address);
+SELECT pg_catalog.setval('public."Usuario_id_seq"', 1, false);
 
 
 --
--- Name: RolUsuario PK_RolUsuario; Type: CONSTRAINT; Schema: public; Owner: dev
+-- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
+--
+
+SELECT pg_catalog.setval('public.user_id_seq', 1, false);
+
+
+--
+-- Name: Account PK_Account; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Account"
+    ADD CONSTRAINT "PK_Account" PRIMARY KEY (id_user);
+
+
+--
+-- Name: LoginAttempts PK_LoginAttempts; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."LoginAttempts"
+    ADD CONSTRAINT "PK_LoginAttempts" PRIMARY KEY (mac_address);
+
+
+--
+-- Name: User PK_User; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."User"
+    ADD CONSTRAINT "PK_User" PRIMARY KEY (id);
+
+
+--
+-- Name: UserRole PK_UserRole; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."UserRole"
+    ADD CONSTRAINT "PK_UserRole" PRIMARY KEY (id_user);
+
+
+--
+-- Name: RolUsuario RolUsuario_pkey; Type: CONSTRAINT; Schema: public; Owner: dev
 --
 
 ALTER TABLE ONLY public."RolUsuario"
-    ADD CONSTRAINT "PK_RolUsuario" PRIMARY KEY (id_usuario);
+    ADD CONSTRAINT "RolUsuario_pkey" PRIMARY KEY (id_user);
 
 
 --
--- Name: Usuario PK_Usuario; Type: CONSTRAINT; Schema: public; Owner: dev
+-- Name: Usuario Usuario_pkey; Type: CONSTRAINT; Schema: public; Owner: dev
 --
 
 ALTER TABLE ONLY public."Usuario"
-    ADD CONSTRAINT "PK_Usuario" PRIMARY KEY (id);
+    ADD CONSTRAINT "Usuario_pkey" PRIMARY KEY (id);
 
 
 --
--- Name: VerificacionCodigo PK_VerificacionCodigo; Type: CONSTRAINT; Schema: public; Owner: dev
+-- Name: VerificacionCodigo VerificacionCodigo_pkey; Type: CONSTRAINT; Schema: public; Owner: dev
 --
 
 ALTER TABLE ONLY public."VerificacionCodigo"
-    ADD CONSTRAINT "PK_VerificacionCodigo" PRIMARY KEY (id);
+    ADD CONSTRAINT "VerificacionCodigo_pkey" PRIMARY KEY (username);
 
 
 --
--- Name: IXFK_Administrador_RolUsuario; Type: INDEX; Schema: public; Owner: dev
+-- Name: IXFK_AccountVerification_Account; Type: INDEX; Schema: public; Owner: dev
 --
 
-CREATE INDEX "IXFK_Administrador_RolUsuario" ON public."Administrador" USING btree (id_usuario);
-
-
---
--- Name: IXFK_ConfiguracionUsuario_Usuario; Type: INDEX; Schema: public; Owner: dev
---
-
-CREATE INDEX "IXFK_ConfiguracionUsuario_Usuario" ON public."ConfiguracionUsuario" USING btree (id_usuario);
+CREATE INDEX "IXFK_AccountVerification_Account" ON public."AccountVerification" USING btree (id_user);
 
 
 --
--- Name: IXFK_Cuenta_Usuario; Type: INDEX; Schema: public; Owner: dev
+-- Name: IXFK_AccountVerification_Account_02; Type: INDEX; Schema: public; Owner: dev
 --
 
-CREATE INDEX "IXFK_Cuenta_Usuario" ON public."Cuenta" USING btree (id_usuario);
-
-
---
--- Name: IXFK_Empresarial_RolUsuario; Type: INDEX; Schema: public; Owner: dev
---
-
-CREATE INDEX "IXFK_Empresarial_RolUsuario" ON public."Empresarial" USING btree (id_usuario);
+CREATE INDEX "IXFK_AccountVerification_Account_02" ON public."AccountVerification" USING btree (id_user);
 
 
 --
--- Name: IXFK_Moderador_RolUsuario; Type: INDEX; Schema: public; Owner: dev
+-- Name: IXFK_Account_User; Type: INDEX; Schema: public; Owner: dev
 --
 
-CREATE INDEX "IXFK_Moderador_RolUsuario" ON public."Moderador" USING btree (id_usuario);
-
-
---
--- Name: IXFK_Personal_RolUsuario; Type: INDEX; Schema: public; Owner: dev
---
-
-CREATE INDEX "IXFK_Personal_RolUsuario" ON public."Personal" USING btree (id_usuario);
+CREATE INDEX "IXFK_Account_User" ON public."Account" USING btree (id_user);
 
 
 --
--- Name: IXFK_RolUsuario_Usuario; Type: INDEX; Schema: public; Owner: dev
+-- Name: IXFK_Administrator_UserRole; Type: INDEX; Schema: public; Owner: dev
 --
 
-CREATE INDEX "IXFK_RolUsuario_Usuario" ON public."RolUsuario" USING btree (id_usuario);
-
-
---
--- Name: IXFK_VerificacionCuenta_Cuenta; Type: INDEX; Schema: public; Owner: dev
---
-
-CREATE INDEX "IXFK_VerificacionCuenta_Cuenta" ON public."VerificacionCuenta" USING btree (id_usuario);
+CREATE INDEX "IXFK_Administrator_UserRole" ON public."Administrator" USING btree (id_user);
 
 
 --
--- Name: Administrador FK_Administrador_RolUsuario; Type: FK CONSTRAINT; Schema: public; Owner: dev
+-- Name: IXFK_Business_UserRole; Type: INDEX; Schema: public; Owner: dev
 --
 
-ALTER TABLE ONLY public."Administrador"
-    ADD CONSTRAINT "FK_Administrador_RolUsuario" FOREIGN KEY (id_usuario) REFERENCES public."RolUsuario"(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: ConfiguracionUsuario FK_ConfiguracionUsuario_Usuario; Type: FK CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."ConfiguracionUsuario"
-    ADD CONSTRAINT "FK_ConfiguracionUsuario_Usuario" FOREIGN KEY (id_usuario) REFERENCES public."Usuario"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+CREATE INDEX "IXFK_Business_UserRole" ON public."Business" USING btree (id_user);
 
 
 --
--- Name: Cuenta FK_Cuenta_Usuario; Type: FK CONSTRAINT; Schema: public; Owner: dev
+-- Name: IXFK_Moderator_UserRole; Type: INDEX; Schema: public; Owner: dev
 --
 
-ALTER TABLE ONLY public."Cuenta"
-    ADD CONSTRAINT "FK_Cuenta_Usuario" FOREIGN KEY (id_usuario) REFERENCES public."Usuario"(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: Empresarial FK_Empresarial_RolUsuario; Type: FK CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."Empresarial"
-    ADD CONSTRAINT "FK_Empresarial_RolUsuario" FOREIGN KEY (id_usuario) REFERENCES public."RolUsuario"(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE;
+CREATE INDEX "IXFK_Moderator_UserRole" ON public."Moderator" USING btree (id_user);
 
 
 --
--- Name: Moderador FK_Moderador_RolUsuario; Type: FK CONSTRAINT; Schema: public; Owner: dev
+-- Name: IXFK_Personal_UserRole; Type: INDEX; Schema: public; Owner: dev
 --
 
-ALTER TABLE ONLY public."Moderador"
-    ADD CONSTRAINT "FK_Moderador_RolUsuario" FOREIGN KEY (id_usuario) REFERENCES public."RolUsuario"(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE;
+CREATE INDEX "IXFK_Personal_UserRole" ON public."Personal" USING btree (id_user);
 
 
 --
--- Name: Personal FK_Personal_RolUsuario; Type: FK CONSTRAINT; Schema: public; Owner: dev
+-- Name: IXFK_UserConfiguration_User; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_UserConfiguration_User" ON public."UserConfiguration" USING btree (id_user);
+
+
+--
+-- Name: IXFK_UserRole_User; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_UserRole_User" ON public."UserRole" USING btree (id_user);
+
+
+--
+-- Name: AccountVerification FK_AccountVerification_Account; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."AccountVerification"
+    ADD CONSTRAINT "FK_AccountVerification_Account" FOREIGN KEY (id_user) REFERENCES public."Account"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Account FK_Account_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Account"
+    ADD CONSTRAINT "FK_Account_User" FOREIGN KEY (id_user) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Administrator FK_Administrator_UserRole; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Administrator"
+    ADD CONSTRAINT "FK_Administrator_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Business FK_Business_UserRole; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Business"
+    ADD CONSTRAINT "FK_Business_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Moderator FK_Moderator_UserRole; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Moderator"
+    ADD CONSTRAINT "FK_Moderator_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Personal FK_Personal_UserRole; Type: FK CONSTRAINT; Schema: public; Owner: dev
 --
 
 ALTER TABLE ONLY public."Personal"
-    ADD CONSTRAINT "FK_Personal_RolUsuario" FOREIGN KEY (id_usuario) REFERENCES public."RolUsuario"(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE;
+    ADD CONSTRAINT "FK_Personal_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: RolUsuario FK_RolUsuario_Usuario; Type: FK CONSTRAINT; Schema: public; Owner: dev
+-- Name: UserConfiguration FK_UserConfiguration_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
 --
 
-ALTER TABLE ONLY public."RolUsuario"
-    ADD CONSTRAINT "FK_RolUsuario_Usuario" FOREIGN KEY (id_usuario) REFERENCES public."Usuario"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public."UserConfiguration"
+    ADD CONSTRAINT "FK_UserConfiguration_User" FOREIGN KEY (id_user) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
--- Name: VerificacionCuenta FK_VerificacionCuenta_Cuenta; Type: FK CONSTRAINT; Schema: public; Owner: dev
+-- Name: UserRole FK_UserRole_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
 --
 
-ALTER TABLE ONLY public."VerificacionCuenta"
-    ADD CONSTRAINT "FK_VerificacionCuenta_Cuenta" FOREIGN KEY (id_usuario) REFERENCES public."Cuenta"(id_usuario) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public."UserRole"
+    ADD CONSTRAINT "FK_UserRole_User" FOREIGN KEY (id_user) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Usuario Usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Usuario"
+    ADD CONSTRAINT "Usuario_id_fkey" FOREIGN KEY (id) REFERENCES public."Account"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

@@ -2,13 +2,13 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { User } = require("./User");
 
-const UserRole = sequelize.define("RolUsuario", {
-    id_usuario: {
+const UserRole = sequelize.define("UserRole", {
+    id_user: {
         type: DataTypes.BIGINT,
         allowNull: false,
         primaryKey: true
     },
-    rol_usuario: {
+    role: {
         type: DataTypes.ENUM("PERSONAL", "EMPRESARIAL", "MODERADOR", "ADMINISTRADOR")
     }
 }, {
@@ -18,14 +18,14 @@ const UserRole = sequelize.define("RolUsuario", {
 
 UserRole.hasOne(User, {
     foreignKey: "id",
-    sourceKey: "id_usuario",
+    sourceKey: "id_user",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
 User.belongsTo(UserRole, {
     foreignKey: "id",
-    targetKey: "id_usuario",
+    targetKey: "id_user",
 });
 
 module.exports = { UserRole };

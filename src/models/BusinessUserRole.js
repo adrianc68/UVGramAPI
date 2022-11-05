@@ -2,29 +2,29 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { UserRole } = require("./UserRole");
 
-const BusinessUserRole = sequelize.define("Empresarial", {
-    categoria: {
+const BusinessUserRole = sequelize.define("Business", {
+    category: {
         type: DataTypes.ENUM("BLOG_PERSONAL", "PRODUCTO_O_SERVICIO", "ARTE", "MUSICO_O_BANDA", "COMPRAS_VENTAS_MINORISTAS", "SALUD_BELLEZA", "TIENDAS_COMESTIBLES")
     },
-    ciudad: {
+    city: {
         type: DataTypes.STRING
     },
-    codigo_postal: {
+    postal_code: {
         type: DataTypes.STRING
     },
-    direccion_postal: {
+    postal_address: {
         type: DataTypes.STRING
     },
-    correo_contacto: {
+    contact_email: {
         type: DataTypes.STRING
     },
-    telefono_contacto: {
+    phone_contact: {
         type: DataTypes.STRING
     },
-    nombre_completo: {
+    organization_name: {
         type: DataTypes.STRING
     },
-    id_usuario: {
+    id_user: {
         type: DataTypes.BIGINT,
         allowNull: false,
         primaryKey: true
@@ -35,15 +35,15 @@ const BusinessUserRole = sequelize.define("Empresarial", {
 });
 
 BusinessUserRole.hasOne(UserRole, {
-    foreignKey: "id_usuario",
-    sourceKey: "id_usuario",
+    foreignKey: "id_user",
+    sourceKey: "id_user",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
 UserRole.belongsTo(BusinessUserRole, {
-    foreignKey: "id_usuario",
-    targetKey: "id_usuario"
+    foreignKey: "id_user",
+    targetKey: "id_user"
 });
 
 module.exports = { BusinessUserRole };

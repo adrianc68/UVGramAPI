@@ -2,23 +2,23 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { User } = require("./User");
 
-const Account = sequelize.define("Cuenta", {
-    correo: {
+const Account = sequelize.define("Account", {
+    email: {
         type: DataTypes.STRING,
     },
-    contraseña: {
+    password: {
         type: DataTypes.STRING
     },
-    id_usuario: {
+    id_user: {
         type: DataTypes.BIGINT,
         allowNull: false,
         primaryKey: true
     },
-    telefono: {
+    phone_number: {
         type: DataTypes.STRING,
         allowNull: true
     },
-    fecha_nacimiento: {
+    birthday: {
         type: DataTypes.DATE,
         allowNull: false
     },
@@ -29,13 +29,14 @@ const Account = sequelize.define("Cuenta", {
 
 Account.hasOne(User, {
     foreignKey: "id",
-    sourceKey: "id_usuario",
+    sourceKey: "id_user",
     onDelete: "CASCADE",
+    onUpdate: "CASCADE"
 });
 
 User.belongsTo(Account, {
     foreignKey: "id",
-    targetKey: "id_usuario",
+    targetKey: "id_user",
 });
 
 module.exports = { Account };

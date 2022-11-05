@@ -2,11 +2,11 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { Account } = require("./Account");
 
-const AccountVerification = sequelize.define("VerificacionCuenta", {
-    estado_cuenta: {
+const AccountVerification = sequelize.define("AccountVerification", {
+    account_status: {
         type: DataTypes.ENUM("BLOQUEADO", "NO_BLOQUEADO")
     },
-    id_usuario: {
+    id_user: {
         type: DataTypes.BIGINT
     }
 }, {
@@ -17,15 +17,15 @@ const AccountVerification = sequelize.define("VerificacionCuenta", {
 AccountVerification.removeAttribute("id");
 
 AccountVerification.hasOne(Account, {
-    foreignKey: "id_usuario",
-    sourceKey: "id_usuario",
+    foreignKey: "id_user",
+    sourceKey: "id_user",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
 Account.belongsTo(AccountVerification, {
-    foreignKey: "id_usuario",
-    targetKey: "id_usuario"
+    foreignKey: "id_user",
+    targetKey: "id_user"
 });
 
 module.exports = { AccountVerification };

@@ -2,11 +2,11 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { User } = require("./User");
 
-const UserConfiguration = sequelize.define("ConfiguracionUsuario", {
-    tipo_privacidad: {
+const UserConfiguration = sequelize.define("UserConfiguration", {
+    privacy: {
         type: DataTypes.ENUM("PUBLICO", "PRIVADO")
     },
-    id_usuario: {
+    id_user: {
         type: DataTypes.STRING
     }
 }, {
@@ -18,14 +18,14 @@ UserConfiguration.removeAttribute("id");
 
 UserConfiguration.hasOne(User, {
     foreignKey: "id",
-    sourceKey: "id_usuario",
+    sourceKey: "id_user",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
 User.belongsTo(UserConfiguration, {
     foreignKey: "id",
-    targetKey: "id_usuario"
+    targetKey: "id_user"
 });
 
 module.exports = { UserConfiguration };
