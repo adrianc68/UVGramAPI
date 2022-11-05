@@ -14,8 +14,8 @@ const TOKEN_STATE = {
 };
 
 const TOKEN_TYPE = {
-    REFRESH: "REFRESH",
-    ACCESS: "ACCESS"
+    REFRESH: "refreshToken",
+    ACCESS: "accessToken"
 };
 
 const generateRefreshToken = async (payload) => {
@@ -87,5 +87,5 @@ const removeToken = async (token) => {
 module.exports = {
     generateRefreshToken, generateAccessToken, verifyToken,
     addToken, checkToken, blacklistToken,
-    removeToken, TOKEN_STATE
+    removeToken, TOKEN_STATE, TOKEN_TYPE
 }

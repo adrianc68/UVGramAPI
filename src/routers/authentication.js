@@ -1,6 +1,6 @@
 const router = require('express').Router();
-const { createTokens, refreshTokens, logOutToken } = require('../controllers/authenticationController');
-const { validationLoginData, validationAccesTokenData, validationRefreshTokenData, sayHello, validationLogoutTokensData } = require('../validators/authenticationValidation');
+const { createTokens, refreshTokens, logOutToken, sayHello } = require('../controllers/authenticationController');
+const { validationLoginData, validationAccesTokenData, validationRefreshTokenData, validationLogoutTokensData } = require('../validators/authenticationValidation');
 const { formatValidationLogin, formatValidationAuthorizationToken, formatValidationRefreshTokenAsParameter, formatValidationOptionalAccessToken } = require('../validators/formatValidators/authenticationFormatValidator');
 
 router.post("/authentication/login",

@@ -1,6 +1,6 @@
 const { httpResponseInternalServerError, httpResponseNotFound, httpResponseErrorToken, httpResponseForbidden } = require("../helpers/httpResponses");
 const { encondePassword } = require("../helpers/cipher");
-const { checkToken, verifyToken, TOKEN_STATE } = require("../helpers/token");
+const { checkToken, verifyToken, TOKEN_STATE, TOKEN_TYPE } = require("../helpers/token");
 const { getAccountLoginData } = require("../dataaccess/UserDataAccess");
 const { logger } = require("../helpers/logger");
 
@@ -20,22 +20,22 @@ const doesPasswordMatch = (passwordA, passwordB) => {
     return doesPasswordMatch;
 }
 
-const getTokenExist = async (token) => {
+const getTokenExist = async (token, tokenType = "token") => {
     let value;
     try {
         value = await checkToken(token);
     } catch (error) {
-        throw new Error(error, "token not found")
+        throw new Error(error, `${tokenType} not found`)
     }
     if (!value || value == TOKEN_STATE.NIL) {
-        throw new Error("token does not exist");
+        throw new Error(`${tokenType} does not exist`);
     } else if (value.split(" ")[0] == TOKEN_STATE.INVALID) {
-        throw new Error("token has expired")
+        throw new Error(`${tokenType} has expired`)
     }
     try {
         await verifyToken(token);
     } catch (error) {
-        throw new Error(error, "token is not valid");
+        throw new Error(error, `${tokenType} is not valid`);
     }
     return value;
 }
@@ -61,11 +61,10 @@ const validationLoginData = async (request, response, next) => {
 
 const validationAccesTokenData = async (request, response, next) => {
     let accessToken = (request.headers.authorization).split(" ")[1];
-    let value;
     try {
-        await getTokenExist(accessToken);
+        await getTokenExist(accessToken, TOKEN_TYPE.ACCESS);
     } catch (error) {
-        const payload = { error: error.message, token: "accessToken" }
+        const payload = { error: error.message }
         return httpResponseErrorToken(response, payload);
     }
     return next();
@@ -73,10 +72,19 @@ const validationAccesTokenData = async (request, response, next) => {
 
 const validationRefreshTokenData = async (request, response, next) => {
     let refreshToken = (request.headers.authorization).split(" ")[1];
+    let optionalAccessToken = request.headers.accesstoken;
     try {
-        await getTokenExist(refreshToken);
+        await getTokenExist(refreshToken, TOKEN_TYPE.REFRESH);
+
+
+
+        if (optionalAccessToken) {
+            await getTokenExist(optionalAccessToken.split(" ")[1], TOKEN_TYPE.ACCESS);
+        }
+
+        
     } catch (error) {
-        const payload = { error: error.message, token: "refreshToken" }
+        const payload = { error: error.message }
         return httpResponseErrorToken(response, payload);
     }
     return next();
@@ -86,27 +94,17 @@ const validationLogoutTokensData = async (request, response, next) => {
     let accessToken = (request.headers.authorization).split(" ")[1];
     let refreshToken = (request.headers.refreshtoken).split(" ")[1];
     try {
-        await getTokenExist(refreshToken);
+        await getTokenExist(refreshToken, TOKEN_TYPE.REFRESH);
+        await getTokenExist(accessToken, TOKEN_TYPE.ACCESS);
     } catch (error) {
-        const payload = { error: error.message, token: "refreshToken" }
-        return httpResponseErrorToken(response, payload);
-    }
-    try {
-        await getTokenExist(accessToken);
-    } catch (error) {
-        const payload = { error: error.message, token: "accessToken" }
+        const payload = { error: error.message }
         return httpResponseErrorToken(response, payload);
     }
     return next();
 }
 
-const sayHello = (request, response) => {
-    return response.send("Welcome! Now you can get the resources");
-}
-
 module.exports = {
-    validationLoginData, validationAccesTokenData, validationRefreshTokenData,
-    sayHello, validationLogoutTokensData
+    validationLoginData, validationAccesTokenData, validationRefreshTokenData, validationLogoutTokensData
 }
 
 

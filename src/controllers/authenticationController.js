@@ -85,4 +85,8 @@ const logOutToken = async (request, response) => {
     return httpResponseOk(response, { message: "logout successful" });
 }
 
-module.exports = { createTokens, refreshTokens, logOutToken }
+const sayHello = (request, response) => {
+    return response.send("Welcome! Now you can get the resources");
+}
+
+module.exports = { createTokens, refreshTokens, logOutToken, sayHello }
