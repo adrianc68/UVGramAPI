@@ -47,12 +47,28 @@ const refreshAccessToken = async (username, userId, userRole, refreshTokenJti) =
     return tokenCreated;
 }
 
+const removeOptionalAccessToken = async (optionalAccessToken) => {
+    let optionalOldAccessTokenMessage;
+    if (optionalAccessToken) {
+        try {
+            await verifyToken(optionalAccessToken);
+            await removeToken(optionalAccessToken);
+        } catch (error) {
+            optionalOldAccessTokenMessage = {
+                message: "Failed to remove access token",
+                errorType: error.message
+            }
+        }
+    }
+    return optionalOldAccessTokenMessage;
+}
+
 const createTokens = async (request, response) => {
     let { emailOrUsername } = request.body;
     let tokens;
     try {
         let user = await getAccountLoginData(emailOrUsername);
-        tokens = await generateTokens(user.usuario, user.id, user["RolUsuario.rol_usuario"]);
+        tokens = await generateTokens(user.username, user.id, user["UserRole.role"]);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -62,14 +78,19 @@ const createTokens = async (request, response) => {
 const refreshTokens = async (request, response) => {
     let newRefreshtoken;
     let refreshToken = (request.headers.authorization).split(" ")[1];
+    let optionalAccessToken = request.headers.accesstoken;
+    let optionalOldAccessTokenMessage = (optionalAccessToken) ? await removeOptionalAccessToken(optionalAccessToken.split(" ")[1]) : undefined;
     try {
         let refreshTokenData = await verifyToken(refreshToken);
         let user = await getAccountLoginDataById(refreshTokenData.id);
-        newRefreshtoken = await refreshAccessToken(user.usuario, user.id, user["RolUsuario.rol_usuario"], refreshTokenData.jti);
+        newRefreshtoken = await refreshAccessToken(user.usuario, user.id, user["UserRole.role"], refreshTokenData.jti);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    const payload = { accessToken: newRefreshtoken.accessToken.token }
+    const payload = {
+        accessToken: newRefreshtoken.accessToken.token,
+        optionalAccessTokenMessage: optionalOldAccessTokenMessage
+    }
     return httpResponseOk(response, payload);
 }
 

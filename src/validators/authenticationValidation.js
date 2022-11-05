@@ -33,7 +33,8 @@ const getTokenExist = async (token, tokenType = "token") => {
         throw new Error(`${tokenType} has expired`)
     }
     try {
-        await verifyToken(token);
+        let data = await verifyToken(token);
+        logger.debug(data);
     } catch (error) {
         throw new Error(error, `${tokenType} is not valid`);
     }
@@ -72,17 +73,8 @@ const validationAccesTokenData = async (request, response, next) => {
 
 const validationRefreshTokenData = async (request, response, next) => {
     let refreshToken = (request.headers.authorization).split(" ")[1];
-    let optionalAccessToken = request.headers.accesstoken;
     try {
         await getTokenExist(refreshToken, TOKEN_TYPE.REFRESH);
-
-
-
-        if (optionalAccessToken) {
-            await getTokenExist(optionalAccessToken.split(" ")[1], TOKEN_TYPE.ACCESS);
-        }
-
-        
     } catch (error) {
         const payload = { error: error.message }
         return httpResponseErrorToken(response, payload);

@@ -1,6 +1,6 @@
-const router = require('express').Router();
 const { httpResponseValidation } = require('../../helpers/httpResponses');
-const { validatePasswordData, validateLoginData, validateAuthorizationHeaderData, validateRefreshTokenParameterData, validateAccessTokenParameterData, validateOptionalAccessTokenParameterData } = require('./formatValidator');
+const { validatePasswordData, validateLoginData, validateAuthorizationHeaderData,
+    validateRefreshTokenParameterData, validateAccessTokenParameterData, validateOptionalAccessTokenParameterData } = require('./formatValidator');
 
 const formatValidationLogin = [
     validateLoginData,

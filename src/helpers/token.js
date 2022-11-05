@@ -55,19 +55,19 @@ const verifyToken = async (token) => {
 };
 
 const addToken = async (token, jti) => {
-    const check = await redisClient.EXISTS(token); // check if key exists in cache
+    const check = await redisClient.EXISTS(token);
     if (check == 1) {
         return;
     }
     const value = `${TOKEN_STATE.VALID} ${jti}`
     await redisClient.SET(token, value);
-    const payload = await verifyToken(token); // verify and decode the JWT
+    const payload = await verifyToken(token);
     await redisClient.EXPIREAT(token, +payload.exp); // set expiry date for the key in the cache
     return;
 };
 
 const checkToken = async (token) => {
-    const status = await redisClient.GET(token); // get the token from the cache and return its value
+    const status = await redisClient.GET(token);
     return status;
 };
 
@@ -75,7 +75,7 @@ const blacklistToken = async (token, jti) => {
     const value = `${TOKEN_STATE.INVALID} ${jti}`
     const status = await redisClient.SET(token, value);
     if (status == "nil") return;
-    const payload = await verifyToken(token); // verify and decode the JWT
+    const payload = await verifyToken(token);
     await redisClient.EXPIREAT(token, +payload.exp); // set time duration for the token to removed from the cache
     return;
 };
