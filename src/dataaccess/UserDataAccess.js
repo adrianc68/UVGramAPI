@@ -2,8 +2,10 @@ const { Op } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { encondePassword, encodeStringSHA256 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
+const { logger } = require("../helpers/logger");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
+const { AccountStatusType } = require("../models/enum/AccountStatusType");
 const { PersonalUserRole } = require("../models/PersonalUserRole");
 const { User } = require("../models/User");
 const { UserConfiguration } = require("../models/UserConfiguration");
@@ -22,7 +24,11 @@ const getAccountLoginData = async (emailOrUsername) => {
         attributes: ["id", "username"],
         include: [{
             model: Account,
-            attributes: ["password"]
+            attributes: ["password"],
+            include: [{
+                model: AccountVerification,
+                attributes: ["account_status"]
+            }]
         }, {
             model: UserRole,
             attributes: ["role"]

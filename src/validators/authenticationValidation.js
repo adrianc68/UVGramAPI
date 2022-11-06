@@ -2,6 +2,8 @@ const { httpResponseInternalServerError, httpResponseNotFound, httpResponseError
 const { encondePassword } = require("../helpers/cipher");
 const { getAccountLoginData } = require("../dataaccess/UserDataAccess");
 const { getTokenExist, TOKEN_TYPE } = require("../dataaccess/tokenDataAccess");
+const { logger } = require("../helpers/logger");
+const { AccountStatusType } = require("../models/enum/AccountStatusType");
 
 const doesExistUser = (user) => {
     let doesExistUser = false;
@@ -24,6 +26,9 @@ const validationLoginData = async (request, response, next) => {
     try {
         await getAccountLoginData(emailOrUsername).then(user => {
             if (doesExistUser(user)) {
+                if (user["Account.AccountVerification.account_status"] == AccountStatusType.BLOCKED) {
+                    return httpResponseForbidden(response, "user has been kicked from server")
+                }
                 if (doesPasswordMatch(encondePassword(password), user["Account.password"])) {
                     return next();
                 } else {
