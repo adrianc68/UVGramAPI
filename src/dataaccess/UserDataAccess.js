@@ -1,10 +1,11 @@
 const { Op } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { encondePassword, encodeStringSHA256 } = require("../helpers/cipher");
+const { encondePassword, encodeStringSHA256, encondeSHA512 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
 const { PersonalUserRole } = require("../models/PersonalUserRole");
+const { Session } = require("../models/Session");
 const { User } = require("../models/User");
 const { UserConfiguration } = require("../models/UserConfiguration");
 const { UserRole } = require("../models/UserRole");
@@ -114,6 +115,50 @@ const deleteUserByUsername = async (username) => {
 };
 
 /**
+ * Save session including a token in database
+ * @param {*} session session that must include id_user, token and device
+ * @returns true if it was saved otherwise false
+ */
+const saveSessionToken = async (session) => {
+    let isSaved = false;
+    const t = await sequelize.transaction();
+    try {
+        await Session.create({
+            ...session
+        }, { transaction: t });
+        await t.commit();
+        isSaved = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isSaved;
+};
+
+/**
+ * Remove session by token in database.
+ * @param {*} token the session to be removed.
+ * @returns true if it was removed otherwise false.
+ */
+const removeSessionToken = async (token) => {
+    let isRemoved = false;
+    const t = await sequelize.transaction();
+    try {
+        await Session.destroy({
+            where: {
+                token
+            }
+        }, { transaction: t });
+        await t.commit();
+        isRemoved = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isRemoved;
+};
+
+/**
  * Create an user in database.
  * @param {*} user the user object that contain password, email, name, presentation, username, phoneNumber, birthday and confirmationCode
  * @returns a message indicating that user was added.
@@ -172,7 +217,7 @@ const generateCodeVerification = async (username) => {
     const t = await sequelize.transaction();
     try {
         verificationData = await VerificationCode.create({
-            verification_code: generateRandomCode(8),
+            code: generateRandomCode(8),
             username: encodeStringSHA256(username)
         }, { transaction: t });
         await t.commit();
@@ -180,12 +225,12 @@ const generateCodeVerification = async (username) => {
         await t.rollback();
         throw new Error(error);
     }
-    return verificationData.verification_code;
+    return verificationData.code;
 };
 
 /**
  * Check if verification code is generated.
- * @param {*} username the username that generated the verification code.
+ * @param {*} id the user id that generated the verification code.
  * @returns true if it was generated otherwise false.
  */
 const isVerificationCodeGenerated = async (username) => {
@@ -201,7 +246,7 @@ const isVerificationCodeGenerated = async (username) => {
 
 /**
  * Delete a verification code from database.
- * @param {*} username the username that generated verification code.
+ * @param {*} username the user that generated verification code.
  * @returns true if it was removed otherwise false.
  */
 const removeVerificationCode = async (username) => {
@@ -223,6 +268,25 @@ const removeVerificationCode = async (username) => {
 };
 
 /**
+ * Get ID of user by username.
+ * @param {*} username the username to get the Id.
+ * @returns id of user
+ */
+const getIdByUsername = async (username) => {
+    let id = await User.findAll({
+        where: {
+            username
+        },
+        attributes: ["id"],
+        raw: true,
+        plain: true
+    }).then(data => {
+        return data.id;
+    });
+    return id;
+}
+
+/**
  * Check if verification code provided matches with database verification code.
  * @param {*} username username that generated the verification code.
  * @param {*} verificationCode the verification code provided by the user.
@@ -233,7 +297,7 @@ const doesVerificationCodeMatches = async (username, verificationCode) => {
     let verificationData = await VerificationCode.findAll({
         where: {
             username: encodeStringSHA256(username),
-            verification_code: verificationCode
+            code: verificationCode
         }
     });
     doesMatches = (verificationData.length != 0);
@@ -244,5 +308,5 @@ module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
     generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
-    doesVerificationCodeMatches
+    doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken
 }

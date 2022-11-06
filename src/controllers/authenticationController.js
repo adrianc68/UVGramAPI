@@ -1,5 +1,5 @@
 const { removeOptionalAccessToken, refreshAccessToken, verifyToken, removeToken, generateTokens } = require("../dataaccess/tokenDataAccess");
-const { getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/UserDataAccess");
+const { getAccountLoginData, getAccountLoginDataById, saveSessionToken, removeSessionToken } = require("../dataaccess/UserDataAccess");
 const { httpResponseOk, httpResponseInternalServerError, httpResponseErrorToken } = require("../helpers/httpResponses");
 
 const createTokens = async (request, response) => {
@@ -8,6 +8,12 @@ const createTokens = async (request, response) => {
     try {
         let user = await getAccountLoginData(emailOrUsername);
         tokens = await generateTokens(user.username, user.id, user["UserRole.role"]);
+        let session = {
+            id_user: user.id,
+            token: tokens.refreshToken,
+            device: "device of client found in http request"
+        }
+        await saveSessionToken(session);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -39,6 +45,7 @@ const logOutToken = async (request, response) => {
     try {
         await removeToken(accessToken);
         await removeToken(refreshToken);
+        await removeSessionToken(refreshToken);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }

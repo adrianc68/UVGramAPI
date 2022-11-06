@@ -2,11 +2,12 @@ const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 
 const VerificationCode = sequelize.define("VerificationCode", {
-    verification_code: {
-        type: DataTypes.STRING
+    code: {
+        type: DataTypes.STRING,
+        allowNull: true,
     },
     username: {
-        type: DataTypes.STRING,
+        type: DataTypes.BIGINT,
         allowNull: false,
         primaryKey: true
     }

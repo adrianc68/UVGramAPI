@@ -34,16 +34,16 @@ const removeUserByUsername = async (request, response) => {
 
 const createVerificationCode = async (request, response) => {
     let { username } = request.body;
-    let isVerificationCodeGenerated = false;
+    let verificationCode;
     try {
-        isVerificationCodeGenerated = await generateCodeVerification(username);
+        verificationCode = await generateCodeVerification(username);
         // SEND THE VERIFICATION CODE TO EMAIL!!!!
         // BY NOW RETURN THE CODE TO CLIENT
     } catch (error) {
-        await removeVerificationCode(isVerificationCodeGenerated);
+        if (verificationCode) await removeVerificationCode(verificationCode);
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, { isGenerated: isVerificationCodeGenerated });
+    return httpResponseOk(response, { verificationCode });
 };
 
 module.exports = { addUser, removeUserByUsername, createVerificationCode }
