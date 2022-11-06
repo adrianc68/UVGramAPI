@@ -14,7 +14,7 @@ const validationisEmailRegisteredWithNext = async (request, response, next) => {
     } else {
         return next();
     }
-}
+};
 
 const validationIsUsernameRegisteredWithNext = async (request, response, next) => {
     let isRegistered;
@@ -29,7 +29,7 @@ const validationIsUsernameRegisteredWithNext = async (request, response, next) =
     } else {
         return next();
     }
-}
+};
 
 const validationIsEmailRegistered = async (request, response) => {
     let isRegistered;
@@ -46,7 +46,7 @@ const validationIsEmailRegistered = async (request, response) => {
         message = "email is not registered";
     }
     return httpResponseOk(response, { exist: isRegistered, message });
-}
+};
 
 const validationIsUsernameRegistered = async (request, response) => {
     let isRegistered;
@@ -63,7 +63,7 @@ const validationIsUsernameRegistered = async (request, response) => {
         message = "username is not registered";
     }
     return httpResponseOk(response, { exist: isRegistered, message });
-}
+};
 
 const validationNotGeneratedVerificationCode = async (request, response, next) => {
     let { username } = request.body;
@@ -77,7 +77,7 @@ const validationNotGeneratedVerificationCode = async (request, response, next) =
         return httpResponseForbidden(response, "wait to generate another verification code");
     }
     return next();
-}
+};
 
 const validationVerificationCodeMatches = async (request, response, next) => {
     let { username, verificationCode } = request.body;
@@ -91,7 +91,7 @@ const validationVerificationCodeMatches = async (request, response, next) => {
         return httpResponseForbidden(response, "verification code is not valid");
     }
     return next();
-}
+};
 
 module.exports = {
     validationisEmailRegisteredWithNext, validationIsUsernameRegisteredWithNext,

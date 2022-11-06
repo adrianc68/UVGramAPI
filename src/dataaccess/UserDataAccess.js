@@ -32,6 +32,7 @@ const getAccountLoginData = async (emailOrUsername) => {
     });
     return user;
 };
+
 /**
  * Get user, account data from database using id
  * @param {*} id the user's id.

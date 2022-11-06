@@ -6,6 +6,6 @@ const { formatValidationAuthorizationToken } = require("../validators/formatVali
 const checkAuthAccessMiddleware = Router().use([
     formatValidationAuthorizationToken,
     validationAccesTokenData,
-    checkAuth])
+    checkAuth]);
 
 module.exports = { checkAuthAccessMiddleware }

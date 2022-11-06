@@ -34,7 +34,7 @@ const formatValidationVerificationCode = [
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }
-]
+];
 
 module.exports = {
     formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername,

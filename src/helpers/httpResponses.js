@@ -33,6 +33,7 @@ const httpResponseOk = (response, message) => {
     };
     return response.status(StatusCodes.OK).json(payload);
 }
+
 /**
  * 404 Not Found
  * Can not find requested resource.
@@ -48,6 +49,7 @@ const httpResponseNotFound = (response, message) => {
     };
     return response.status(StatusCodes.NOT_FOUND).json(payload);
 };
+
 /**
  * 401 Unathorized
  * Client must authenticate to get the requested response.
@@ -62,6 +64,7 @@ const httpResponseUnauthorized = (response, message) => {
     return response.status(StatusCodes.UNAUTHORIZED).json(payload);
 
 };
+
 /**
  * 403 Forbidden for Token
  * Client does not have right access to the content.
@@ -74,7 +77,8 @@ const httpResponseErrorToken = (response, message) => {
         errorType: "token"
     };
     return response.status(StatusCodes.FORBIDDEN).json(payload);
-}
+};
+
 /**
  * 403 Forbidden
  * Client does not have right access to the content.
@@ -86,7 +90,8 @@ const httpResponseForbidden = (response, message) => {
         message
     }
     return response.status(StatusCodes.FORBIDDEN).json(payload);
-}
+};
+
 /**
  * 501 Not implemented
  * Request method is not supported by server.
@@ -98,7 +103,8 @@ const httpResponseNotImplement = (response, message) => {
         message
     };
     return response.status(StatusCodes.NOT_IMPLEMENTED).json(payload);
-}
+};
+
 /**
  * 400 Bad Request
  * Server could not understand the request due to invalid syntax
@@ -111,7 +117,8 @@ const httpResponseBadRequest = (response, message) => {
     };
     return response.status(StatusCodes.BAD_REQUEST).json(payload);
 
-}
+};
+
 /**
  * 500 Internal Server Error
  * Unexpected condition that prevented it from fulfilling the request.

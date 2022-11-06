@@ -31,7 +31,8 @@ router.get("/accounts/email/check",
 
 router.delete("/accounts/username/delete",
     formatValidationAccountUsername,
-    removeUserByUsername);
+    removeUserByUsername
+);
 
 
 module.exports = router;

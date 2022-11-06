@@ -37,6 +37,7 @@ const generateRefreshToken = async (payload) => {
     });
     return { token: refreshToken, jti }
 };
+
 /**
  * This method generate and signs a token of type accessToken
  * and it's need a reference to a refreshToken.
@@ -59,6 +60,7 @@ const generateAccessToken = async (payload, refreshTokenId) => {
     });
     return { token: accessToken, jti }
 };
+
 /**
  * Verify the if JWT exists and decode the JTW data.
  * @param {*} token the token provided.
@@ -68,6 +70,7 @@ const verifyToken = async (token) => {
     const tokenVerified = jwt.verify(token, process.env.TOKEN_SECRET);
     return tokenVerified;
 };
+
 /**
  * Add token to redis server.
  * @param {*} token that will act as the key.
@@ -84,6 +87,7 @@ const addToken = async (token, jti) => {
     await redisClient.EXPIREAT(token, +payload.exp);
     return;
 };
+
 /**
  * Check if token is stored in redis server
  * @param {*} token that will act as a key.
@@ -93,6 +97,7 @@ const checkToken = async (token) => {
     const status = await redisClient.GET(token);
     return status;
 };
+
 /**
  * Set the token value into invalid in redis server.
  * @param {*} token that will act as a key.
@@ -106,6 +111,7 @@ const blacklistToken = async (token, jti) => {
     await redisClient.EXPIREAT(token, +payload.exp);
     return;
 };
+
 /**
  * Remove token from redis server.
  * @param {*} token that will act as a key.

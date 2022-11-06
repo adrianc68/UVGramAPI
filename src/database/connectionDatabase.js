@@ -8,11 +8,11 @@ const clientDatabase = new Client({
     database: DB_DATABASE,
     password: DB_PASSWORD,
     port: DB_PORT,
-})
+});
 
 clientDatabase.connect(function (error) {
     if (error) throw error;
     logger.info("Successful connection to the database ");
-})
+});
 
 module.exports = { clientDatabase };

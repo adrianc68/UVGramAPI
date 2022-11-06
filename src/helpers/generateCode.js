@@ -13,6 +13,6 @@ const generateRandomCode = (maxCharacters) => {
     const sha256hasher = crypto.createHmac("sha256", secret);
     const hash = sha256hasher.update("0239423095389112341209").digest("hex");
     return hash.slice(0, maxCharacters);
-}
+};
 
 module.exports = { generateRandomCode }

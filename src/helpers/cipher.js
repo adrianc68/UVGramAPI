@@ -9,7 +9,7 @@ function encondeSHA256(lines) {
         hash.write(line);
     }
     return hash.digest('hex');
-}
+};
 
 function encondeSHA512(lines) {
     const hash = createHash('sha512');
@@ -19,14 +19,14 @@ function encondeSHA512(lines) {
         hash.write(line);
     }
     return hash.digest('hex');
-}
+};
 
 function encondePassword(password) {
     return encondeSHA256(password);
-}
+};
 
 function encodeStringSHA256(lines) {
     return encondeSHA256(lines);
-}
+};
 
 module.exports = { encondePassword, encodeStringSHA256, encondeSHA512 }
