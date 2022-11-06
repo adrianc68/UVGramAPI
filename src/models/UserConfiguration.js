@@ -1,10 +1,11 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { User } = require("./User");
+const { PrivacyType } = require("./enum/PrivacyType");
 
 const UserConfiguration = sequelize.define("UserConfiguration", {
     privacy: {
-        type: DataTypes.ENUM("PUBLICO", "PRIVADO")
+        type: DataTypes.ENUM(PrivacyType.PUBLIC, PrivacyType.PRIVATE)
     },
     id_user: {
         type: DataTypes.STRING

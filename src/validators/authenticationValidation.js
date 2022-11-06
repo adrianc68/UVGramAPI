@@ -2,7 +2,6 @@ const { httpResponseInternalServerError, httpResponseNotFound, httpResponseError
 const { encondePassword } = require("../helpers/cipher");
 const { getAccountLoginData } = require("../dataaccess/UserDataAccess");
 const { getTokenExist, TOKEN_TYPE } = require("../dataaccess/tokenDataAccess");
-const { logger } = require("../helpers/logger");
 const { AccountStatusType } = require("../models/enum/AccountStatusType");
 
 const doesExistUser = (user) => {

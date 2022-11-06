@@ -1,10 +1,11 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { Account } = require("./Account");
+const { AccountStatusType } = require("./enum/AccountStatusType");
 
 const AccountVerification = sequelize.define("AccountVerification", {
     account_status: {
-        type: DataTypes.ENUM("BLOQUEADO", "NO_BLOQUEADO")
+        type: DataTypes.ENUM(AccountStatusType.BLOCKED, AccountStatusType.UNBLOCKED)
     },
     id_user: {
         type: DataTypes.BIGINT

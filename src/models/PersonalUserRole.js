@@ -1,6 +1,7 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { UserRole } = require("./UserRole");
+const { GenderType } = require("./enum/GenderType");
 
 const PersonalUserRole = sequelize.define("Personal", {
     faculty: {
@@ -10,7 +11,7 @@ const PersonalUserRole = sequelize.define("Personal", {
         type: DataTypes.STRING
     },
     gender: {
-        type: DataTypes.ENUM("MASCULINO", "FEMENINO", "INDIFERENTE")
+        type: DataTypes.ENUM(GenderType.MALE, GenderType.FEMININE, GenderType.INDIFFERENT)
     },
     id_user: {
         type: DataTypes.BIGINT,

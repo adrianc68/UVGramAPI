@@ -1,10 +1,11 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { UserRole } = require("./UserRole");
+const { CategoryType } = require("./enum/CategoryType");
 
 const BusinessUserRole = sequelize.define("Business", {
     category: {
-        type: DataTypes.ENUM("BLOG_PERSONAL", "PRODUCTO_O_SERVICIO", "ARTE", "MUSICO_O_BANDA", "COMPRAS_VENTAS_MINORISTAS", "SALUD_BELLEZA", "TIENDAS_COMESTIBLES")
+        type: DataTypes.ENUM(CategoryType.PERSONAL_BLOG, CategoryType.PRODUCT_OR_SERVICE, CategoryType.ART, CategoryType.BAND_OR_MUSIC, CategoryType.RETAIL_PURCHASES_OR_SALES, CategoryType.HEALTH_OR_BEAUTY, CategoryType.GROCERY_STORES)
     },
     city: {
         type: DataTypes.STRING

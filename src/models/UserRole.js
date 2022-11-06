@@ -1,6 +1,7 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { User } = require("./User");
+const { UserRoleType } = require("./enum/UserRoleType");
 
 const UserRole = sequelize.define("UserRole", {
     id_user: {
@@ -9,7 +10,7 @@ const UserRole = sequelize.define("UserRole", {
         primaryKey: true
     },
     role: {
-        type: DataTypes.ENUM("PERSONAL", "EMPRESARIAL", "MODERADOR", "ADMINISTRADOR")
+        type: DataTypes.ENUM(UserRoleType.PERSONAL, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.ADMINISTRATOR)
     }
 }, {
     timestamps: false,

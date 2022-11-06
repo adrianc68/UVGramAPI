@@ -1,14 +1,14 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
+const { LoginStateType } = require("./enum/LoginStateType");
 
 const LoginAttempts = sequelize.define("LoginAttempts", {
     attempts: {
         type: DataTypes.STRING
     },
-    session_state: {
-        type: DataTypes.ENUM("BLOQUEADO", "NO_BLOQUEADO"),
+    login_state: {
+        type: DataTypes.ENUM(LoginStateType.BLOCKED, LoginStateType.UNBLOCKED),
         allowNull: false,
-        primaryKey: true
     },
     mac_address: {
         type: DataTypes.STRING,
