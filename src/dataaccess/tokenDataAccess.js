@@ -1,5 +1,6 @@
 const { generateRefreshToken: generateRefreshTokenHelper, generateAccessToken: generateAcessTokenHelper,
-    addToken: addTokenHelper, removeToken: removeTokenHelper, verifyToken: verifyTokenHelper, TOKEN_STATE, TOKEN_TYPE, checkToken: checkTokenHelper } = require("../helpers/token");
+    addToken: addTokenHelper, removeToken: removeTokenHelper, verifyToken: verifyTokenHelper,
+    TOKEN_STATE, TOKEN_TYPE, checkToken: checkTokenHelper } = require("../helpers/token");
 
 /**
 * Check that the token has the VALID status and TokenType 
@@ -61,7 +62,8 @@ const generateTokens = async (username, userId, userRole) => {
         accessToken: accessToken.token
     }
     return tokensCreated;
-}
+};
+
 /**
  * It generates a new accessToken using a refreshtoken identifier.
  * @param {*} username data to be save into payload.
@@ -88,7 +90,8 @@ const refreshAccessToken = async (username, userId, userRole, refreshTokenJti) =
         accessToken
     }
     return tokenCreated;
-}
+};
+
 /**
  * It receives a optional accessToken and removes if exists from redis server.
  * @param {*} optionalAccessToken the accessToken to be removed
@@ -108,16 +111,25 @@ const removeOptionalAccessToken = async (optionalAccessToken) => {
         }
     }
     return optionalOldAccessTokenMessage;
-}
+};
 
+/**
+ * Remove token from redis server
+ * @param {*} token the token to remove that will act as key
+ */
 const removeToken = async (token) => {
     try {
         await removeTokenHelper(token);
     } catch (error) {
         throw new Error(error);
     }
-}
+};
 
+/**
+ * Verify if token exist and decode data.
+ * @param {*} token the token to be verified.
+ * @returns the JWT data decoded.
+ */
 const verifyToken = async (token) => {
     let tokenVerified;
     try {
@@ -126,6 +138,6 @@ const verifyToken = async (token) => {
         throw new Error(error);
     }
     return tokenVerified;
-}
+};
 
 module.exports = { removeOptionalAccessToken, refreshAccessToken, generateTokens, removeToken, verifyToken, getTokenExist, TOKEN_STATE, TOKEN_TYPE }

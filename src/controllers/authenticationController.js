@@ -12,7 +12,7 @@ const createTokens = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, tokens);
-}
+};
 
 const refreshTokens = async (request, response) => {
     let newRefreshtoken;
@@ -31,7 +31,7 @@ const refreshTokens = async (request, response) => {
         optionalAccessTokenMessage: optionalOldAccessTokenMessage
     }
     return httpResponseOk(response, payload);
-}
+};
 
 const logOutToken = async (request, response) => {
     let accessToken = (request.headers.authorization).split(" ")[1];
@@ -43,7 +43,7 @@ const logOutToken = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, { message: "logout successful" });
-}
+};
 
 const checkAuth = async (request, response, next) => {
     let accessToken = request.headers.authorization;
@@ -58,11 +58,11 @@ const checkAuth = async (request, response, next) => {
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-}
+};
 
 const sayHello = async (request, response) => {
     return response.send("Welcome! Now you can get the resources");
-}
+};
 
 
 module.exports = { createTokens, refreshTokens, logOutToken, checkAuth, sayHello }

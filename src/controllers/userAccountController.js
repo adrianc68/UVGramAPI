@@ -19,7 +19,7 @@ const addUser = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, message)
-}
+};
 
 const removeUserByUsername = async (request, response) => {
     const { username } = request.body;
@@ -30,7 +30,7 @@ const removeUserByUsername = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, message)
-}
+};
 
 const createVerificationCode = async (request, response) => {
     let { username } = request.body;
@@ -44,6 +44,6 @@ const createVerificationCode = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, { isGenerated: isVerificationCodeGenerated });
-}
+};
 
 module.exports = { addUser, removeUserByUsername, createVerificationCode }

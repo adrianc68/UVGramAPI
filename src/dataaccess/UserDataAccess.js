@@ -9,7 +9,11 @@ const { User } = require("../models/User");
 const { UserConfiguration } = require("../models/UserConfiguration");
 const { UserRole } = require("../models/UserRole");
 const { VerificationCode } = require("../models/VerificationCode");
-
+/**
+ * Get user,account data from database using email or username
+ * @param {*} emailOrUsername email or username.
+ * @returns undefined or the user data retrieved from database
+ */
 const getAccountLoginData = async (emailOrUsername) => {
     const user = await User.findAll({
         where: {
@@ -27,8 +31,12 @@ const getAccountLoginData = async (emailOrUsername) => {
         raw: true
     });
     return user;
-}
-
+};
+/**
+ * Get user, account data from database using id
+ * @param {*} id the user's id.
+ * @returns undefined or the user data retrieved from database.
+ */
 const getAccountLoginDataById = async (id) => {
     const user = await User.findAll({
         where: {
@@ -46,8 +54,13 @@ const getAccountLoginDataById = async (id) => {
         raw: true
     });
     return user;
-}
+};
 
+/**
+ * Check if username exist in database.
+ * @param {*} username the username as string.
+ * @returns true if exist otherwise false.
+ */
 const isUsernameRegistered = async (username) => {
     let isUsernameRegistered = false;
     const user = await User.findAll({
@@ -55,8 +68,13 @@ const isUsernameRegistered = async (username) => {
     });
     isUsernameRegistered = (user.length != 0);
     return isUsernameRegistered;
-}
+};
 
+/**
+ * Check if email exist in database.
+ * @param {*} email the email as string.
+ * @returns true if exist otherwise false.
+ */
 const isEmailRegistered = async (email) => {
     let isEmailRegistered = false;
     const account = await Account.findAll({
@@ -64,8 +82,13 @@ const isEmailRegistered = async (email) => {
     });
     isEmailRegistered = (account.length != 0);
     return isEmailRegistered;
-}
+};
 
+/**
+ * Delete user by username in database.
+ * @param {*} username the username as string
+ * @returns the number of entities removed from database.
+ */
 const deleteUserByUsername = async (username) => {
     const t = await sequelize.transaction();
     let message;
@@ -83,8 +106,13 @@ const deleteUserByUsername = async (username) => {
         throw new Error(error);
     }
     return message;
-}
+};
 
+/**
+ * Create an user in database.
+ * @param {*} user the user object that contain password, email, name, presentation, username, phoneNumber, birthday and confirmationCode
+ * @returns a message indicating that user was added.
+ */
 const createUser = async (user) => {
     const { password, email, name, presentation, username, phoneNumber, birthdate, confirmationCode } = user;
     let userID;
@@ -127,8 +155,13 @@ const createUser = async (user) => {
         throw new Error(error);
     }
     return "New entity was added";
-}
+};
 
+/**
+ * Generate a random code with 8 characters in database.
+ * @param {*} username the username that generated the code.
+ * @returns verification code as string.
+ */
 const generateCodeVerification = async (username) => {
     let verificationData;
     const t = await sequelize.transaction();
@@ -143,8 +176,13 @@ const generateCodeVerification = async (username) => {
         throw new Error(error);
     }
     return verificationData.verification_code;
-}
+};
 
+/**
+ * Check if verification code is generated.
+ * @param {*} username the username that generated the verification code.
+ * @returns true if it was generated otherwise false.
+ */
 const isVerificationCodeGenerated = async (username) => {
     let isCodeGenerated = false;
     let verificationData = await VerificationCode.findAll({
@@ -154,8 +192,13 @@ const isVerificationCodeGenerated = async (username) => {
     });
     isCodeGenerated = (verificationData.length != 0);
     return isCodeGenerated;
-}
+};
 
+/**
+ * Delete a verification code from database.
+ * @param {*} username the username that generated verification code.
+ * @returns true if it was removed otherwise false.
+ */
 const removeVerificationCode = async (username) => {
     let isRemoved = false;
     const t = await sequelize.transaction();
@@ -172,8 +215,14 @@ const removeVerificationCode = async (username) => {
         throw new Error(error);
     }
     return isRemoved;
-}
+};
 
+/**
+ * Check if verification code provided matches with database verification code.
+ * @param {*} username username that generated the verification code.
+ * @param {*} verificationCode the verification code provided by the user.
+ * @returns true if matches otherwise false.
+ */
 const doesVerificationCodeMatches = async (username, verificationCode) => {
     let doesMatches = false;
     let verificationData = await VerificationCode.findAll({
@@ -184,7 +233,7 @@ const doesVerificationCodeMatches = async (username, verificationCode) => {
     });
     doesMatches = (verificationData.length != 0);
     return doesMatches;
-}
+};
 
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
