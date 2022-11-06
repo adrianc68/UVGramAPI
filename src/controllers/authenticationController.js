@@ -1,7 +1,14 @@
 const { getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/UserDataAccess");
-const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
-const { addToken, removeToken, generateRefreshToken, generateAccessToken, verifyToken } = require("../helpers/token");
-
+const { httpResponseOk, httpResponseInternalServerError, httpResponseUnauthorized, httpResponseErrorToken } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
+const { addToken, removeToken, generateRefreshToken, generateAccessToken, verifyToken, TOKEN_TYPE } = require("../helpers/token");
+/**
+ * It generates the accessToken and refreshToken
+ * @param {*} username data to be save into payload.
+ * @param {*} userId data to be save into payload.
+ * @param {*} userRole data to be save into payload.
+ * @returns the accessToken and refreshToken as JSON object.
+ */
 const generateTokens = async (username, userId, userRole) => {
     let accessToken;
     let refreshToken;
@@ -26,7 +33,14 @@ const generateTokens = async (username, userId, userRole) => {
     }
     return tokensCreated;
 }
-
+/**
+ * It generates a new accessToken using a refreshtoken identifier.
+ * @param {*} username data to be save into payload.
+ * @param {*} userId data to be save into payload.
+ * @param {*} userRole data to be save into payload.
+ * @param {*} refreshTokenJti the identifier of refreshToken
+ * @returns the new accessToken as JSON object.
+ */
 const refreshAccessToken = async (username, userId, userRole, refreshTokenJti) => {
     let accessToken;
     try {
@@ -46,7 +60,11 @@ const refreshAccessToken = async (username, userId, userRole, refreshTokenJti) =
     }
     return tokenCreated;
 }
-
+/**
+ * It receives a optional accessToken and removes if exists from redis server.
+ * @param {*} optionalAccessToken the accessToken to be removed
+ * @returns undefined if token does not exist and fail message if cannot be removed from redis server
+ */
 const removeOptionalAccessToken = async (optionalAccessToken) => {
     let optionalOldAccessTokenMessage;
     if (optionalAccessToken) {
@@ -106,8 +124,25 @@ const logOutToken = async (request, response) => {
     return httpResponseOk(response, { message: "logout successful" });
 }
 
-const sayHello = (request, response) => {
+const checkAuth = async (request, response, next) => {
+    let accessToken = request.headers.authorization;
+    let tokenData;
+    try {
+        tokenData = await verifyToken(accessToken.split(" ")[1]);
+        if (tokenData.id) {
+            logger.debug(tokenData);
+            return next();
+        } else {
+            return httpResponseErrorToken(response, "token is required to access to this resource!");
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+}
+
+const sayHello = async (request, response) => {
     return response.send("Welcome! Now you can get the resources");
 }
 
-module.exports = { createTokens, refreshTokens, logOutToken, sayHello }
+
+module.exports = { createTokens, refreshTokens, logOutToken, checkAuth, sayHello }

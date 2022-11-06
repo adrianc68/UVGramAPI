@@ -2,25 +2,42 @@ const { httpResponseInternalServerError, httpResponseNotFound, httpResponseError
 const { encondePassword } = require("../helpers/cipher");
 const { checkToken, verifyToken, TOKEN_STATE, TOKEN_TYPE } = require("../helpers/token");
 const { getAccountLoginData } = require("../dataaccess/UserDataAccess");
-const { logger } = require("../helpers/logger");
 
+/**
+ * Check if user is not undefined or null.
+ * @param {*} user 
+ * @returns true if user has content otherwise false.
+ */
 const doesExistUser = (user) => {
     let doesExistUser = false;
     if (user != undefined && user.length != 0) {
         doesExistUser = true;
     }
     return doesExistUser;
-}
+};
 
+/**
+ * Check if passwordA is equal to passwordB.
+ * @param {*} passwordA 
+ * @param {*} passwordB 
+ * @returns true if both are equals otherwise false.
+ */
 const doesPasswordMatch = (passwordA, passwordB) => {
     let doesPasswordMatch = false;
     if (passwordA == passwordB) {
         doesPasswordMatch = true;
     }
     return doesPasswordMatch;
-}
+};
 
-const getTokenExist = async (token, tokenType = "token") => {
+/**
+ * Check that the token has the VALID status and TokenType 
+ * is the expected tokenType
+ * @param {*} token token to be verified.
+ * @param {*} tokenType type of token expected
+ * @returns the actual value got from redis database (VALID|INVALID|NILL|Undefined|null)
+ */
+const getTokenExist = async (token, tokenType) => {
     let value;
     try {
         value = await checkToken(token);
@@ -33,13 +50,15 @@ const getTokenExist = async (token, tokenType = "token") => {
         throw new Error(`${tokenType} has expired`)
     }
     try {
-        let data = await verifyToken(token);
-        logger.debug(data);
+        let values = await verifyToken(token);
+        if (values.tokenType != tokenType) {
+            throw (`you must provide a token of type ${tokenType} `)
+        }
     } catch (error) {
         throw new Error(error, `${tokenType} is not valid`);
     }
     return value;
-}
+};
 
 const validationLoginData = async (request, response, next) => {
     const { emailOrUsername, password } = request.body;
@@ -58,7 +77,7 @@ const validationLoginData = async (request, response, next) => {
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-}
+};
 
 const validationAccesTokenData = async (request, response, next) => {
     let accessToken = (request.headers.authorization).split(" ")[1];
@@ -69,7 +88,7 @@ const validationAccesTokenData = async (request, response, next) => {
         return httpResponseErrorToken(response, payload);
     }
     return next();
-}
+};
 
 const validationRefreshTokenData = async (request, response, next) => {
     let refreshToken = (request.headers.authorization).split(" ")[1];
@@ -80,7 +99,7 @@ const validationRefreshTokenData = async (request, response, next) => {
         return httpResponseErrorToken(response, payload);
     }
     return next();
-}
+};
 
 const validationLogoutTokensData = async (request, response, next) => {
     let accessToken = (request.headers.authorization).split(" ")[1];
@@ -93,7 +112,7 @@ const validationLogoutTokensData = async (request, response, next) => {
         return httpResponseErrorToken(response, payload);
     }
     return next();
-}
+};
 
 module.exports = {
     validationLoginData, validationAccesTokenData, validationRefreshTokenData, validationLogoutTokensData
