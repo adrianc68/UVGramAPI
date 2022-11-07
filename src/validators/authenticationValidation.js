@@ -24,7 +24,7 @@ const validationLoginData = async (request, response, next) => {
     const { emailOrUsername, password } = request.body;
     try {
         await getAccountLoginData(emailOrUsername).then(user => {
-            if (doesExistUser(user)) {
+            if (doesExistUser(user)) { 
                 if (user["Account.AccountVerification.account_status"] == AccountStatusType.BLOCKED) {
                     return httpResponseForbidden(response, "user has been kicked from server")
                 }

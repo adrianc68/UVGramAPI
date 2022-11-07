@@ -28,12 +28,12 @@ async function main() {
         await sequelize.sync({ force: false });
 
         redisClient.on("connect", (err) => {
-            logger.info(`Successful connnection to Redis on port ${process.env.REDIS_PORT}`);
+            logger.info(`Authentication Redis Server initialized on port ${process.env.REDIS_PORT}`);
         });
         await redisClient.connect();
 
         app.listen(app.get("port"), () => {
-            logger.info(`Server initialized on port ${app.get("port")}`);
+            logger.info(`NodeJS Express Server initialized on port ${app.get("port")}`);
         });
     } catch (error) {
         logger.fatal(error);

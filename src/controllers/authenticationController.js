@@ -11,7 +11,7 @@ const createTokens = async (request, response) => {
         let session = {
             id_user: user.id,
             token: tokens.refreshToken,
-            device: "device of client found in http request"
+            device: request.headers.host
         }
         await saveSessionToken(session);
     } catch (error) {

@@ -115,50 +115,6 @@ const deleteUserByUsername = async (username) => {
 };
 
 /**
- * Save session including a token in database
- * @param {*} session session that must include id_user, token and device
- * @returns true if it was saved otherwise false
- */
-const saveSessionToken = async (session) => {
-    let isSaved = false;
-    const t = await sequelize.transaction();
-    try {
-        await Session.create({
-            ...session
-        }, { transaction: t });
-        await t.commit();
-        isSaved = true;
-    } catch (error) {
-        await t.rollback();
-        throw new Error(error);
-    }
-    return isSaved;
-};
-
-/**
- * Remove session by token in database.
- * @param {*} token the session to be removed.
- * @returns true if it was removed otherwise false.
- */
-const removeSessionToken = async (token) => {
-    let isRemoved = false;
-    const t = await sequelize.transaction();
-    try {
-        await Session.destroy({
-            where: {
-                token
-            }
-        }, { transaction: t });
-        await t.commit();
-        isRemoved = true;
-    } catch (error) {
-        await t.rollback();
-        throw new Error(error);
-    }
-    return isRemoved;
-};
-
-/**
  * Create an user in database.
  * @param {*} user the user object that contain password, email, name, presentation, username, phoneNumber, birthday and confirmationCode
  * @returns a message indicating that user was added.
@@ -303,6 +259,52 @@ const doesVerificationCodeMatches = async (username, verificationCode) => {
     doesMatches = (verificationData.length != 0);
     return doesMatches;
 };
+
+/**
+ * Save session including a token in database
+ * @param {*} session session that must include id_user, token and device
+ * @returns true if it was saved otherwise false
+ */
+const saveSessionToken = async (session) => {
+    let isSaved = false;
+    const t = await sequelize.transaction();
+    try {
+        await Session.create({
+            ...session
+        }, { transaction: t });
+        await t.commit();
+        isSaved = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isSaved;
+};
+
+/**
+ * Remove session by token in database.
+ * @param {*} token the session to be removed.
+ * @returns true if it was removed otherwise false.
+ */
+const removeSessionToken = async (token) => {
+    let isRemoved = false;
+    const t = await sequelize.transaction();
+    try {
+        await Session.destroy({
+            where: {
+                token
+            }
+        }, { transaction: t });
+        await t.commit();
+        isRemoved = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isRemoved;
+};
+
+
 
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
