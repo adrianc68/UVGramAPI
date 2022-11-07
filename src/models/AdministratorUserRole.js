@@ -3,9 +3,6 @@ const { DataTypes } = require("sequelize");
 const { UserRole } = require("./UserRole");
 
 const AdministratorUserRole = sequelize.define("Administrator", {
-    update_date: {
-        type: DataTypes.DATE
-    },
     id_user: {
         type: DataTypes.BIGINT,
         allowNull: false,

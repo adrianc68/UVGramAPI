@@ -1,4 +1,4 @@
-const { deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode } = require("../dataaccess/userDataAccess");
+const { deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode, getAllUsers: getAllUsersDataAccess } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
 
 const addUser = async (request, response) => {
@@ -46,4 +46,14 @@ const createVerificationCode = async (request, response) => {
     return httpResponseOk(response, { verificationCode });
 };
 
-module.exports = { addUser, removeUserByUsername, createVerificationCode }
+const getAllUsers = async (request, response) => {
+    let users;
+    try {
+        users = await getAllUsersDataAccess();
+    } catch (error) {
+        return httpResponseInternalServerError(error);
+    }
+    return httpResponseOk(response, users);
+}
+
+module.exports = { addUser, removeUserByUsername, createVerificationCode, getAllUsers }

@@ -304,11 +304,26 @@ const removeSessionToken = async (token) => {
     return isRemoved;
 };
 
-
+/**
+ * Get all user registered in database.
+ * @returns users (id,username, name) in JSON format.
+ */
+const getAllUsers = async () => {
+    let usersRegistered;
+    try {
+        usersRegistered = await User.findAll({
+            attributes: ["id", "username", "name"]
+        });
+    } catch (error) {
+        throw new Error();
+    }
+    return usersRegistered;
+}
 
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
     generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
-    doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken
+    doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken,
+    getAllUsers
 }

@@ -1,5 +1,7 @@
 const router = require('express').Router();
-const { addUser, removeUserByUsername, createVerificationCode } = require('../controllers/userAccountController');
+const { addUser, removeUserByUsername, createVerificationCode, getAllUsers } = require('../controllers/userAccountController');
+const { checkAuthRoleMiddleware } = require('../middleware/authentication');
+const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches } = require('../validators/userAccountValidation');
 
@@ -34,5 +36,9 @@ router.delete("/accounts/username/delete",
     removeUserByUsername
 );
 
+router.get("/accounts/users/",
+    checkAuthRoleMiddleware(UserRoleType.ADMINISTRATOR),
+    getAllUsers
+);
 
 module.exports = router;

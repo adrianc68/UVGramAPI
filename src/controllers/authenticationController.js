@@ -52,21 +52,6 @@ const logOutToken = async (request, response) => {
     return httpResponseOk(response, { message: "logout successful" });
 };
 
-const checkAuth = async (request, response, next) => {
-    let accessToken = request.headers.authorization;
-    let tokenData;
-    try {
-        tokenData = await verifyToken(accessToken.split(" ")[1]);
-        if (tokenData.userId) {
-            return next();
-        } else {
-            return httpResponseErrorToken(response, "token is required to access to this resource!");
-        }
-    } catch (error) {
-        return httpResponseInternalServerError(response, error);
-    }
-};
-
 const checkAuthRole = (roles) => async (request, response, next) => {
     const token = (request.headers.authorization).split(" ")[1];
     let userRoleData;
@@ -83,8 +68,7 @@ const checkAuthRole = (roles) => async (request, response, next) => {
 };
 
 const sayHello = async (request, response) => {
-    return response.send("Welcome! Now you can get the resources");
+    return response.send("Welcome! This is just for testing purposes");
 };
-
 
 module.exports = { createTokens, refreshTokens, logOutToken, checkAuthRole, sayHello }

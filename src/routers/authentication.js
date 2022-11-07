@@ -26,7 +26,8 @@ router.post("/authentication/logout",
 );
 
 router.post("/authentication/testing",
-    checkAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS]),
+    checkAuthRoleMiddleware([UserRoleType.ADMINISTRATOR]),
+    sayHello,
 );
 
 module.exports = router;
