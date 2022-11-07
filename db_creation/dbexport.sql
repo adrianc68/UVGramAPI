@@ -260,6 +260,18 @@ CREATE TYPE public."GenderType" AS ENUM (
 ALTER TYPE public."GenderType" OWNER TO dev;
 
 --
+-- Name: LoginStateType; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."LoginStateType" AS ENUM (
+    'BLOQUEADO',
+    'NO_BLOQUEADO'
+);
+
+
+ALTER TYPE public."LoginStateType" OWNER TO dev;
+
+--
 -- Name: PrivacyType; Type: TYPE; Schema: public; Owner: dev
 --
 
@@ -270,18 +282,6 @@ CREATE TYPE public."PrivacyType" AS ENUM (
 
 
 ALTER TYPE public."PrivacyType" OWNER TO dev;
-
---
--- Name: SessionStateType; Type: TYPE; Schema: public; Owner: dev
---
-
-CREATE TYPE public."SessionStateType" AS ENUM (
-    'BLOQUEADO',
-    'NO_BLOQUEADO'
-);
-
-
-ALTER TYPE public."SessionStateType" OWNER TO dev;
 
 --
 -- Name: UserRoleType; Type: TYPE; Schema: public; Owner: dev
@@ -369,7 +369,8 @@ ALTER TYPE public."enum_RolUsuario_role" OWNER TO dev;
 
 CREATE TYPE public."enum_UserConfiguration_privacy" AS ENUM (
     'PUBLICO',
-    'PRIVADO'
+    'PRIVADO',
+    'PRIVATE'
 );
 
 
@@ -383,6 +384,7 @@ CREATE TYPE public."enum_UserRole_role" AS ENUM (
     'PERSONAL',
     'EMPRESARIAL',
     'MODERADOR',
+    'MODERATOR',
     'ADMINISTRADOR'
 );
 
@@ -449,8 +451,8 @@ ALTER TABLE public."AccountVerification" OWNER TO dev;
 --
 
 CREATE TABLE public."Administrator" (
-    update_date date,
-    id_user bigint
+    created_time timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    id_user bigint NOT NULL
 );
 
 
@@ -480,7 +482,7 @@ ALTER TABLE public."Business" OWNER TO dev;
 
 CREATE TABLE public."LoginAttempts" (
     attempts integer,
-    session_state public."SessionStateType",
+    login_state public."LoginStateType",
     mac_address character varying(17) NOT NULL
 );
 
@@ -514,16 +516,18 @@ CREATE TABLE public."Personal" (
 ALTER TABLE public."Personal" OWNER TO dev;
 
 --
--- Name: RolUsuario; Type: TABLE; Schema: public; Owner: dev
+-- Name: Session; Type: TABLE; Schema: public; Owner: dev
 --
 
-CREATE TABLE public."RolUsuario" (
+CREATE TABLE public."Session" (
     id_user bigint NOT NULL,
-    role public."enum_RolUsuario_role"
+    token text NOT NULL,
+    created_time timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    device text NOT NULL
 );
 
 
-ALTER TABLE public."RolUsuario" OWNER TO dev;
+ALTER TABLE public."Session" OWNER TO dev;
 
 --
 -- Name: User; Type: TABLE; Schema: public; Owner: dev
@@ -564,72 +568,11 @@ CREATE TABLE public."UserRole" (
 ALTER TABLE public."UserRole" OWNER TO dev;
 
 --
--- Name: Usuario; Type: TABLE; Schema: public; Owner: dev
---
-
-CREATE TABLE public."Usuario" (
-    id integer NOT NULL,
-    nombre character varying(255),
-    presentacion character varying(255),
-    usuario character varying(255)
-);
-
-
-ALTER TABLE public."Usuario" OWNER TO dev;
-
---
--- Name: Usuario_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
---
-
-CREATE SEQUENCE public."Usuario_id_seq"
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public."Usuario_id_seq" OWNER TO dev;
-
---
--- Name: Usuario_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: dev
---
-
-ALTER SEQUENCE public."Usuario_id_seq" OWNED BY public."Usuario".id;
-
-
---
--- Name: VerificacionCodigo; Type: TABLE; Schema: public; Owner: dev
---
-
-CREATE TABLE public."VerificacionCodigo" (
-    verification_code character varying(255),
-    username character varying(255) NOT NULL,
-    create_time character varying(255) NOT NULL
-);
-
-
-ALTER TABLE public."VerificacionCodigo" OWNER TO dev;
-
---
--- Name: VerificacionCuenta; Type: TABLE; Schema: public; Owner: dev
---
-
-CREATE TABLE public."VerificacionCuenta" (
-    estado_cuenta public."enum_VerificacionCuenta_estado_cuenta",
-    id_usuario bigint
-);
-
-
-ALTER TABLE public."VerificacionCuenta" OWNER TO dev;
-
---
 -- Name: VerificationCode; Type: TABLE; Schema: public; Owner: dev
 --
 
 CREATE TABLE public."VerificationCode" (
-    verification_code character varying(8),
+    code character varying(8),
     username character varying(64) NOT NULL,
     created_time timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -652,17 +595,11 @@ CREATE SEQUENCE public.user_id_seq
 ALTER TABLE public.user_id_seq OWNER TO dev;
 
 --
--- Name: Usuario id; Type: DEFAULT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."Usuario" ALTER COLUMN id SET DEFAULT nextval('public."Usuario_id_seq"'::regclass);
-
-
---
 -- Data for Name: Account; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
 COPY public."Account" (password, email, id_user, phone_number, birthday) FROM stdin;
+0acbfc311e50b11cb0966c22d2cb887eec45cad411b0bff42789106568b8853b	admin@uvgram.com	1	2281046161	2000-09-13
 \.
 
 
@@ -671,6 +608,7 @@ COPY public."Account" (password, email, id_user, phone_number, birthday) FROM st
 --
 
 COPY public."AccountVerification" (account_status, id_user) FROM stdin;
+NO_BLOQUEADO	1
 \.
 
 
@@ -678,7 +616,8 @@ COPY public."AccountVerification" (account_status, id_user) FROM stdin;
 -- Data for Name: Administrator; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Administrator" (update_date, id_user) FROM stdin;
+COPY public."Administrator" (created_time, id_user) FROM stdin;
+2022-11-07 04:23:11.33201	1
 \.
 
 
@@ -694,7 +633,7 @@ COPY public."Business" (category, city, postal_code, postal_address, contact_ema
 -- Data for Name: LoginAttempts; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."LoginAttempts" (attempts, session_state, mac_address) FROM stdin;
+COPY public."LoginAttempts" (attempts, login_state, mac_address) FROM stdin;
 \.
 
 
@@ -715,10 +654,11 @@ COPY public."Personal" (faculty, career, gender, id_user) FROM stdin;
 
 
 --
--- Data for Name: RolUsuario; Type: TABLE DATA; Schema: public; Owner: dev
+-- Data for Name: Session; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."RolUsuario" (id_user, role) FROM stdin;
+COPY public."Session" (id_user, token, created_time, device) FROM stdin;
+1	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJ0b2tlblR5cGUiOiJyZWZyZXNoVG9rZW4iLCJpYXQiOjE2Njc3OTUwMDAsImV4cCI6MTY3MDQyMzAwMCwianRpIjoiNjlhOGJkZTktMTVlZi00MzJlLThjNDItYjQ0MDNlNmY1ZmU4In0.-k6nHb-0ZQsJPRkuyuYFxt45zSlNTheW7QTUCrB83bM	2022-11-07 04:23:20.80168	localhost:8080
 \.
 
 
@@ -727,6 +667,7 @@ COPY public."RolUsuario" (id_user, role) FROM stdin;
 --
 
 COPY public."User" (name, presentation, username, id) FROM stdin;
+UVGram		UVGram	1
 \.
 
 
@@ -735,6 +676,7 @@ COPY public."User" (name, presentation, username, id) FROM stdin;
 --
 
 COPY public."UserConfiguration" (privacy, id_user) FROM stdin;
+PUBLICO	1
 \.
 
 
@@ -743,30 +685,7 @@ COPY public."UserConfiguration" (privacy, id_user) FROM stdin;
 --
 
 COPY public."UserRole" (id_user, role) FROM stdin;
-\.
-
-
---
--- Data for Name: Usuario; Type: TABLE DATA; Schema: public; Owner: dev
---
-
-COPY public."Usuario" (id, nombre, presentacion, usuario) FROM stdin;
-\.
-
-
---
--- Data for Name: VerificacionCodigo; Type: TABLE DATA; Schema: public; Owner: dev
---
-
-COPY public."VerificacionCodigo" (verification_code, username, create_time) FROM stdin;
-\.
-
-
---
--- Data for Name: VerificacionCuenta; Type: TABLE DATA; Schema: public; Owner: dev
---
-
-COPY public."VerificacionCuenta" (estado_cuenta, id_usuario) FROM stdin;
+1	ADMINISTRADOR
 \.
 
 
@@ -774,23 +693,15 @@ COPY public."VerificacionCuenta" (estado_cuenta, id_usuario) FROM stdin;
 -- Data for Name: VerificationCode; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."VerificationCode" (verification_code, username, created_time) FROM stdin;
-06e13160	702e38c68a150dca176400050eb5c208914140b565d1d80e4ed908629cca83e5	2022-11-05 04:06:47.96076
+COPY public."VerificationCode" (code, username, created_time) FROM stdin;
 \.
-
-
---
--- Name: Usuario_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
---
-
-SELECT pg_catalog.setval('public."Usuario_id_seq"', 1, false);
 
 
 --
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_id_seq', 2, false);
 
 
 --
@@ -799,6 +710,14 @@ SELECT pg_catalog.setval('public.user_id_seq', 1, false);
 
 ALTER TABLE ONLY public."Account"
     ADD CONSTRAINT "PK_Account" PRIMARY KEY (id_user);
+
+
+--
+-- Name: Administrator PK_Administrator; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Administrator"
+    ADD CONSTRAINT "PK_Administrator" PRIMARY KEY (id_user);
 
 
 --
@@ -826,41 +745,10 @@ ALTER TABLE ONLY public."UserRole"
 
 
 --
--- Name: RolUsuario RolUsuario_pkey; Type: CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."RolUsuario"
-    ADD CONSTRAINT "RolUsuario_pkey" PRIMARY KEY (id_user);
-
-
---
--- Name: Usuario Usuario_pkey; Type: CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."Usuario"
-    ADD CONSTRAINT "Usuario_pkey" PRIMARY KEY (id);
-
-
---
--- Name: VerificacionCodigo VerificacionCodigo_pkey; Type: CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."VerificacionCodigo"
-    ADD CONSTRAINT "VerificacionCodigo_pkey" PRIMARY KEY (username);
-
-
---
 -- Name: IXFK_AccountVerification_Account; Type: INDEX; Schema: public; Owner: dev
 --
 
 CREATE INDEX "IXFK_AccountVerification_Account" ON public."AccountVerification" USING btree (id_user);
-
-
---
--- Name: IXFK_AccountVerification_Account_02; Type: INDEX; Schema: public; Owner: dev
---
-
-CREATE INDEX "IXFK_AccountVerification_Account_02" ON public."AccountVerification" USING btree (id_user);
 
 
 --
@@ -896,6 +784,13 @@ CREATE INDEX "IXFK_Moderator_UserRole" ON public."Moderator" USING btree (id_use
 --
 
 CREATE INDEX "IXFK_Personal_UserRole" ON public."Personal" USING btree (id_user);
+
+
+--
+-- Name: IXFK_Session_Account; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Session_Account" ON public."Session" USING btree (id_user);
 
 
 --
@@ -961,6 +856,14 @@ ALTER TABLE ONLY public."Personal"
 
 
 --
+-- Name: Session FK_Session_Account; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Session"
+    ADD CONSTRAINT "FK_Session_Account" FOREIGN KEY (id_user) REFERENCES public."Account"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: UserConfiguration FK_UserConfiguration_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
 --
 
@@ -974,14 +877,6 @@ ALTER TABLE ONLY public."UserConfiguration"
 
 ALTER TABLE ONLY public."UserRole"
     ADD CONSTRAINT "FK_UserRole_User" FOREIGN KEY (id_user) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: Usuario Usuario_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."Usuario"
-    ADD CONSTRAINT "Usuario_id_fkey" FOREIGN KEY (id) REFERENCES public."Account"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

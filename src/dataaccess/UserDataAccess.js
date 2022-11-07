@@ -318,7 +318,7 @@ const getAllUsers = async () => {
         throw new Error();
     }
     return usersRegistered;
-}
+};
 
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,

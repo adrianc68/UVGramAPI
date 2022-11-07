@@ -54,6 +54,6 @@ const getAllUsers = async (request, response) => {
         return httpResponseInternalServerError(error);
     }
     return httpResponseOk(response, users);
-}
+};
 
 module.exports = { addUser, removeUserByUsername, createVerificationCode, getAllUsers }

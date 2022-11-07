@@ -7,6 +7,6 @@ const checkAuthRoleMiddleware = (roles) => Router().use([
     formatValidationAuthorizationToken,
     validationAccesTokenData,
     checkAuthRole(roles),
-])
+]);
 
 module.exports = { checkAuthRoleMiddleware }
