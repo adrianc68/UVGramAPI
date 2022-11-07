@@ -54,12 +54,10 @@ const httpResponseNotFound = (response, message) => {
  * 401 Unathorized
  * Client must authenticate to get the requested response.
  * @param {*} response represents the HTTP response
- * @param {*} message message to send the HTTP response.
  */
-const httpResponseUnauthorized = (response, message) => {
+const httpResponseUnauthorized = (response) => {
     let payload = {
-        message: "You don't have permissions to do this action!",
-        error: message
+        message: "You don't have permissions to perform this action!",
     };
     return response.status(StatusCodes.UNAUTHORIZED).json(payload);
 

@@ -1,6 +1,6 @@
 const { removeOptionalAccessToken, refreshAccessToken, verifyToken, removeToken, generateTokens } = require("../dataaccess/tokenDataAccess");
 const { getAccountLoginData, getAccountLoginDataById, saveSessionToken, removeSessionToken } = require("../dataaccess/UserDataAccess");
-const { httpResponseOk, httpResponseInternalServerError, httpResponseErrorToken } = require("../helpers/httpResponses");
+const { httpResponseOk, httpResponseInternalServerError, httpResponseErrorToken, httpResponseUnauthorized } = require("../helpers/httpResponses");
 
 const createTokens = async (request, response) => {
     let { emailOrUsername } = request.body;
@@ -67,9 +67,24 @@ const checkAuth = async (request, response, next) => {
     }
 };
 
+const checkAuthRole = (roles) => async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let userRoleData;
+    try {
+        userRoleData = (await verifyToken(token)).userRole;
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    let rolesAllowed = [].concat(roles);
+    if (!rolesAllowed.includes(userRoleData)) {
+        return httpResponseUnauthorized(response)
+    }
+    return next();
+};
+
 const sayHello = async (request, response) => {
     return response.send("Welcome! Now you can get the resources");
 };
 
 
-module.exports = { createTokens, refreshTokens, logOutToken, checkAuth, sayHello }
+module.exports = { createTokens, refreshTokens, logOutToken, checkAuthRole, sayHello }

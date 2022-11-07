@@ -1,6 +1,7 @@
 const router = require('express').Router();
-const { createTokens, refreshTokens, logOutToken, sayHello } = require('../controllers/authenticationController');
-const { checkAuthAccessMiddleware } = require('../middleware/authentication');
+const { createTokens, refreshTokens, logOutToken, sayHello, checkAuthRole } = require('../controllers/authenticationController');
+const { checkAuthRoleMiddleware } = require('../middleware/authentication');
+const { UserRoleType } = require('../models/enum/UserRoleType');
 const { validationLoginData, validationRefreshTokenData, validationLogoutTokensData } = require('../validators/authenticationValidation');
 const { formatValidationLogin, formatValidationAuthorizationToken, formatValidationRefreshTokenAsParameter, formatValidationOptionalAccessToken } = require('../validators/formatValidators/authenticationFormatValidator');
 
@@ -25,8 +26,7 @@ router.post("/authentication/logout",
 );
 
 router.post("/authentication/testing",
-    checkAuthAccessMiddleware,
-    sayHello
+    checkAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS]),
 );
 
 module.exports = router;

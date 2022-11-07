@@ -1,11 +1,12 @@
 const { Router } = require("express");
-const { checkAuth } = require("../controllers/authenticationController");
+const { checkAuthRole } = require("../controllers/authenticationController");
 const { validationAccesTokenData } = require("../validators/authenticationValidation");
 const { formatValidationAuthorizationToken } = require("../validators/formatValidators/authenticationFormatValidator");
 
-const checkAuthAccessMiddleware = Router().use([
+const checkAuthRoleMiddleware = (roles) => Router().use([
     formatValidationAuthorizationToken,
     validationAccesTokenData,
-    checkAuth]);
+    checkAuthRole(roles),
+]) 
 
-module.exports = { checkAuthAccessMiddleware }
+module.exports = { checkAuthRoleMiddleware }
