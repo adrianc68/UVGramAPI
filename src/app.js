@@ -5,7 +5,7 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
 const { logger } = require("./helpers/logger");
-const { redisClient } = require("./database/connectionRedis");
+const { redisClient, REDIS_PORT_CONNECTED_TO } = require("./database/connectionRedis");
 const { sequelize } = require("./database/connectionDatabaseSequelize");
 const { handleJSON } = require("./middleware/jsonValidation");
 
@@ -23,22 +23,20 @@ app.use(handleJSON);
 app.use(require("./routers/userAccount"));
 app.use(require("./routers/authentication"));
 
-async function main() {
+const connetionToServers = async () => {
     try {
-        await sequelize.sync({ force: false });
-
-        redisClient.on("connect", (err) => {
-            logger.info(`Authentication Redis Server initialized on port ${process.env.REDIS_PORT}`);
+        await sequelize.authenticate().then(async x => {
+            await sequelize.sync({ force: false });
+            logger.info(`PostgreSQL Client initialized on port ${sequelize.config.port}`)
         });
-        await redisClient.connect();
-
-        app.listen(app.get("port"), () => {
-            logger.info(`NodeJS Express Server initialized on port ${app.get("port")}`);
+        await redisClient.connect().then(x => {
+            logger.info(`Redis Client initialized on port ${REDIS_PORT_CONNECTED_TO}`);
         });
     } catch (error) {
         logger.fatal(error);
     }
 }
 
-main();
+connetionToServers();
 
+module.exports = app;
