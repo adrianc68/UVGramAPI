@@ -12,7 +12,7 @@ const validateEmailData = [
         .bail()
         .isEmail()
         .normalizeEmail()
-        .withMessage("email format is not valid. format allowed hello@example.com")
+        .withMessage("email format is not valid. must have allowed format: hello@example.com")
 ];
 
 const validateUsernameData = [
@@ -24,7 +24,9 @@ const validateUsernameData = [
         .isLength({ min: 3, max: 30 })
         .withMessage("username must have the allowed length: {min: 3, max: 30}")
         .matches(/^[\w\d]+(\.([\w\d]+))*$/)
-        .withMessage("username is not valid, must have allowed characters: words, numbers and one space beteween words")
+        .withMessage("username is not valid, must have allowed characters: words, numbers. no allowed spaces and period as last character")
+        .isLowercase()
+        .withMessage("username is not valid, must have allowed characters: only lowercase allowed")
 ];
 
 const validateNameData = [
@@ -34,7 +36,7 @@ const validateNameData = [
         .isLength({ min: 3, max: 64 })
         .withMessage("name must have the allowed length: {min: 3, max: 64}")
         .bail()
-        .matches(/^[a-zA-Z]+(\ ([a-zA-Z]+))*$/)
+        .matches(/^[a-zA-Zñ]+(\ ([a-zA-Zñ]+))*$/)
         .withMessage("name is not valid, must have allowed characters: a-zA-Z and one space between words")
 ];
 
@@ -67,7 +69,7 @@ const validatePhoneNumberData = [
 const validateBirthdateData = [
     check("birthdate")
         .isISO8601('yyyy-mm-dd')
-        .withMessage("birthday format is invalid")
+        .withMessage("birthday format is invalid, must have the allowed format: yyyy-mm-dd")
         .bail()
         .custom((value, { req }) => {
             return isValidDate(value);

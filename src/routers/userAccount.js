@@ -17,6 +17,8 @@ router.post("/accounts/create",
 router.post("/accounts/create/verification",
     formatValidationAccountUsername,
     formatValidationAccountEmail,
+    validationIsUsernameRegisteredWithNext,
+    validationisEmailRegisteredWithNext,
     validationNotGeneratedVerificationCode,
     createVerificationCode
 );

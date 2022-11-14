@@ -10,7 +10,7 @@ const validationisEmailRegisteredWithNext = async (request, response, next) => {
         return httpResponseInternalServerError(response, err);
     }
     if (isRegistered) {
-        return httpResponseOk(response, { exist: isRegistered, message: "email is already registered" });
+        return httpResponseForbidden(response, { exist: isRegistered, message: "email is already registered" });
     } else {
         return next();
     }
@@ -25,7 +25,7 @@ const validationIsUsernameRegisteredWithNext = async (request, response, next) =
         return httpResponseInternalServerError(response, err);
     }
     if (isRegistered) {
-        return httpResponseOk(response, { exist: isRegistered, message: "username is already registered" });
+        return httpResponseForbidden(response, { exist: isRegistered, message: "username is already registered" });
     } else {
         return next();
     }
