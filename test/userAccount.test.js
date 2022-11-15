@@ -13,10 +13,12 @@ function delay() {
 
 beforeAll(async () => {
     await delay();
+    await sequelize.truncate({ cascade: true, restartIdentity: true });
 })
 
 afterAll(async () => {
-    sequelize.truncate({ cascade: true, restartIdentity: true });
+    server.close();
+    await sequelize.truncate({ cascade: true, restartIdentity: true });
 });
 
 describe('POST /accounts/create/verification', () => {
@@ -87,7 +89,6 @@ describe('POST /accounts/create/verification', () => {
 
         test('POST /accounts/create/verification 403 Forbidden Code already generated should wait 5 minutes', async () => {
             const response = await request(server).post("/accounts/create/verification").send({ "username": "ricardolopez", "email": "riclopez@uvgram.com" });
-            console.log(response.body);
             expect(response.statusCode).toBe(403);
         });
 
@@ -856,10 +857,186 @@ describe('POST /accounts/create/', () => {
             expect(response.body.message.message).toContain("email is already registered");
             expect(response.statusCode).toBe(403);
         });
+
+        test('POST /accounts/create/ 403 Forbidden verification is not valid (generated but is invalid)', async () => {
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "test94", "email": "gonzalocar@uvgram.com" });
+            let verificationCode = "12345678"
+            const newUser = {
+                name: "Gonzalo Carlos",
+                presentation: "Other user in UVGram",
+                username: "test94",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "gonzalocar@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode
+            }
+            response = await request(server).post("/accounts/create").send(newUser);
+            expect(response.statusCode).toBe(403);
+        });
     })
 });
 
+describe('GET /accounts/email/check', () => {
+    test('POST /accounts/email/checks 404 Resource Not Found ', async () => {
+        response = await request(server).get("/accounts/email/checks").send({ "email": "test234232@uvgram.com" });
+        expect(response.statusCode).toBe(404);
+    });
 
-afterAll(async () => {
-    server.close();
+    test('POST /accounts/email/check 400 Bad Request Invalid JSON ', async () => {
+        response = await request(server).get("/accounts/email/check").send({ "emai\"l": "test234232@uvgram.com" });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/email/check 400 Bad Request email is required ', async () => {
+        response = await request(server).get("/accounts/email/check").send({ "s": "test234232@uvgram.com" });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/email/check 200 OK email exist', async () => {
+        let response = await request(server).post("/accounts/create/verification").send({ "username": "test1000", "email": "test1000@uvgram.com" });
+        let { verificationCode } = response.body.message;
+        const newUser = {
+            name: "Testing",
+            presentation: "Welcome to UVGram.",
+            username: "test1000",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "test1000@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser);
+        response = await request(server).get("/accounts/email/check").send({ "email": "test1000@uvgram.com" });
+        expect(response.body.message.exist).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/email/check 200 OK email does not exist', async () => {
+        response = await request(server).get("/accounts/email/check").send({ "email": "test234232@uvgram.com" });
+        expect(response.body.message.exist).toBe(false);
+        expect(response.statusCode).toBe(200);
+    });
 });
+
+describe('GET /accounts/username/check', () => {
+    test('POST /accounts/username/checks 404 Resource Not Found ', async () => {
+        response = await request(server).get("/accounts/username/checks").send({ "username": "test234232" });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('POST /accounts/username/check 400 Bad Request Invalid JSON ', async () => {
+        response = await request(server).get("/accounts/username/check").send({ "username\"l": "test234232" });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/username/check 400 Bad Request username is required ', async () => {
+        response = await request(server).get("/accounts/username/check").send({ "s": "test234232" });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/username/check 200 OK username exist', async () => {
+        let response = await request(server).post("/accounts/create/verification").send({ "username": "test88888", "email": "test88888@uvgram.com" });
+        let { verificationCode } = response.body.message;
+        const newUser = {
+            name: "Testing",
+            presentation: "Welcome to UVGram.",
+            username: "test88888",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "test88888@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser);
+        response = await request(server).get("/accounts/username/check").send({ "username": "test88888" });
+        expect(response.body.message.exist).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/username/check 200 OK username does not exist', async () => {
+        response = await request(server).get("/accounts/username/check").send({ "username": "test3453464" });
+        expect(response.body.message.exist).toBe(false);
+        expect(response.statusCode).toBe(200);
+    });
+});
+
+
+describe('DEL /accounts/username/delete', () => {
+    test('DEL /accounts/username/deletes 404 Resource Not Found ', async () => {
+        response = await request(server).del("/accounts/username/deletes").send({ "username": "test234232" });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('DEL /accounts/username/delete 400 Bad Request Invalid JSON ', async () => {
+        response = await request(server).del("/accounts/username/delete").send({ "username\"l": "test234232" });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('DEL /accounts/username/delete 400 Bad Request username is required ', async () => {
+        response = await request(server).del("/accounts/username/delete").send({ "s": "test234232" });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('DEL /accounts/username/delete 200 OK username exist', async () => {
+        let response = await request(server).post("/accounts/create/verification").send({ "username": "deleteme", "email": "deleteme@uvgram.com" });
+        let { verificationCode } = response.body.message;
+        const newUser = {
+            name: "Testing",
+            presentation: "Welcome to UVGram.",
+            username: "deleteme",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "deleteme@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser);
+        response = await request(server).del("/accounts/username/delete").send({ "username": "deleteme" });
+        expect(response.body.message).toContain("1 entity(s) was removed");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /accounts/username/delete OK 0 entities was removed', async () => {
+        response = await request(server).del("/accounts/username/delete").send({ "username": "test23423" });
+        expect(response.body.message).toContain("0 entity(s) was removed");
+        expect(response.statusCode).toBe(200);
+    });
+});
+
+describe('GET /accounts/users', () => {
+    test('GET /accounts/users 400 Authorization header required', async () => {
+        let response = await request(server).post("/accounts/create/verification").send({ "username": "userone", "email": "userone@uvgram.com" });
+        let { verificationCode } = response.body.message;
+        let newUser = {
+            name: "Testing",
+            presentation: "Welcome to UVGram.",
+            username: "userone",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "userone@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser);
+        response = await request(server).post("/accounts/create/verification").send({ "username": "usertwo", "email": "usertwo@uvgram.com" });
+        let { verificationCode: verificationCode2 } = response.body.message;
+        newUser = {
+            name: "Testing",
+            presentation: "Welcome to UVGram.",
+            username: "usertwo",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "usertwo@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode: verificationCode2
+        }
+        response = await request(server).post("/accounts/create").send(newUser);
+        response = await request(server).get("/accounts/users").send();
+        expect(response.body.errors[0].msg).toContain("authorization header is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+
+});
+
