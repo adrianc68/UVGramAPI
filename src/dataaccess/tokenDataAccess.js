@@ -24,7 +24,7 @@ const getTokenExist = async (token, tokenType) => {
     try {
         let values = await verifyToken(token);
         if (values.tokenType != tokenType) {
-            throw (`you must provide a token of type ${tokenType} `)
+            throw (`you must provide a token of type ${tokenType}`)
         }
     } catch (error) {
         throw new Error(error, `${tokenType} is not valid`);

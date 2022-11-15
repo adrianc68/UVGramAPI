@@ -82,6 +82,7 @@ const validateLoginData = [
         .not()
         .isEmpty()
         .withMessage("emailOrUsername is required")
+        .bail()
         .isLength({ min: 3, max: 254 })
         .withMessage("emailOrUsername must have the allowed length: {min: 3, max: 254}")
 ];

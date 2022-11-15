@@ -9,12 +9,12 @@ function delay() {
             resolve();
         }, 3000);
     });
-}
+};
 
 beforeAll(async () => {
     await delay();
     await sequelize.truncate({ cascade: true, restartIdentity: true });
-})
+});
 
 afterAll(async () => {
     server.close();
@@ -961,7 +961,6 @@ describe('GET /accounts/username/check', () => {
     });
 });
 
-
 describe('DEL /accounts/username/delete', () => {
     test('DEL /accounts/username/deletes 404 Resource Not Found ', async () => {
         response = await request(server).del("/accounts/username/deletes").send({ "username": "test234232" });
@@ -1036,7 +1035,5 @@ describe('GET /accounts/users', () => {
         expect(response.body.errors[0].msg).toContain("authorization header is required");
         expect(response.statusCode).toBe(400);
     });
-
-
 });
 

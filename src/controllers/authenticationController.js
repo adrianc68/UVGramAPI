@@ -49,7 +49,7 @@ const logOutToken = async (request, response) => {
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, { message: "logout successful" });
+    return httpResponseOk(response, "logout successful");
 };
 
 const checkAuthRole = (roles) => async (request, response, next) => {

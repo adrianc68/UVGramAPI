@@ -34,7 +34,7 @@ const validationLoginData = async (request, response, next) => {
                     return httpResponseForbidden(response, "password does not match");
                 }
             } else {
-                return httpResponseNotFound(response, "user not found");
+                return httpResponseForbidden(response, "user not found");
             }
         });
     } catch (error) {
