@@ -1,42 +1,32 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { User } = require("./User");
+const { UserRoleType } = require("./enum/UserRoleType");
 
-const Account = sequelize.define("Account", {
-    email: {
-        type: DataTypes.STRING,
-    },
-    password: {
-        type: DataTypes.STRING
-    },
+const UserRole = sequelize.define("UserRole", {
     id_user: {
         type: DataTypes.BIGINT,
         allowNull: false,
         primaryKey: true
     },
-    phone_number: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    birthday: {
-        type: DataTypes.DATE,
-        allowNull: false
-    },
+    role: {
+        type: DataTypes.ENUM(UserRoleType.PERSONAL, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.ADMINISTRATOR)
+    }
 }, {
     timestamps: false,
     freezeTableName: true
 });
 
-Account.hasOne(User, {
+UserRole.hasOne(User, {
     foreignKey: "id",
     sourceKey: "id_user",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
-User.belongsTo(Account, {
+User.belongsTo(UserRole, {
     foreignKey: "id",
     targetKey: "id_user",
 });
 
-module.exports = { Account };
+module.exports = { UserRole };
