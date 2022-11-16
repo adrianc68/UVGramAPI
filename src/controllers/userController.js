@@ -1,5 +1,6 @@
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedUsersOfUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 const { verifyToken } = require("../helpers/token");
 
 const followUser = async (request, response) => {

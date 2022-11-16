@@ -205,3 +205,343 @@ describe('DEL /user/unfollow/', () => {
         });
     });
 });
+
+
+describe('GET /user/followed-by/:username', () => {
+    test('GET /user/followed-by/test/ 404 Resource Not Found ', async () => {
+        response = await request(server).get("/user/followed-bys/test/").set({ "authorization": "Bearer sadfasdfas" }).send();
+        expect(response.statusCode).toBe(404);
+    });
+
+    describe('GET /user/followed-by/:username After 5 new users', () => {
+        let accessTokenUser1;
+        let accessTokenUser2;
+        let accessTokenUser3;
+        let accessTokenUser4;
+        let accessTokenUser5;
+
+        afterAll(async () => {
+            await redisClient.flushAll("ASYNC");
+            await sequelize.truncate({ cascade: true, restartIdentity: true });
+        });
+
+        beforeAll(async () => {
+            await redisClient.flushAll("ASYNC");
+            await sequelize.truncate({ cascade: true, restartIdentity: true });
+
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram1", "email": "uvgram1@uvgram.com" });
+            let { verificationCode } = response.body.message;
+            const newUser = {
+                name: "uvgram",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram1",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram1@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode
+            }
+            response = await request(server).post("/accounts/create").send(newUser);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram1", "password": "hola1234" });
+            accessTokenUser1 = response.body.message.accessToken;
+
+            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
+            let { verificationCode: vCode } = response.body.message;
+            const newUser2 = {
+                name: "uvgram second user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram2",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram2@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode: vCode
+            }
+            response = await request(server).post("/accounts/create").send(newUser2);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
+            accessTokenUser2 = response.body.message.accessToken;
+
+            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram3", "email": "uvgram3@uvgram.com" });
+            let { verificationCode: vCode2 } = response.body.message;
+            const newUser3 = {
+                name: "uvgram third user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram3",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram3@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode: vCode2
+            }
+            response = await request(server).post("/accounts/create").send(newUser3);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram3", "password": "hola1234" });
+            accessTokenUser3 = response.body.message.accessToken;
+
+            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram4", "email": "uvgram4@uvgram.com" });
+            let { verificationCode: vCode3 } = response.body.message;
+            const newUser4 = {
+                name: "uvgram fourth user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram4",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram4@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode: vCode3
+            }
+            response = await request(server).post("/accounts/create").send(newUser4);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram4", "password": "hola1234" });
+            accessTokenUser4 = response.body.message.accessToken;
+
+            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram5", "email": "uvgram5@uvgram.com" });
+            let { verificationCode: vCode4 } = response.body.message;
+            const newUser5 = {
+                name: "uvgram fiveth user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram5",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram5@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode: vCode4
+            }
+            response = await request(server).post("/accounts/create").send(newUser5);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram5", "password": "hola1234" });
+            accessTokenUser5 = response.body.message.accessToken;
+
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser1}` }).send({ "username": "uvgram2" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser1}` }).send({ "username": "uvgram3" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser1}` }).send({ "username": "uvgram3" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser1}` }).send({ "username": "uvgram4" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser1}` }).send({ "username": "uvgram5" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser2}` }).send({ "username": "uvgram5" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser3}` }).send({ "username": "uvgram5" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser4}` }).send({ "username": "uvgram5" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser5}` }).send({ "username": "uvgram1" });
+        });
+
+        test('GET /user/followed-by/:username 200 OK uvgram1 is following 4 users', async () => {
+            response = await request(server).get("/user/followed-by/uvgram1").set({ "authorization": `Bearer ${accessTokenUser5}` }).send();
+            const EXPECTED_USERS_FOLLOWED = 4;
+            expect(response.body.message.length).toBe(EXPECTED_USERS_FOLLOWED);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followed-by/:username 200 OK uvgram2 is following 1 user', async () => {
+            response = await request(server).get("/user/followed-by/uvgram2").set({ "authorization": `Bearer ${accessTokenUser2}` }).send();
+            const EXPECTED_USERS_FOLLOWED = 1;
+            expect(response.body.message.length).toBe(EXPECTED_USERS_FOLLOWED);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followed-by/:username 200 OK uvgram3 is following 1 user', async () => {
+            response = await request(server).get("/user/followed-by/uvgram3").set({ "authorization": `Bearer ${accessTokenUser3}` }).send();
+            const EXPECTED_USERS_FOLLOWED = 1;
+            expect(response.body.message.length).toBe(EXPECTED_USERS_FOLLOWED);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followed-by/:username 200 OK uvgram4 is following 1 user', async () => {
+            response = await request(server).get("/user/followed-by/uvgram4").set({ "authorization": `Bearer ${accessTokenUser3}` }).send();
+            const EXPECTED_USERS_FOLLOWED = 1;
+            expect(response.body.message.length).toBe(EXPECTED_USERS_FOLLOWED);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followed-by/:username 200 OK uvgram5 is following 1 user', async () => {
+            response = await request(server).get("/user/followed-by/uvgram5").set({ "authorization": `Bearer ${accessTokenUser3}` }).send();
+            const EXPECTED_USERS_FOLLOWED = 1;
+            expect(response.body.message.length).toBe(EXPECTED_USERS_FOLLOWED);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followed-by/:username 403 Forbidden uvgram6 does not exist', async () => {
+            response = await request(server).get("/user/followed-by/uvgram6").set({ "authorization": `Bearer ${accessTokenUser3}` }).send();
+            expect(response.body.message).toContain("username does not exist");
+            expect(response.statusCode).toBe(403);
+        });
+
+        test('GET /user/followed-by/:username 400 Bad Request bearer token is required', async () => {
+            response = await request(server).get("/user/followed-by/uvgram6").send();
+            expect(response.body.errors[0].msg).toContain("authorization header is required");
+            expect(response.statusCode).toBe(400);
+        });
+
+        test('GET /user/followed-by/:username 403 Forbidden uvgram6 token does not exist', async () => {
+            response = await request(server).get("/user/followed-by/uvgram6").set({ "authorization": `Bearer ${accessTokenUser3}s` }).send();
+            expect(response.body.message.error).toContain("accessToken does not exist");
+            expect(response.statusCode).toBe(403);
+        });
+    });
+});
+
+
+
+describe('GET /user/followers-of/:username', () => {
+    test('GET /user/followers-ofs/:username 404 Resource Not Found ', async () => {
+        response = await request(server).get("/user/followed-bys/test/").set({ "authorization": "Bearer sadfasdfas" }).send();
+        expect(response.statusCode).toBe(404);
+    });
+
+    describe('GET /user/followers-of/:username After 5 new users', () => {
+        let accessTokenUser1;
+        let accessTokenUser2;
+        let accessTokenUser3;
+        let accessTokenUser4;
+        let accessTokenUser5;
+
+        afterAll(async () => {
+            await redisClient.flushAll("ASYNC");
+            await sequelize.truncate({ cascade: true, restartIdentity: true });
+        });
+
+        beforeAll(async () => {
+            await redisClient.flushAll("ASYNC");
+            await sequelize.truncate({ cascade: true, restartIdentity: true });
+
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram1", "email": "uvgram1@uvgram.com" });
+            let { verificationCode } = response.body.message;
+            const newUser = {
+                name: "uvgram",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram1",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram1@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode
+            }
+            response = await request(server).post("/accounts/create").send(newUser);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram1", "password": "hola1234" });
+            accessTokenUser1 = response.body.message.accessToken;
+
+            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
+            let { verificationCode: vCode } = response.body.message;
+            const newUser2 = {
+                name: "uvgram second user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram2",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram2@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode: vCode
+            }
+            response = await request(server).post("/accounts/create").send(newUser2);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
+            accessTokenUser2 = response.body.message.accessToken;
+
+            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram3", "email": "uvgram3@uvgram.com" });
+            let { verificationCode: vCode2 } = response.body.message;
+            const newUser3 = {
+                name: "uvgram third user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram3",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram3@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode: vCode2
+            }
+            response = await request(server).post("/accounts/create").send(newUser3);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram3", "password": "hola1234" });
+            accessTokenUser3 = response.body.message.accessToken;
+
+            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram4", "email": "uvgram4@uvgram.com" });
+            let { verificationCode: vCode3 } = response.body.message;
+            const newUser4 = {
+                name: "uvgram fourth user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram4",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram4@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode: vCode3
+            }
+            response = await request(server).post("/accounts/create").send(newUser4);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram4", "password": "hola1234" });
+            accessTokenUser4 = response.body.message.accessToken;
+
+            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram5", "email": "uvgram5@uvgram.com" });
+            let { verificationCode: vCode4 } = response.body.message;
+            const newUser5 = {
+                name: "uvgram fiveth user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram5",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram5@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode: vCode4
+            }
+            response = await request(server).post("/accounts/create").send(newUser5);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram5", "password": "hola1234" });
+            accessTokenUser5 = response.body.message.accessToken;
+
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser1}` }).send({ "username": "uvgram1" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser1}` }).send({ "username": "uvgram3" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser1}` }).send({ "username": "uvgram5" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser3}` }).send({ "username": "uvgram1" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser3}` }).send({ "username": "uvgram2" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser3}` }).send({ "username": "uvgram4" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser3}` }).send({ "username": "uvgram5" });
+            response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessTokenUser4}` }).send({ "username": "uvgram2" });
+        });
+
+        test('GET /user/followers-of/:username 200 OK uvgram1 is followed by 3 users', async () => {
+            response = await request(server).get("/user/followers-of/uvgram1").set({ "authorization": `Bearer ${accessTokenUser5}` }).send();
+            const EXPECTED_USERS_FOLLOWED = 1;
+            expect(response.body.message.length).toBe(EXPECTED_USERS_FOLLOWED);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followers-of/:username 200 OK uvgram2 is followed by 0 user', async () => {
+            response = await request(server).get("/user/followers-of/uvgram2").set({ "authorization": `Bearer ${accessTokenUser2}` }).send();
+            const EXPECTED_USERS_FOLLOWED = 2;
+            expect(response.body.message.length).toBe(EXPECTED_USERS_FOLLOWED);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followers-of/:username 200 OK uvgram3 is followed by 4 user', async () => {
+            response = await request(server).get("/user/followers-of/uvgram3").set({ "authorization": `Bearer ${accessTokenUser3}` }).send();
+            const EXPECTED_USERS_FOLLOWED = 1;
+            expect(response.body.message.length).toBe(EXPECTED_USERS_FOLLOWED);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followers-of/:username 200 OK uvgram4 is followed by 1 user', async () => {
+            response = await request(server).get("/user/followers-of/uvgram4").set({ "authorization": `Bearer ${accessTokenUser3}` }).send();
+            const EXPECTED_USERS_FOLLOWED = 1;
+            expect(response.body.message.length).toBe(EXPECTED_USERS_FOLLOWED);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followers-of/:username 200 OK uvgram5 is followed by 0 user', async () => {
+            response = await request(server).get("/user/followers-of/uvgram5").set({ "authorization": `Bearer ${accessTokenUser3}` }).send();
+            const EXPECTED_USERS_FOLLOWED = 2;
+            expect(response.body.message.length).toBe(EXPECTED_USERS_FOLLOWED);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followers-of/:username 403 Forbidden uvgram6 does not exist', async () => {
+            response = await request(server).get("/user/followers-of/uvgram6").set({ "authorization": `Bearer ${accessTokenUser3}` }).send();
+            expect(response.body.message).toContain("username does not exist");
+            expect(response.statusCode).toBe(403);
+        });
+
+        test('GET /user/followers-of/:username 400 Bad Request bearer token is required', async () => {
+            response = await request(server).get("/user/followers-of/uvgram6").send();
+            expect(response.body.errors[0].msg).toContain("authorization header is required");
+            expect(response.statusCode).toBe(400);
+        });
+
+        test('GET /user/followers-of/:username 403 Forbidden uvgram6 token does not exist', async () => {
+            response = await request(server).get("/user/followers-of/uvgram6").set({ "authorization": `Bearer ${accessTokenUser3}s` }).send();
+            expect(response.body.message.error).toContain("accessToken does not exist");
+            expect(response.statusCode).toBe(403);
+        });
+    });
+});
+
+
