@@ -28,7 +28,13 @@ DROP ROLE dev;
 --
 
 CREATE ROLE dev;
-ALTER ROLE dev WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'SCRAM-SHA-256$4096:GSEDN9/L6zOyG2ruK44MBA==$zfTG3rS0jnY0T6OQm7wmtx2nkrRp83vqXr6gFXwt/vc=:iHQLlWtubZh62BDljm0xldTOnO5XRezOXFI5PtNxrCQ=';
+ALTER ROLE dev WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'SCRAM-SHA-256$4096:2f3NEez9/zpAoRsD2SNoVw==$kbxZ0dkoChYCI8vqbRBfwvcXNL6Z9yFVWikJ5V1V4FQ=:SdZ24/RS+HSPmjufIH/hNvtA596RPYRIICd2v/2vOpk=';
+
+--
+-- User Configurations
+--
+
+
 
 
 
@@ -47,8 +53,8 @@ ALTER ROLE dev WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPA
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 14.5 (Debian 14.5-1.pgdg110+1)
--- Dumped by pg_dump version 14.5 (Debian 14.5-1.pgdg110+1)
+-- Dumped from database version 15.1 (Debian 15.1-1.pgdg110+1)
+-- Dumped by pg_dump version 15.1 (Debian 15.1-1.pgdg110+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -67,7 +73,7 @@ DROP DATABASE template1;
 -- Name: template1; Type: DATABASE; Schema: -; Owner: dev
 --
 
-CREATE DATABASE template1 WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.utf8';
+CREATE DATABASE template1 WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
 
 
 ALTER DATABASE template1 OWNER TO dev;
@@ -132,8 +138,8 @@ GRANT CONNECT ON DATABASE template1 TO PUBLIC;
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 14.5 (Debian 14.5-1.pgdg110+1)
--- Dumped by pg_dump version 14.5 (Debian 14.5-1.pgdg110+1)
+-- Dumped from database version 15.1 (Debian 15.1-1.pgdg110+1)
+-- Dumped by pg_dump version 15.1 (Debian 15.1-1.pgdg110+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -151,7 +157,7 @@ DROP DATABASE postgres;
 -- Name: postgres; Type: DATABASE; Schema: -; Owner: dev
 --
 
-CREATE DATABASE postgres WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.utf8';
+CREATE DATABASE postgres WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
 
 
 ALTER DATABASE postgres OWNER TO dev;
@@ -170,6 +176,13 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
+-- Name: DATABASE postgres; Type: COMMENT; Schema: -; Owner: dev
+--
+
+COMMENT ON DATABASE postgres IS 'default administrative connection database';
+
+
+--
 -- PostgreSQL database dump complete
 --
 
@@ -181,8 +194,8 @@ SET row_security = off;
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 14.5 (Debian 14.5-1.pgdg110+1)
--- Dumped by pg_dump version 14.5 (Debian 14.5-1.pgdg110+1)
+-- Dumped from database version 15.1 (Debian 15.1-1.pgdg110+1)
+-- Dumped by pg_dump version 15.1 (Debian 15.1-1.pgdg110+1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -199,7 +212,7 @@ SET row_security = off;
 -- Name: uvgram_db; Type: DATABASE; Schema: -; Owner: dev
 --
 
-CREATE DATABASE uvgram_db WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.utf8';
+CREATE DATABASE uvgram_db WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
 
 
 ALTER DATABASE uvgram_db OWNER TO dev;
@@ -477,6 +490,18 @@ CREATE TABLE public."Business" (
 ALTER TABLE public."Business" OWNER TO dev;
 
 --
+-- Name: Follower; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."Follower" (
+    id_user_follower bigint NOT NULL,
+    id_user_followed bigint NOT NULL
+);
+
+
+ALTER TABLE public."Follower" OWNER TO dev;
+
+--
 -- Name: LoginAttempts; Type: TABLE; Schema: public; Owner: dev
 --
 
@@ -600,6 +625,7 @@ ALTER TABLE public.user_id_seq OWNER TO dev;
 
 COPY public."Account" (password, email, id_user, phone_number, birthday) FROM stdin;
 0acbfc311e50b11cb0966c22d2cb887eec45cad411b0bff42789106568b8853b	admin@uvgram.com	1	2281046161	2000-09-13
+3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram2@uvgram.com	2	2281046161	2000-09-13
 \.
 
 
@@ -609,6 +635,7 @@ COPY public."Account" (password, email, id_user, phone_number, birthday) FROM st
 
 COPY public."AccountVerification" (account_status, id_user) FROM stdin;
 NO_BLOQUEADO	1
+NO_BLOQUEADO	2
 \.
 
 
@@ -626,6 +653,15 @@ COPY public."Administrator" (created_time, id_user) FROM stdin;
 --
 
 COPY public."Business" (category, city, postal_code, postal_address, contact_email, phone_contact, organization_name, id_user) FROM stdin;
+\.
+
+
+--
+-- Data for Name: Follower; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."Follower" (id_user_follower, id_user_followed) FROM stdin;
+1	2
 \.
 
 
@@ -650,6 +686,7 @@ COPY public."Moderator" (update_date, id_user) FROM stdin;
 --
 
 COPY public."Personal" (faculty, career, gender, id_user) FROM stdin;
+\N	\N	INDIFERENTE	2
 \.
 
 
@@ -658,7 +695,9 @@ COPY public."Personal" (faculty, career, gender, id_user) FROM stdin;
 --
 
 COPY public."Session" (id_user, token, created_time, device) FROM stdin;
-1	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJ0b2tlblR5cGUiOiJyZWZyZXNoVG9rZW4iLCJpYXQiOjE2Njc3OTUwMDAsImV4cCI6MTY3MDQyMzAwMCwianRpIjoiNjlhOGJkZTktMTVlZi00MzJlLThjNDItYjQ0MDNlNmY1ZmU4In0.-k6nHb-0ZQsJPRkuyuYFxt45zSlNTheW7QTUCrB83bM	2022-11-07 04:23:20.80168	localhost:8080
+1	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJ0b2tlblR5cGUiOiJyZWZyZXNoVG9rZW4iLCJpYXQiOjE2Njg1MzEyNjQsImV4cCI6MTY3MTE1OTI2NCwianRpIjoiYWU5MDRhNTUtNGM4MC00YzJkLWJmNzAtNDFmZjY2OTQ3ZjgzIn0.D-wMtbKypgR1-dgaJ6yg5SA55tjkKdbYH5CCkNRdQ48	2022-11-15 16:54:24.30281	localhost:8080
+1	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJ0b2tlblR5cGUiOiJyZWZyZXNoVG9rZW4iLCJpYXQiOjE2Njg1MzEyNzksImV4cCI6MTY3MTE1OTI3OSwianRpIjoiMWY1MmEyMzUtMTBkZS00NzM0LWFmZDItY2Y5ZTNlZWFjMDhlIn0.wEmrW9LbknwtyXLSjd5p9gSg682laYirDm-2VW-OUPA	2022-11-15 16:54:39.375814	localhost:8080
+1	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJ0b2tlblR5cGUiOiJyZWZyZXNoVG9rZW4iLCJpYXQiOjE2Njg1NTE1MjMsImV4cCI6MTY3MTE3OTUyMywianRpIjoiMjA0YjVhZmYtOTI4Zi00NDAxLTkzYzgtNjEzYzZiZjEzM2ExIn0.1ovtw3QruX-wiTh32aIAVtNqihc8T7Xvelh0tmJb8iA	2022-11-15 22:32:03.788885	localhost:8080
 \.
 
 
@@ -667,7 +706,8 @@ COPY public."Session" (id_user, token, created_time, device) FROM stdin;
 --
 
 COPY public."User" (name, presentation, username, id) FROM stdin;
-UVGram		UVGram	1
+UVGram		uvgram	1
+Second user		uvgram2	2
 \.
 
 
@@ -677,6 +717,7 @@ UVGram		UVGram	1
 
 COPY public."UserConfiguration" (privacy, id_user) FROM stdin;
 PUBLICO	1
+PUBLICO	2
 \.
 
 
@@ -686,6 +727,7 @@ PUBLICO	1
 
 COPY public."UserRole" (id_user, role) FROM stdin;
 1	ADMINISTRADOR
+2	PERSONAL
 \.
 
 
@@ -701,7 +743,7 @@ COPY public."VerificationCode" (code, username, created_time) FROM stdin;
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 2, false);
+SELECT pg_catalog.setval('public.user_id_seq', 2, true);
 
 
 --
@@ -773,6 +815,20 @@ CREATE INDEX "IXFK_Business_UserRole" ON public."Business" USING btree (id_user)
 
 
 --
+-- Name: IXFK_Follower_User; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Follower_User" ON public."Follower" USING btree (id_user_follower);
+
+
+--
+-- Name: IXFK_Follower_User_02; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Follower_User_02" ON public."Follower" USING btree (id_user_followed);
+
+
+--
 -- Name: IXFK_Moderator_UserRole; Type: INDEX; Schema: public; Owner: dev
 --
 
@@ -837,6 +893,22 @@ ALTER TABLE ONLY public."Administrator"
 
 ALTER TABLE ONLY public."Business"
     ADD CONSTRAINT "FK_Business_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Follower FK_Followed_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Follower"
+    ADD CONSTRAINT "FK_Followed_User" FOREIGN KEY (id_user_followed) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Follower FK_Follower_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Follower"
+    ADD CONSTRAINT "FK_Follower_User" FOREIGN KEY (id_user_follower) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
