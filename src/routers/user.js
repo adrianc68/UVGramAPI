@@ -7,14 +7,14 @@ const { validationFollowingUser, validationUnfollowingUser } = require('../valid
 const router = require('express').Router();
 
 router.post("/user/follow/",
-    checkTokenAndAuthRoleMiddleware(UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL),
+    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationFollowingUser,
     followUser
 );
 
 router.delete("/user/unfollow/",
-    checkTokenAndAuthRoleMiddleware(UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL),
+    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationUnfollowingUser,
     unfollowUser

@@ -130,7 +130,6 @@ describe('POST /accounts/create/', () => {
                 verificationCode: "00000000"
             }
             const response = await request(server).post("/accounts/create").send(newUser);
-            console.log(response.body.errors[0].msg);
             expect(response.body.errors[0].msg).toContain("name must have the allowed length");
             expect(response.statusCode).toBe(400);
         });

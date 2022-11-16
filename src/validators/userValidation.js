@@ -31,7 +31,7 @@ const validationFollowingUser = async (request, response, next) => {
     try {
         let isUsernameRegistered = await doesUsernameIsRegistered(username);
         if (!isUsernameRegistered) {
-            return httpResponseForbidden(response, "username is not registered");
+            return httpResponseForbidden(response, "username does not exist");
         }
         idUserFollower = await verifyToken(token).then(data => { return data.id });
         idUserFollowed = await getIdByUsername(username).then(id => { return id });
@@ -57,7 +57,7 @@ const validationUnfollowingUser = async (request, response, next) => {
     try {
         let isUsernameRegistered = await doesUsernameIsRegistered(username);
         if (!isUsernameRegistered) {
-            return httpResponseForbidden(response, "username is not registered");
+            return httpResponseForbidden(response, "username does not exist");
         }
         idUserFollower = await verifyToken(token).then(data => { return data.id });
         idUserFollowed = await getIdByUsername(username).then(id => { return id });
