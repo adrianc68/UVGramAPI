@@ -1,5 +1,5 @@
 const { removeOptionalAccessToken, refreshAccessToken, verifyToken, removeToken, generateTokens } = require("../dataaccess/tokenDataAccess");
-const { getAccountLoginData, getAccountLoginDataById, saveSessionToken, removeSessionToken } = require("../dataaccess/UserDataAccess");
+const { getAccountLoginData, getAccountLoginDataById, saveSessionToken, removeSessionToken } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError, httpResponseErrorToken, httpResponseUnauthorized } = require("../helpers/httpResponses");
 
 const createTokens = async (request, response) => {

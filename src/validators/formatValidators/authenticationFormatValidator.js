@@ -1,6 +1,6 @@
 const { httpResponseValidation } = require('../../helpers/httpResponses');
 const { validatePasswordData, validateLoginData, validateAuthorizationHeaderData,
-    validateRefreshTokenParameterData, validateAccessTokenParameterData, validateOptionalAccessTokenParameterData } = require('./formatValidator');
+    validateRefreshTokenParameterData, validateAccessTokenParameterData, validateOptionalAccessTokenParameterData, validateUsernameInParams } = require('./formatValidator');
 
 const formatValidationLogin = [
     validateLoginData,

@@ -2,8 +2,10 @@ const { Op } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { encondePassword, encodeStringSHA256, encondeSHA512 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
+const { logger } = require("../helpers/logger");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
+const { Follower } = require("../models/Follower");
 const { PersonalUserRole } = require("../models/PersonalUserRole");
 const { Session } = require("../models/Session");
 const { User } = require("../models/User");
@@ -229,16 +231,24 @@ const removeVerificationCode = async (username) => {
  * @returns id of user
  */
 const getIdByUsername = async (username) => {
-    let id = await User.findAll({
-        where: {
-            username
-        },
-        attributes: ["id"],
-        raw: true,
-        plain: true
-    }).then(data => {
-        return data.id;
-    });
+    let id;
+    try {
+        id = await User.findAll({
+            where: {
+                username
+            },
+            attributes: ["id"],
+            raw: true,
+            plain: true
+        }).then(data => {
+            if (data) {
+                return data.id;
+            }
+            return null;
+        });
+    } catch (error) {
+        throw new Error(error);
+    }
     return id;
 }
 
@@ -320,10 +330,81 @@ const getAllUsers = async () => {
     return usersRegistered;
 };
 
+/**
+ * Add a follower to a followed user.
+ * @param {*} id_user_follower user that is following to an specific user
+ * @param {*} id_user_followed the user that is followed.
+ * @returns true if user can follow otherwise false.
+ */
+const followUser = async (id_user_follower, id_user_followed) => {
+    let isFollowed = false;
+    const t = await sequelize.transaction();
+    try {
+        await Follower.create({
+            id_user_follower,
+            id_user_followed
+        }, { transaction: t });
+        await t.commit();
+        isFollowed = true;
+
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isFollowed;
+}
+
+/**
+ * Remove a follower from a followed user.
+ * @param {*} id_user_follower the user that is following a specified user.
+ * @param {*} id_user_followed the followed user.
+ * @returns 
+ */
+const unfollowUser = async (id_user_follower, id_user_followed) => {
+    let isUnfollowed = false;
+    const t = await sequelize.transaction();
+    try {
+        await Follower.destroy({
+            where: {
+                id_user_follower,
+                id_user_followed
+            }
+        }, { transaction: t });
+        await t.commit();
+        isUnfollowed = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUnfollowed;
+}
+
+/**
+ * Check if user is already folllowing an user
+ * @param {*} id_user_follower the user that is following an specified user
+ * @param {*} id_user_followed the user that is followed.
+ * @returns true if is already following otherwise false.
+ */
+const isUserFollowedByUser = async (id_user_follower, id_user_followed) => {
+    let isFollowed = false;
+    try {
+        let data = await Follower.findAll({
+            where: {
+                id_user_follower,
+                id_user_followed
+            }
+        });
+        isFollowed = data.length != 0;
+    } catch (error) {
+        throw new Error(error);
+    }
+    return isFollowed;
+}
+
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
     generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
     doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken,
-    getAllUsers
+    getAllUsers, followUser, isUserFollowedByUser, unfollowUser
 }

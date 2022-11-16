@@ -22,6 +22,7 @@ app.use(handleJSON);
 // routers
 app.use(require("./routers/userAccount"));
 app.use(require("./routers/authentication"));
+app.use(require("./routers/user"));
 
 const connetionToServers = async () => {
     try {
