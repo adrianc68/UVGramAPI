@@ -2,7 +2,6 @@ const request = require('supertest');
 const app = require('../src/app');
 const { sequelize } = require("../src/database/connectionDatabaseSequelize");
 const { redisClient } = require("../src/database/connectionRedis");
-const { logger } = require('../src/helpers/logger');
 const { server } = require("../src/server");
 
 async function delay() {

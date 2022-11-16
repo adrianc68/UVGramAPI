@@ -1,8 +1,8 @@
-const { followUser, unfollowUser } = require('../controllers/userController');
+const { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser } = require('../controllers/userController');
 const { checkTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
-const { validationFollowingUser, validationUnfollowingUser } = require('../validators/userValidation');
+const { validationFollowingUser, validationUnfollowingUser, validationExistFollowedOrFollowerUser } = require('../validators/userValidation');
 
 const router = require('express').Router();
 
@@ -19,5 +19,20 @@ router.delete("/user/unfollow/",
     validationUnfollowingUser,
     unfollowUser
 );
+
+router.get("/user/followed-by/:username/",
+    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    formatValidationAccountUsername,
+    validationExistFollowedOrFollowerUser,
+    getFollowedUsersOfUser
+);
+
+router.get("/user/followers-of/:username",
+    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    formatValidationAccountUsername,
+    validationExistFollowedOrFollowerUser,
+    getFollowersOfUser
+);
+
 
 module.exports = router;

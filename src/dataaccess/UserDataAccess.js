@@ -1,8 +1,7 @@
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { encondePassword, encodeStringSHA256, encondeSHA512 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
-const { logger } = require("../helpers/logger");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
 const { Follower } = require("../models/Follower");
@@ -401,10 +400,73 @@ const isUserFollowedByUser = async (id_user_follower, id_user_followed) => {
     return isFollowed;
 }
 
+/**
+ * Get all followed users by User
+ * @param {*} id_user_follower the user that is following the those users
+ * @returns array with users that contain username and name
+ */
+const getFollowedUsersOfUser = async (id_user_follower) => {
+    let followedByUser = [];
+    try {
+        followedByUser = await Follower.findAll({
+            where: {
+                id_user_follower
+            },
+            attributes: [
+                Sequelize.col("followed.username", "username"),
+                Sequelize.col("followed.name", "name")
+            ],
+            include: [{
+                model: User,
+                as: "followed",
+                attributes: [],
+            }],
+            raw: true,
+        },).then(users => {
+            return users;
+        });
+    } catch (error) {
+        throw new Error(error);
+    }
+    return followedByUser;
+}
+/**
+ * Get all followers of user
+ * @param {*} id the user to get the followers
+ * @returns array with users that contain username and name
+ */
+const getFollowersOfUser = async (id) => {
+    let followers = [];
+    try {
+        followers = await Follower.findAll({
+            where: {
+                id_user_followed: id
+            },
+            attributes: [
+                Sequelize.col("follower.username", "username"),
+                Sequelize.col("follower.name", "name")
+            ],
+            include: [{
+                model: User,
+                as: "follower",
+                required: false,
+                attributes: [],
+            }],
+            raw: true,
+        },).then(users => {
+            return users;
+        });
+    } catch (error) {
+        throw new Error(error);
+    }
+    return followers;
+}
+
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
     generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
     doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken,
-    getAllUsers, followUser, isUserFollowedByUser, unfollowUser
+    getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedUsersOfUser,
+    getFollowersOfUser
 }

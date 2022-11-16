@@ -1,4 +1,5 @@
 const { httpResponseValidation } = require('../../helpers/httpResponses');
+const { logger } = require('../../helpers/logger');
 const { validateNameData, validatePresentationData, validateUsernameData, validatePasswordData,
     validatePhoneNumberData, validateEmailData, validateBirthdateData, validateVerificationCodeData } = require('./formatValidator');
 

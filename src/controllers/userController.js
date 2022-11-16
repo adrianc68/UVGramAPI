@@ -1,4 +1,4 @@
-const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess } = require("../dataaccess/userDataAccess");
+const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedUsersOfUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { verifyToken } = require("../helpers/token");
 
@@ -30,6 +30,29 @@ const unfollowUser = async (request, response) => {
     return httpResponseOk(response, `user has unfollow to ${username}`);
 }
 
+const getFollowedUsersOfUser = async (request, response) => {
+    let username = request.params.username;
+    const idUser = await getIdByUsername(username).then(id => { return id });
+    let message;
+    try {
+        message = await getFollowedUsersOfUserUserDataAccess(idUser);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, message);
+}
+
+const getFollowersOfUser = async (request, response) => {
+    let username = request.params.username;
+    const idUser = await getIdByUsername(username).then(id => { return id });
+    let message;
+    try {
+        message = await getFollowersOfUserUserDataAccess(idUser);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, message);
+}
 
 
-module.exports = { followUser, unfollowUser }
+module.exports = { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser }

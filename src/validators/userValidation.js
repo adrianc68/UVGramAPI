@@ -74,4 +74,17 @@ const validationUnfollowingUser = async (request, response, next) => {
     return next();
 }
 
-module.exports = { validationFollowingUser, validationUnfollowingUser }
+const validationExistFollowedOrFollowerUser = async (request, response, next) => {
+    let username = request.params.username;
+    try {
+        let isUsernameRegistered = await doesUsernameIsRegistered(username);
+        if (!isUsernameRegistered) {
+            return httpResponseForbidden(response, "username does not exist");
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(error);
+    }
+    return next();
+}
+
+module.exports = { validationFollowingUser, validationUnfollowingUser, validationExistFollowedOrFollowerUser }

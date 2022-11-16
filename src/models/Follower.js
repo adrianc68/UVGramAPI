@@ -18,29 +18,32 @@ const Follower = sequelize.define("Follower", {
 
 Follower.removeAttribute("id");
 
-Follower.hasOne(User, {
-    foreignKey: "id",
-    sourceKey: "id_user_follower",
+Follower.belongsTo(User, {
+    as: "follower",
+    foreignKey: "id_user_follower",
+    sourceKey: "id",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
-Follower.hasOne(User, {
-    foreignKey: "id",
-    sourceKey: "id_user_followed",
+Follower.belongsTo(User, {
+    as: "followed",
+    foreignKey: "id_user_followed",
+    sourceKey: "id",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
-User.belongsTo(Follower, {
-    foreignKey: "id",
-    targetKey: "id_user_followed"
+User.hasOne(Follower, {
+    as: "follower",
+    foreignKey: "id_user_follower",
+    targetKey: "id"
 });
 
-User.belongsTo(Follower, {
-    foreignKey: "id",
-    targetKey: "id_user_follower"
-});
-
+User.hasOne(Follower, {
+    as: "followed",
+    foreignKey: "id_user_followed",
+    targetKey: "id"
+})
 
 module.exports = { Follower };
