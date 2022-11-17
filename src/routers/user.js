@@ -1,4 +1,4 @@
-const { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser } = require('../controllers/userController');
+const { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser, getProfileOfUser } = require('../controllers/userController');
 const { checkTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
@@ -32,6 +32,10 @@ router.get("/user/followers-of/:username",
     formatValidationAccountUsername,
     validationExistFollowedOrFollowerUser,
     getFollowersOfUser
+);
+
+router.get("/:username/",
+    getProfileOfUser
 );
 
 

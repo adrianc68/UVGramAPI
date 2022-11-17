@@ -2,6 +2,7 @@ const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { encondePassword, encodeStringSHA256, encondeSHA512 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
+const { logger } = require("../helpers/logger");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
 const { Follower } = require("../models/Follower");
@@ -402,29 +403,25 @@ const isUserFollowedByUser = async (id_user_follower, id_user_followed) => {
 
 /**
  * Get all followed users by User
- * @param {*} id_user_follower the user that is following the those users
+ * @param {*} id the user that is following the those users
  * @returns array with users that contain username and name
  */
-const getFollowedUsersOfUser = async (id_user_follower) => {
+const getFollowedUsersOfUser = async (id) => {
     let followedByUser = [];
     try {
         followedByUser = await Follower.findAll({
             where: {
-                id_user_follower
+                id_user_follower: id
             },
-            attributes: [
-                Sequelize.col("followed.username", "username"),
-                Sequelize.col("followed.name", "name")
-            ],
+            attributes: ["followed.*"],
             include: [{
                 model: User,
                 as: "followed",
-                attributes: [],
+                attributes: []
             }],
-            raw: true,
-        },).then(users => {
-            return users;
-        });
+            nest: true,
+            raw: true
+        })
     } catch (error) {
         throw new Error(error);
     }
@@ -442,18 +439,15 @@ const getFollowersOfUser = async (id) => {
             where: {
                 id_user_followed: id
             },
-            attributes: [
-                Sequelize.col("follower.username", "username"),
-                Sequelize.col("follower.name", "name")
-            ],
+            attributes: ["follower.*"],
             include: [{
                 model: User,
                 as: "follower",
-                required: false,
-                attributes: [],
+                attributes: []
             }],
-            raw: true,
-        },).then(users => {
+            nest: true,
+            raw: true
+        }).then(users => {
             return users;
         });
     } catch (error) {
@@ -462,11 +456,54 @@ const getFollowersOfUser = async (id) => {
     return followers;
 }
 
+/**
+ * Get user Profile
+ * @param {*} username the user to get the profile
+ * @returns user data that contains username, presentation, name, publications, numbers followers, number users followed
+ */
+const getUserProfile = async (username) => {
+    let user = [];
+    try {
+        user = await User.findAll({
+            where: {
+                username
+            },
+            // group: ['User.id'],
+            // attributes: ["User.*", 'followed.*', [Sequelize.fn("COUNT", "followed.id_user_follower"), "FollowedCount"]],
+            // attributes:
+            //     [
+            //         "name",
+            //         "presentation",
+            //         "username",
+            //     ]
+            // ,
+            include: [{
+                model: Follower,
+                as: "followed",
+
+                // attributes: []
+            },
+                // {
+                //     model: Follower,
+                //     as: "followed",
+
+                // }
+            ],
+
+        }).then(data => {
+            return data;
+        });
+    } catch (error) {
+        throw error;
+    }
+    return user;
+}
+
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
     generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
     doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken,
     getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedUsersOfUser,
-    getFollowersOfUser
+    getFollowersOfUser, getUserProfile
 }

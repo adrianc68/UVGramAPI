@@ -38,7 +38,7 @@ describe('POST /user/follow/', () => {
             await sequelize.truncate({ cascade: true, restartIdentity: true });
         });
 
-        beforeAll(async () => {
+        beforeAll(async () => { 
             await redisClient.flushAll("ASYNC");
             await sequelize.truncate({ cascade: true, restartIdentity: true });
 

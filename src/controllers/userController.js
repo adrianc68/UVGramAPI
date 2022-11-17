@@ -1,4 +1,4 @@
-const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedUsersOfUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess } = require("../dataaccess/userDataAccess");
+const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedUsersOfUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const { verifyToken } = require("../helpers/token");
@@ -55,5 +55,17 @@ const getFollowersOfUser = async (request, response) => {
     return httpResponseOk(response, message);
 }
 
+const getProfileOfUser = async (request, response) => {
+    let username = request.params.username;
+    logger.debug(username);
+    let user;
+    try {
+        user = await getUserProfileUserDataAccess(username);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, user);
+}
 
-module.exports = { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser }
+
+module.exports = { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser, getProfileOfUser }
