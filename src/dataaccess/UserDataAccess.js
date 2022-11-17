@@ -5,6 +5,7 @@ const { generateRandomCode } = require("../helpers/generateCode");
 const { logger } = require("../helpers/logger");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
+const { Block } = require("../models/Block");
 const { Follower } = require("../models/Follower");
 const { PersonalUserRole } = require("../models/PersonalUserRole");
 const { Session } = require("../models/Session");
@@ -346,7 +347,6 @@ const followUser = async (id_user_follower, id_user_followed) => {
         }, { transaction: t });
         await t.commit();
         isFollowed = true;
-
     } catch (error) {
         await t.rollback();
         throw new Error(error);
@@ -458,45 +458,92 @@ const getFollowersOfUser = async (id) => {
 
 /**
  * Get user Profile
- * @param {*} username the user to get the profile
- * @returns user data that contains username, presentation, name, publications, numbers followers, number users followed
+ * @param {*} id the user to get the profile
+ * @returns return name, username and presentation
  */
-const getUserProfile = async (username) => {
-    let user = [];
+const getUserProfile = async (id) => {
+    let user
     try {
         user = await User.findAll({
-            where: {
-                username
-            },
-            // group: ['User.id'],
-            // attributes: ["User.*", 'followed.*', [Sequelize.fn("COUNT", "followed.id_user_follower"), "FollowedCount"]],
-            // attributes:
-            //     [
-            //         "name",
-            //         "presentation",
-            //         "username",
-            //     ]
-            // ,
-            include: [{
-                model: Follower,
-                as: "followed",
-
-                // attributes: []
-            },
-                // {
-                //     model: Follower,
-                //     as: "followed",
-
-                // }
-            ],
-
-        }).then(data => {
-            return data;
+            where: { id },
+            attributes: ["name", "presentation", "username"],
+            raw: true,
+            plain: true,
         });
     } catch (error) {
         throw error;
     }
     return user;
+}
+
+/**
+ * Block an user
+ * @param {*} id_user_blocker user who will block the user
+ * @param {*} id_user_blocked the user who is going to be blocked
+ * @returns true is it was blocked otherwise false
+ */
+const blockUser = async (id_user_blocker, id_user_blocked) => {
+    let isBlocked;
+    const t = await sequelize.transaction();
+    try {
+        await Block.create({
+            id_user_blocker,
+            id_user_blocked
+        }, { transaction: t });
+        await t.commit();
+        isBlocked = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isBlocked;
+}
+
+/**
+ * Unblock user
+ * @param {*} id_user_blocker the user who has blocked the another one
+ * @param {*} id_user_blocked the user who will be unblocked
+ * @returns true if it was unblocked otherwise fae
+ */
+const unblockUser = async (id_user_blocker, id_user_blocked) => {
+    let isUnblocked;
+    const t = await sequelize.transaction();
+    try {
+        await Block.destroy({
+            where: {
+                id_user_blocker,
+                id_user_blocked
+            }
+        }, { transaction: t });
+        await t.commit();
+        isUnblocked = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUnblocked;
+}
+
+/**
+ * Check if a user is already blocked by another one
+ * @param {*} id_user_blocker the user who blocked.
+ * @param {*} id_user_blocked the user who is probably blocked.
+ * @returns true if it's blocked otherwise false.
+ */
+const isUserBlockedByUser = async (id_user_blocker, id_user_blocked) => {
+    let isBlocked = false;
+    try {
+        let data = await Block.findAll({
+            where: {
+                id_user_blocker,
+                id_user_blocked
+            }
+        });
+        isBlocked = data.length != 0;
+    } catch (error) {
+        throw new Error(error);
+    }
+    return isBlocked;
 }
 
 module.exports = {
@@ -505,5 +552,5 @@ module.exports = {
     generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
     doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken,
     getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedUsersOfUser,
-    getFollowersOfUser, getUserProfile
+    getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser
 }

@@ -26,18 +26,18 @@ app.use(require("./routers/user"));
 
 const connetionToServers = async () => {
     try {
-        await sequelize.authenticate().then(async x => {
-            await sequelize.sync({ force: false });
-            logger.info(`PostgreSQL Client initialized on port ${sequelize.config.port}`)
-        });
-        await redisClient.connect().then(x => {
-            logger.info(`Redis Client initialized on port ${REDIS_PORT_CONNECTED_TO}`);
-        });
+    await sequelize.authenticate().then(async x => {
+        await sequelize.sync({ force: false });
+        logger.info(`PostgreSQL Client initialized on port ${sequelize.config.port}`)
+    });
+    await redisClient.connect().then(x => {
+        logger.info(`Redis Client initialized on port ${REDIS_PORT_CONNECTED_TO}`);
+    });
     } catch (error) {
         logger.fatal(error);
     }
 }
 
-connetionToServers();
+// connetionToServers();
 
-module.exports = app;
+module.exports = { app, connetionToServers };

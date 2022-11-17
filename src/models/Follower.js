@@ -10,7 +10,7 @@ const Follower = sequelize.define("Follower", {
     id_user_followed: {
         type: DataTypes.BIGINT,
         allowNull: false,
-    }
+    },
 }, {
     timestamps: false,
     freezeTableName: true
@@ -25,19 +25,21 @@ Follower.hasMany(User, {
 });
 
 User.belongsTo(Follower, {
+    as: "followed",
     foreignKey: "id",
     targetKey: "id_user_followed"
-})
+});
 
 Follower.belongsTo(User, {
-    as:"follower",
+    as: "follower",
     foreignKey: "id_user_follower",
     targetKey: "id"
 });
 
 User.hasMany(Follower, {
+    as: "follower",
     foreignKey: "id_user_follower",
     sourceKey: "id"
-})
+});
 
 module.exports = { Follower };

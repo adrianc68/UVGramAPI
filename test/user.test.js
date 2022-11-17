@@ -1,15 +1,11 @@
 const request = require('supertest');
-const app = require('../src/app');
+const { connetionToServers } = require('../src/app');
 const { sequelize } = require("../src/database/connectionDatabaseSequelize");
 const { redisClient } = require("../src/database/connectionRedis");
 const { server } = require("../src/server");
 
 async function delay() {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve();
-        }, 3000);
-    });
+    await connetionToServers();
 };
 
 beforeAll(async () => {
@@ -38,7 +34,7 @@ describe('POST /user/follow/', () => {
             await sequelize.truncate({ cascade: true, restartIdentity: true });
         });
 
-        beforeAll(async () => { 
+        beforeAll(async () => {
             await redisClient.flushAll("ASYNC");
             await sequelize.truncate({ cascade: true, restartIdentity: true });
 
@@ -104,7 +100,6 @@ describe('POST /user/follow/', () => {
         });
     });
 });
-
 
 describe('DEL /user/unfollow/', () => {
     test('DEL /user/unfollow 404 Resource Not Found ', async () => {
@@ -205,7 +200,6 @@ describe('DEL /user/unfollow/', () => {
         });
     });
 });
-
 
 describe('GET /user/followed-by/:username', () => {
     test('GET /user/followed-by/test/ 404 Resource Not Found ', async () => {
@@ -375,8 +369,6 @@ describe('GET /user/followed-by/:username', () => {
     });
 });
 
-
-
 describe('GET /user/followers-of/:username', () => {
     test('GET /user/followers-ofs/:username 404 Resource Not Found ', async () => {
         response = await request(server).get("/user/followed-bys/test/").set({ "authorization": "Bearer sadfasdfas" }).send();
@@ -540,6 +532,171 @@ describe('GET /user/followers-of/:username', () => {
             response = await request(server).get("/user/followers-of/uvgram6").set({ "authorization": `Bearer ${accessTokenUser3}s` }).send();
             expect(response.body.message.error).toContain("accessToken does not exist");
             expect(response.statusCode).toBe(403);
+        });
+    });
+});
+
+describe('POST /user/block/', () => {
+    test('POST /user/block/ 404 Resource Not Found ', async () => {
+        response = await request(server).post("/user/blocsk/").set({ "authorization": "Bearer sadfasdfas" }).send();
+        expect(response.statusCode).toBe(404);
+    });
+
+    describe('POST /user/block/ After 2 new users', () => {
+        let accessToken;
+
+        afterAll(async () => {
+            await redisClient.flushAll("ASYNC");
+            await sequelize.truncate({ cascade: true, restartIdentity: true });
+        });
+
+        beforeAll(async () => {
+            await redisClient.flushAll("ASYNC");
+            await sequelize.truncate({ cascade: true, restartIdentity: true });
+
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
+            let { verificationCode } = response.body.message;
+            const newUser = {
+                name: "uvgram",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "admin@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode
+            }
+            response = await request(server).post("/accounts/create").send(newUser);
+
+            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
+            let { verificationCode: vCode } = response.body.message;
+            const newUser2 = {
+                name: "uvgram second user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram2",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram2@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode: vCode
+            }
+            response = await request(server).post("/accounts/create").send(newUser2);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+            accessToken = response.body.message.accessToken;
+        });
+
+        test('POST /user/block/ 403 Forbidden User can not block himself', async () => {
+            response = await request(server).post("/user/block").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
+            expect(response.body.message).toContain("user can not block himself");
+            expect(response.statusCode).toBe(403);
+        });
+
+        test('POST /user/block/ 403 Forbidden username is required', async () => {
+            response = await request(server).post("/user/block/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "" });
+            expect(response.body.errors[0].msg).toContain("username is required")
+            expect(response.statusCode).toBe(400);
+        });
+
+        test('POST /user/block/ 403 Forbidden username is required', async () => {
+            response = await request(server).post("/user/block/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": null });
+            expect(response.body.errors[0].msg).toContain("username is required")
+            expect(response.statusCode).toBe(400);
+        });
+
+        test('POST /user/block/ 403 Forbidden username does not exist', async () => {
+            response = await request(server).post("/user/block/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram99" });
+            expect(response.body.message).toContain("username does not exist")
+            expect(response.statusCode).toBe(403);
+        });
+
+        test('POST /user/block/ 200 OK username is now blocked', async () => {
+            response = await request(server).post("/user/block/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
+            expect(response.body.message).toContain("user has blocked to");
+            expect(response.statusCode).toBe(200);
+        });
+
+
+    });
+});
+
+describe('POST /user/unblock/', () => {
+    test('POST /user/unblock/ 404 Resource Not Found ', async () => {
+        response = await request(server).post("/user/unblocsk/").set({ "authorization": "Bearer sadfasdfas" }).send();
+        expect(response.statusCode).toBe(404);
+    });
+
+    describe('POST /user/unblock/ After 2 new users', () => {
+        let accessToken;
+
+        afterAll(async () => {
+            await redisClient.flushAll("ASYNC");
+            await sequelize.truncate({ cascade: true, restartIdentity: true });
+        });
+
+        beforeAll(async () => {
+            await redisClient.flushAll("ASYNC");
+            await sequelize.truncate({ cascade: true, restartIdentity: true });
+
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
+            let { verificationCode } = response.body.message;
+            const newUser = {
+                name: "uvgram",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "admin@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode
+            }
+            response = await request(server).post("/accounts/create").send(newUser);
+
+            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
+            let { verificationCode: vCode } = response.body.message;
+            const newUser2 = {
+                name: "uvgram second user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram2",
+                password: "hola1234",
+                phoneNumber: "2212345678",
+                email: "uvgram2@uvgram.com",
+                birthdate: "2000-01-01",
+                verificationCode: vCode
+            }
+            response = await request(server).post("/accounts/create").send(newUser2);
+            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+            accessToken = response.body.message.accessToken;
+            response = await request(server).post("/user/block").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
+        });
+
+        test('POST /user/unblock/ 403 Forbidden User can not block himself', async () => {
+            response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
+            expect(response.body.message).toContain("user can not unblock himself");
+            expect(response.statusCode).toBe(403);
+        });
+
+        test('POST /user/unblock/ 403 Forbidden username is required', async () => {
+            response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "" });
+            expect(response.body.errors[0].msg).toContain("username is required")
+            expect(response.statusCode).toBe(400);
+        });
+
+        test('POST /user/unblock/ 403 Forbidden username is required', async () => {
+            response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": null });
+            expect(response.body.errors[0].msg).toContain("username is required")
+            expect(response.statusCode).toBe(400);
+        });
+
+        test('POST /user/unblock/ 403 Forbidden username does not exist', async () => {
+            response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram99" });
+            expect(response.body.message).toContain("username does not exist")
+            expect(response.statusCode).toBe(403);
+        });
+
+        test('POST /user/unblock/ 200 OK username is now blocked', async () => {
+            response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
+            expect(response.body.message).toContain("user has unblocked to");
+            expect(response.statusCode).toBe(200);
         });
     });
 });

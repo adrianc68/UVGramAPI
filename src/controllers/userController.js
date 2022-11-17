@@ -1,4 +1,5 @@
-const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedUsersOfUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess } = require("../dataaccess/userDataAccess");
+const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedUsersOfUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
+    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const { verifyToken } = require("../helpers/token");
@@ -57,15 +58,48 @@ const getFollowersOfUser = async (request, response) => {
 
 const getProfileOfUser = async (request, response) => {
     let username = request.params.username;
-    logger.debug(username);
     let user;
     try {
-        user = await getUserProfileUserDataAccess(username);
+        const idUser = await getIdByUsername(username).then(id => { return id });
+        // Methods separated because findAll only return first element on inner array
+        // https://github.com/sequelize/sequelize/issues/3885 #3885 <--- Issue
+        user = await getUserProfileUserDataAccess(idUser);
+        user.followers = (await getFollowedUsersOfUserUserDataAccess(idUser)).length;
+        user.followed = (await getFollowersOfUserUserDataAccess(idUser)).length;
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, user);
 }
 
+const blockUser = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let { username } = request.body;
+    const idUserToBlock = await getIdByUsername(username).then(id => { return id });
+    const idUserBlocker = await verifyToken(token).then(data => { return data.id });
+    let message;
+    try {
+        message = await blockUserUserDataAccess(idUserBlocker, idUserToBlock);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, `user has blocked to ${username}`);
+}
 
-module.exports = { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser, getProfileOfUser }
+const unblockUser = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let { username } = request.body;
+    const idUserToUnblock = await getIdByUsername(username).then(id => { return id });
+    const idUserBlocker = await verifyToken(token).then(data => { return data.id });
+    let message;
+    try {
+        message = await unblockUserUserDataAccess(idUserBlocker, idUserToUnblock);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, `user has unblocked to ${username}`);
+}
+
+
+
+module.exports = { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser, getProfileOfUser, blockUser, unblockUser }

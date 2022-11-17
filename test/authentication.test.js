@@ -1,15 +1,11 @@
 const request = require('supertest');
-const app = require('../src/app');
+const {connetionToServers} = require('../src/app');
 const { sequelize } = require("../src/database/connectionDatabaseSequelize");
 const { redisClient } = require("../src/database/connectionRedis");
 const { server } = require("../src/server");
 
 async function delay() {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve();
-        }, 3000);
-    });
+    await connetionToServers();
 };
 
 beforeAll(async () => {
