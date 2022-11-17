@@ -1,5 +1,8 @@
-const { isEmailRegistered, isUsernameRegistered, isVerificationCodeGenerated, doesVerificationCodeMatches, getIdByUsername } = require("../dataaccess/userDataAccess");
+const { verifyToken } = require("../dataaccess/tokenDataAccess");
+const { isEmailRegistered, isUsernameRegistered, isVerificationCodeGenerated, doesVerificationCodeMatches,
+    getIdByUsername, isOldPasswordValid, getAccountLoginData, removeVerificationCode } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 
 const validationisEmailRegisteredWithNext = async (request, response, next) => {
     let isRegistered;
@@ -93,10 +96,46 @@ const validationVerificationCodeMatches = async (request, response, next) => {
     return next();
 };
 
+const validationChangePasswordLoggedUser = async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let { oldPassword } = request.body;
+    let isValidOldPassword = false;
+    try {
+        let userData = await verifyToken(token).then(data => { return data });
+        isValidOldPassword = await isOldPasswordValid(oldPassword, userData.email);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    if (!isValidOldPassword) {
+        return httpResponseForbidden(response, "the old password does not match actual password");
+    }
+    return next();
+}
+
+const validationChangePasswordUnloggedUser = async (request, response, next) => {
+    let { emailOrUsername, verificationCode } = request.body;
+    let userData;
+    let isValidCode;
+    try {
+        userData = await getAccountLoginData(emailOrUsername);
+        isValidCode = await doesVerificationCodeMatches(userData.username, verificationCode);
+        if (!userData) {
+            return httpResponseForbidden(response, "username does not exist");
+        }
+        if (!isValidCode) {
+            return httpResponseForbidden(response, "verification code is not valid");
+        }
+        await removeVerificationCode(userData.username);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return next();
+}
+
 module.exports = {
     validationisEmailRegisteredWithNext, validationIsUsernameRegisteredWithNext,
     validationIsUsernameRegistered, validationIsEmailRegistered, validationNotGeneratedVerificationCode,
-    validationVerificationCodeMatches
+    validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationChangePasswordUnloggedUser
 }
 
 

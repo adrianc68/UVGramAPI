@@ -77,7 +77,7 @@ const validateBirthdateData = [
         .withMessage("birthday does not exist")
 ];
 
-const validateLoginData = [
+const validateEmailOrUsernameData = [
     check("emailOrUsername")
         .not()
         .isEmpty()
@@ -86,6 +86,17 @@ const validateLoginData = [
         .isLength({ min: 3, max: 254 })
         .withMessage("emailOrUsername must have the allowed length: {min: 3, max: 254}")
 ];
+
+const validateOldPasswordData = [
+    check("oldPassword")
+        .not()
+        .isEmpty()
+        .withMessage("oldpassword is required")
+        .bail()
+        .isLength({ min: 6, max: 128 })
+        .withMessage("oldpassword must have the allowed length: {min: 6, max: 128}")
+];
+
 
 const validateVerificationCodeData = [
     body("verificationCode")
@@ -157,7 +168,7 @@ const isValidDate = (dateString) => {
 module.exports = {
     validateEmailData, validateUsernameData, validateNameData,
     validatePresentationData, validatePasswordData, validatePhoneNumberData,
-    validateBirthdateData, validateLoginData, validateVerificationCodeData,
+    validateBirthdateData, validateEmailOrUsernameData, validateVerificationCodeData,
     validateAuthorizationHeaderData, validateAccessTokenParameterData, validateRefreshTokenParameterData,
-    validateOptionalAccessTokenParameterData
+    validateOptionalAccessTokenParameterData, validateOldPasswordData
 }

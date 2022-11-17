@@ -1,14 +1,11 @@
 const request = require('supertest');
 const { connetionToServers } = require('../src/app');
 const { sequelize } = require("../src/database/connectionDatabaseSequelize");
-const { server } = require("../src/server")
-
-async function delay() {
-    await connetionToServers();
-};
+const { redisClient } = require('../src/database/connectionRedis');
+const { server, delayServerConnections } = require("../src/server")
 
 beforeAll(async () => {
-    await delay();
+    await delayServerConnections();
     await sequelize.truncate({ cascade: true, restartIdentity: true });
 });
 
@@ -1032,3 +1029,67 @@ describe('GET /accounts/users', () => {
     });
 });
 
+// describe('POST /accounts/password/reset', () => {
+//     afterAll(async () => {
+//         await redisClient.flushAll("ASYNC");
+//         await sequelize.truncate({ cascade: true, restartIdentity: true });
+//     })
+//     beforeAll(async () => {
+//         await redisClient.flushAll("ASYNC");
+//         await sequelize.truncate({ cascade: true, restartIdentity: true });
+
+//         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+//         let { verificationCode: vCode } = response.body.message;
+//         const newUser2 = {
+//             name: "uvgram user",
+//             presentation: "Welcome to UVGram.",
+//             username: "uvgram",
+//             password: "hola1234",
+//             phoneNumber: "2212345678",
+//             email: "uvgram@uvgram.com",
+//             birthdate: "2000-01-01",
+//             verificationCode: vCode
+//         }
+//         response = await request(server).post("/accounts/create").send(newUser2);
+//         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+//         accessToken = response.body.message.accessToken;
+//     });
+
+//     test('POST /accounts/password/resets 404 Resource Not Found', async () => {
+//         response = await request(server).del("/accounts/password/resets").send({ "emailOrUsername": "test234232", "password": "hola1234", "verificationCode" : "8a"});
+//         expect(response.statusCode).toBe(404);
+//     });
+
+//     test('POST /accounts/password/reset 400 Bad Request', async () => {
+//         response = await request(server).del("/accounts/password/resets").send({ "emailOrUsername": "test234232", "password": "hola1234", "verificationCode" : "8a"});
+//         expect(response.statusCode).toBe(404);
+//     });
+
+// });
+
+// describe('PPOST /accounts/password/change', () => {
+//     afterAll(async () => {
+//         await redisClient.flushAll("ASYNC");
+//         await sequelize.truncate({ cascade: true, restartIdentity: true });
+//     })
+//     beforeAll(async () => {
+//         await redisClient.flushAll("ASYNC");
+//         await sequelize.truncate({ cascade: true, restartIdentity: true });
+
+//         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+//         let { verificationCode: vCode } = response.body.message;
+//         const newUser2 = {
+//             name: "uvgram user",
+//             presentation: "Welcome to UVGram.",
+//             username: "uvgram",
+//             password: "hola1234",
+//             phoneNumber: "2212345678",
+//             email: "uvgram@uvgram.com",
+//             birthdate: "2000-01-01",
+//             verificationCode: vCode
+//         }
+//         response = await request(server).post("/accounts/create").send(newUser2);
+//         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+//         accessToken = response.body.message.accessToken;
+//     });
+// });

@@ -1,9 +1,10 @@
 const router = require('express').Router();
-const { addUser, removeUserByUsername, createVerificationCode, getAllUsers } = require('../controllers/userAccountController');
+const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, changePasswordOnUnloggedUser } = require('../controllers/userAccountController');
 const { checkTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
-const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode } = require('../validators/formatValidators/userAccountFormatValidator');
-const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches } = require('../validators/userAccountValidation');
+const { formatValidationUsernameOrEmail } = require('../validators/formatValidators/authenticationFormatValidator');
+const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode, formatValidationPassword, formatValidationOldPassword } = require('../validators/formatValidators/userAccountFormatValidator');
+const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationChangePasswordUnloggedUser } = require('../validators/userAccountValidation');
 
 router.post("/accounts/create",
     formatValidationUserAccountData,
@@ -17,10 +18,24 @@ router.post("/accounts/create",
 router.post("/accounts/create/verification",
     formatValidationAccountUsername,
     formatValidationAccountEmail,
-    validationIsUsernameRegisteredWithNext,
-    validationisEmailRegisteredWithNext,
     validationNotGeneratedVerificationCode,
     createVerificationCode
+);
+
+router.post("/accounts/password/reset",
+    formatValidationPassword,
+    formatValidationUsernameOrEmail,
+    formatValidationVerificationCode,
+    validationChangePasswordUnloggedUser,
+    changePasswordOnUnloggedUser,
+);
+
+router.post("/accounts/password/change",
+    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.MODERADOR, UserRoleType.BUSINESS, UserRoleType.BUSINESS]),
+    formatValidationPassword,
+    formatValidationOldPassword,
+    validationChangePasswordLoggedUser,
+    changePasswordOnLoggedUser
 );
 
 router.get("/accounts/username/check",

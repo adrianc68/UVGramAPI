@@ -8,7 +8,7 @@ const createTokens = async (request, response) => {
     let tokens;
     try {
         let user = await getAccountLoginData(emailOrUsername);
-        tokens = await generateTokens(user.username, user.id, user["UserRole.role"]);
+        tokens = await generateTokens(user.username, user.id, user["UserRole.role"], user["Account.email"]);
         let session = {
             id_user: user.id,
             token: tokens.refreshToken,
@@ -29,7 +29,7 @@ const refreshTokens = async (request, response) => {
     try {
         let refreshTokenData = await verifyToken(refreshToken);
         let user = await getAccountLoginDataById(refreshTokenData.id);
-        newRefreshtoken = await refreshAccessToken(user.usuario, user.id, user["UserRole.role"], refreshTokenData.jti);
+        newRefreshtoken = await refreshAccessToken(user.usuario, user.id, user["UserRole.role"], user["Account.email"], refreshTokenData.jti);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }

@@ -37,9 +37,10 @@ const getTokenExist = async (token, tokenType) => {
  * @param {*} username data to be save into payload.
  * @param {*} userId data to be save into payload.
  * @param {*} userRole data to be save into payload.
+ * @param {*} email data to be save into payload.
  * @returns the accessToken and refreshToken as JSON object.
  */
-const generateTokens = async (username, userId, userRole) => {
+const generateTokens = async (username, userId, userRole, email) => {
     let accessToken;
     let refreshToken;
     try {
@@ -47,6 +48,7 @@ const generateTokens = async (username, userId, userRole) => {
             id: userId,
             username,
             userRole,
+            email
         };
         refreshToken = await generateRefreshTokenHelper(payloadAccessToken);
         accessToken = await generateAcessTokenHelper(payloadAccessToken, refreshToken.jti);
@@ -69,16 +71,18 @@ const generateTokens = async (username, userId, userRole) => {
  * @param {*} username data to be save into payload.
  * @param {*} userId data to be save into payload.
  * @param {*} userRole data to be save into payload.
+ * @param {*} email data to be save into payload.
  * @param {*} refreshTokenJti the identifier of refreshToken
  * @returns the new accessToken as JSON object.
  */
-const refreshAccessToken = async (username, userId, userRole, refreshTokenJti) => {
+const refreshAccessToken = async (username, userId, userRole, email, refreshTokenJti) => {
     let accessToken;
     try {
         let payloadAccessToken = {
             userId,
             username,
             userRole,
+            email
         };
         accessToken = await generateAcessTokenHelper(payloadAccessToken, refreshTokenJti);
         await addTokenHelper(accessToken.token, accessToken.jti);

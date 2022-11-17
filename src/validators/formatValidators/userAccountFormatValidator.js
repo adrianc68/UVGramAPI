@@ -1,7 +1,6 @@
 const { httpResponseValidation } = require('../../helpers/httpResponses');
-const { logger } = require('../../helpers/logger');
 const { validateNameData, validatePresentationData, validateUsernameData, validatePasswordData,
-    validatePhoneNumberData, validateEmailData, validateBirthdateData, validateVerificationCodeData } = require('./formatValidator');
+    validatePhoneNumberData, validateEmailData, validateBirthdateData, validateVerificationCodeData, validateOldPasswordData } = require('./formatValidator');
 
 const formatValidationUserAccountData = [
     validateNameData,
@@ -37,8 +36,22 @@ const formatValidationVerificationCode = [
     }
 ];
 
+const formatValidationOldPassword = [
+    validateOldPasswordData,
+    (request, response, next) => {
+        return httpResponseValidation(request, response, next);
+    }
+]
+
+const formatValidationPassword = [
+    validatePasswordData,
+    (request, response, next) => {
+        return httpResponseValidation(request, response, next);
+    }
+]
+
 module.exports = {
     formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername,
-    formatValidationVerificationCode
+    formatValidationVerificationCode, formatValidationOldPassword, formatValidationPassword
 }
 

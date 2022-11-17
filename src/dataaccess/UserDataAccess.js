@@ -2,7 +2,6 @@ const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { encondePassword, encodeStringSHA256, encondeSHA512 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
-const { logger } = require("../helpers/logger");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
 const { Block } = require("../models/Block");
@@ -26,7 +25,7 @@ const getAccountLoginData = async (emailOrUsername) => {
         attributes: ["id", "username"],
         include: [{
             model: Account,
-            attributes: ["password"],
+            attributes: ["password", "email"],
             include: [{
                 model: AccountVerification,
                 attributes: ["account_status"]
@@ -54,7 +53,7 @@ const getAccountLoginDataById = async (id) => {
         attributes: ["id", "username"],
         include: [{
             model: Account,
-            attributes: ["password"]
+            attributes: ["password", "email"]
         }, {
             model: UserRole,
             attributes: ["role"]
@@ -106,7 +105,7 @@ const deleteUserByUsername = async (username) => {
             where: {
                 username
             }
-        }).then((rowDeleted) => {
+        }, { transaction: t }).then((rowDeleted) => {
             message = rowDeleted + " entity(s) was removed";
         });
         await t.commit();
@@ -314,6 +313,63 @@ const removeSessionToken = async (token) => {
     }
     return isRemoved;
 };
+
+/**
+ * Change user password.
+ * @param {*} emailOrUsername the email of user.
+ * @param {*} password the new password to be changed.
+ * @returns true if it was update otherwise false.
+ */
+const changePassword = async (emailOrUsername, password) => {
+    let isChanged = false;
+    const t = await sequelize.transaction();
+    try {
+        let result = await Account.findOne({
+            where: {
+                [Op.or]: [{ email: emailOrUsername }, { '$User.username$': emailOrUsername }]
+            },
+            include: [{
+                model: User,
+                as: "User",
+            }],
+        }).then(async user => {
+            if (user) {
+                let data = await user.update({
+                    password: encondePassword(password)
+                }, { transaction: t });
+                isChanged = true;
+            }
+        });
+        await t.commit();
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isChanged;
+}
+
+/**
+ * Check if passworld (as oldpassword) is set into Account's user
+ * @param {*} oldPassword the actual password of user
+ * @param {*} email the email of user to check password
+ * @returns true if it's equal to, otherwise false
+ */
+const isOldPasswordValid = async (oldPassword, email) => {
+    let isRegistered = false;
+    try {
+        let result = await Account.findOne({
+            where: {
+                password: encondePassword(oldPassword),
+                email
+            },
+            raw: true,
+        });
+        isRegistered = (result != null);
+    } catch (error) {
+        throw new Error(error);
+    }
+    return isRegistered;
+}
 
 /**
  * Get all user registered in database.
@@ -552,5 +608,6 @@ module.exports = {
     generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
     doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken,
     getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedUsersOfUser,
-    getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser
+    getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser,
+    changePassword, isOldPasswordValid
 }
