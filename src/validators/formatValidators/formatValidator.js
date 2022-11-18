@@ -91,7 +91,7 @@ const validateOldPasswordData = [
     check("oldPassword")
         .not()
         .isEmpty()
-        .withMessage("oldpassword is required")
+        .withMessage("oldPassword is required")
         .bail()
         .isLength({ min: 6, max: 128 })
         .withMessage("oldpassword must have the allowed length: {min: 6, max: 128}")
@@ -103,6 +103,7 @@ const validateVerificationCodeData = [
         .not()
         .isEmpty()
         .withMessage("verificationCode is required")
+        .bail()
         .isLength({ min: 8, max: 8 })
         .withMessage("verificationCode must have the allowed length: {min: 8, max:8}")
 ];

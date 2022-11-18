@@ -31,7 +31,7 @@ router.post("/accounts/password/reset",
 );
 
 router.post("/accounts/password/change",
-    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.MODERADOR, UserRoleType.BUSINESS, UserRoleType.BUSINESS]),
+    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationPassword,
     formatValidationOldPassword,
     validationChangePasswordLoggedUser,

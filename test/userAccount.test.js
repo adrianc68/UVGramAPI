@@ -2,6 +2,7 @@ const request = require('supertest');
 const { connetionToServers } = require('../src/app');
 const { sequelize } = require("../src/database/connectionDatabaseSequelize");
 const { redisClient } = require('../src/database/connectionRedis');
+const { logger } = require('../src/helpers/logger');
 const { server, delayServerConnections } = require("../src/server")
 
 beforeAll(async () => {
@@ -836,20 +837,6 @@ describe('POST /accounts/create/', () => {
             expect(response.body.message).toContain("New entity was added");
         });
 
-        test('POST /accounts/create/ 403 Forbidden username already registered', async () => {
-            let response = await request(server).post("/accounts/create/verification").send({ "username": "adrianc68", "email": "adrianc68@uvgram.com" });
-            expect(response.body.message.exist).toBe(true);
-            expect(response.body.message.message).toContain("username is already registered");
-            expect(response.statusCode).toBe(403);
-        });
-
-        test('POST /accounts/create/ 403 Forbidden email already registered', async () => {
-            let response = await request(server).post("/accounts/create/verification").send({ "username": "test", "email": "adrianc68@uvgram.com" });
-            expect(response.body.message.exist).toBe(true);
-            expect(response.body.message.message).toContain("email is already registered");
-            expect(response.statusCode).toBe(403);
-        });
-
         test('POST /accounts/create/ 403 Forbidden verification is not valid (generated but is invalid)', async () => {
             let response = await request(server).post("/accounts/create/verification").send({ "username": "test94", "email": "gonzalocar@uvgram.com" });
             let verificationCode = "12345678"
@@ -1029,67 +1016,220 @@ describe('GET /accounts/users', () => {
     });
 });
 
-// describe('POST /accounts/password/reset', () => {
-//     afterAll(async () => {
-//         await redisClient.flushAll("ASYNC");
-//         await sequelize.truncate({ cascade: true, restartIdentity: true });
-//     })
-//     beforeAll(async () => {
-//         await redisClient.flushAll("ASYNC");
-//         await sequelize.truncate({ cascade: true, restartIdentity: true });
+describe('POST /accounts/password/reset', () => {
+    afterAll(async () => {
+        await redisClient.flushAll("ASYNC");
+        await sequelize.truncate({ cascade: true, restartIdentity: true });
+    })
+    beforeAll(async () => {
+        await redisClient.flushAll("ASYNC");
+        await sequelize.truncate({ cascade: true, restartIdentity: true });
 
-//         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
-//         let { verificationCode: vCode } = response.body.message;
-//         const newUser2 = {
-//             name: "uvgram user",
-//             presentation: "Welcome to UVGram.",
-//             username: "uvgram",
-//             password: "hola1234",
-//             phoneNumber: "2212345678",
-//             email: "uvgram@uvgram.com",
-//             birthdate: "2000-01-01",
-//             verificationCode: vCode
-//         }
-//         response = await request(server).post("/accounts/create").send(newUser2);
-//         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
-//         accessToken = response.body.message.accessToken;
-//     });
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        let { verificationCode: vCode } = response.body.message;
+        const newUser2 = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode: vCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser2);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+    });
 
-//     test('POST /accounts/password/resets 404 Resource Not Found', async () => {
-//         response = await request(server).del("/accounts/password/resets").send({ "emailOrUsername": "test234232", "password": "hola1234", "verificationCode" : "8a"});
-//         expect(response.statusCode).toBe(404);
-//     });
+    test('POST /accounts/password/resets 404 Resource Not Found', async () => {
+        response = await request(server).post("/accounts/password/resets").send({ "emailOrUsername": "test234232", "password": "hola1234", "verificationCode": "8a" });
+        expect(response.statusCode).toBe(404);
+    });
 
-//     test('POST /accounts/password/reset 400 Bad Request', async () => {
-//         response = await request(server).del("/accounts/password/resets").send({ "emailOrUsername": "test234232", "password": "hola1234", "verificationCode" : "8a"});
-//         expect(response.statusCode).toBe(404);
-//     });
+    test('POST /accounts/password/reset 400 Bad Request verificationCode is required', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "test234232", "password": "hola1234", "verificationCsode": "8a" });
+        expect(response.body.errors[0].msg).toContain("verificationCode is required")
+        expect(response.statusCode).toBe(400);
+    });
 
-// });
+    test('POST /accounts/password/reset 400 Bad Request verificationCode is empty', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "test234232", "password": "hola1234", "verificationCode": "" });
+        expect(response.body.errors[0].msg).toContain("verificationCode is required")
+        expect(response.statusCode).toBe(400);
+    });
 
-// describe('PPOST /accounts/password/change', () => {
-//     afterAll(async () => {
-//         await redisClient.flushAll("ASYNC");
-//         await sequelize.truncate({ cascade: true, restartIdentity: true });
-//     })
-//     beforeAll(async () => {
-//         await redisClient.flushAll("ASYNC");
-//         await sequelize.truncate({ cascade: true, restartIdentity: true });
+    test('POST /accounts/password/reset 400 Bad Request verificationCode is null', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "test234232", "password": "hola1234", "verificationCsode": null });
+        expect(response.body.errors[0].msg).toContain("verificationCode is required")
+        expect(response.statusCode).toBe(400);
+    });
 
-//         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
-//         let { verificationCode: vCode } = response.body.message;
-//         const newUser2 = {
-//             name: "uvgram user",
-//             presentation: "Welcome to UVGram.",
-//             username: "uvgram",
-//             password: "hola1234",
-//             phoneNumber: "2212345678",
-//             email: "uvgram@uvgram.com",
-//             birthdate: "2000-01-01",
-//             verificationCode: vCode
-//         }
-//         response = await request(server).post("/accounts/create").send(newUser2);
-//         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
-//         accessToken = response.body.message.accessToken;
-//     });
-// });
+    test('POST /accounts/password/reset 403 Forbidden verificationCode is not valid', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "test234232", "password": "hola1234", "verificationCode": "test" });
+        expect(response.body.errors[0].msg).toContain("verificationCode must have the allowed length")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request password is required', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "test234232", "verificationCode": "test" });
+        expect(response.body.errors[0].msg).toContain("password is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request password is empty', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "test234232", "password": "", "verificationCode": "test" });
+        expect(response.body.errors[0].msg).toContain("password is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request password is null', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "test234232", "password": null, "verificationCode": "test" });
+        expect(response.body.errors[0].msg).toContain("password is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request password is undefined', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "test234232", "password": undefined, "verificationCode": "test" });
+        expect(response.body.errors[0].msg).toContain("password is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request emailOrUsername is required', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "password": "hola1234", "verificationCode": "test" });
+        expect(response.body.errors[0].msg).toContain("emailOrUsername is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request emailOrUsername is empty', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "", "password": "hola1234", "verificationCode": "test" });
+        expect(response.body.errors[0].msg).toContain("emailOrUsername is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request emailOrUsername is null', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": null, "password": "hola1234", "verificationCode": "test" });
+        expect(response.body.errors[0].msg).toContain("emailOrUsername is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request emailOrUsername is undefined', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": undefined, "password": "hola1234", "verificationCode": "test" });
+        expect(response.body.errors[0].msg).toContain("emailOrUsername is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 200 OK password was changed', async () => {
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        verificationCode = response.body.message.verificationCode;
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram", "password": "hola1234", "verificationCode": verificationCode });
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/password/reset 403 Forbidden verificationCode is not valid', async () => {
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram", "password": "hola1234", "verificationCode": "12345678" });
+        expect(response.body.message).toContain("verification code is not valid");
+        expect(response.statusCode).toBe(403);
+    });
+
+    test('POST /accounts/password/reset 403 Forbidden verificationCode is already generated', async () => {
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        expect(response.body.message).toContain("wait to generate another verification code");
+        expect(response.statusCode).toBe(403);
+    });
+});
+
+describe('POST /accounts/password/change', () => {
+    let accessToken;
+
+    afterAll(async () => {
+        await redisClient.flushAll("ASYNC");
+        await sequelize.truncate({ cascade: true, restartIdentity: true });
+    })
+    beforeAll(async () => {
+        await redisClient.flushAll("ASYNC");
+        await sequelize.truncate({ cascade: true, restartIdentity: true });
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        let { verificationCode: vCode } = response.body.message;
+        const newUser2 = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode: vCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser2);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+    });
+
+    test('POST /accounts/password/change 404 Resource Not Found', async () => {
+        response = await request(server).post("/accounts/password/changes").send({ "password": "hola1234", "oldPassword": "hola1234", "authorization": `Bearer ${accessToken}` });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request password is required', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "oldPassword": "hola1234" });
+        expect(response.body.errors[0].msg).toContain("password is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request password is null', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": null, "oldPassword": "hola1234" });
+        expect(response.body.errors[0].msg).toContain("password is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request password is undefined', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": undefined, "oldPassword": "hola1234" });
+        expect(response.body.errors[0].msg).toContain("password is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request password is empty', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "", "oldPassword": "hola1234" });
+        expect(response.body.errors[0].msg).toContain("password is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request oldPassword is required', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "hola1234" });
+        expect(response.body.errors[0].msg).toContain("oldPassword is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request oldPassword is empty', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "hola1234", "oldPassword": "" });
+        expect(response.body.errors[0].msg).toContain("oldPassword is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request oldPassword is null', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "hola1234", "oldPassword": null });
+        expect(response.body.errors[0].msg).toContain("oldPassword is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request oldPassword is undefined', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "hola1234", "oldPassword": undefined });
+        expect(response.body.errors[0].msg).toContain("oldPassword is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 200 OK password changed', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "hola1234", "oldPassword": "hola1234" });
+        expect(response.body.message).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/password/change 403 Forbidden Bearer token is not valid', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}s` }).send({ "password": "hola1234", "oldPassword": undefined });
+        expect(response.body.message.error).toContain("accessToken does not exist");
+        expect(response.statusCode).toBe(403);
+    });
+});
