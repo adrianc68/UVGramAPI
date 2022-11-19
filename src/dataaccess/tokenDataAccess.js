@@ -1,6 +1,7 @@
 const { generateRefreshToken: generateRefreshTokenHelper, generateAccessToken: generateAcessTokenHelper,
     addToken: addTokenHelper, removeToken: removeTokenHelper, verifyToken: verifyTokenHelper,
     TOKEN_STATE, TOKEN_TYPE, checkToken: checkTokenHelper } = require("../helpers/token");
+const { removeSessionToken } = require("./userDataAccess");
 
 /**
 * Check that the token has the VALID status and TokenType 
@@ -144,4 +145,29 @@ const verifyToken = async (token) => {
     return tokenVerified;
 };
 
-module.exports = { removeOptionalAccessToken, refreshAccessToken, generateTokens, removeToken, verifyToken, getTokenExist, TOKEN_STATE, TOKEN_TYPE }
+/**
+ * Refresh login of user removing old access token
+ * @param {*} accessToken the accesstoken that will be removed
+ * @param {*} username the actual user data
+ * @param {*} id the actual user data
+ * @param {*} userRole the actual user data
+ * @param {*} email the actual user data
+ * @param {*} refreshTokenJTI the id of refreshToken
+ * @returns accessToken regenerated
+ */
+const refreshLoginAndRemoveOldAccessToken = async (accessToken, username, id, userRole, email, refreshTokenJTI) => {
+    let newAccessToken;
+    try {
+        newAccessToken = await refreshAccessToken(username, id, userRole, email, refreshTokenJTI);
+        await removeTokenHelper(accessToken);
+    } catch (error) {
+        throw new Error(error);
+    }
+    return newAccessToken;
+}
+
+module.exports = {
+    removeOptionalAccessToken, refreshAccessToken, generateTokens,
+    removeToken, verifyToken, getTokenExist, TOKEN_STATE, TOKEN_TYPE,
+    refreshLoginAndRemoveOldAccessToken
+}

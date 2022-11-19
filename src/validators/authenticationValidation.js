@@ -42,7 +42,7 @@ const validationLoginData = async (request, response, next) => {
     }
 };
 
-const validationAccesTokenData = async (request, response, next) => {
+const validationAccesTokenDataAsAuthorization = async (request, response, next) => {
     let accessToken = (request.headers.authorization).split(" ")[1];
     try {
         await getTokenExist(accessToken, TOKEN_TYPE.ACCESS);
@@ -53,7 +53,7 @@ const validationAccesTokenData = async (request, response, next) => {
     return next();
 };
 
-const validationRefreshTokenData = async (request, response, next) => {
+const validationRefreshTokenDataAsAuthorization = async (request, response, next) => {
     let refreshToken = (request.headers.authorization).split(" ")[1];
     try {
         await getTokenExist(refreshToken, TOKEN_TYPE.REFRESH);
@@ -63,6 +63,17 @@ const validationRefreshTokenData = async (request, response, next) => {
     }
     return next();
 };
+
+const validationRefreshTokenDataAsParameter = async (request, response, next) => {
+    let refreshToken = (request.headers.refreshtoken).split(" ")[1];
+    try {
+        await getTokenExist(refreshToken, TOKEN_TYPE.REFRESH);
+    } catch (error) {
+        const payload = { error: error.message }
+        return httpResponseErrorToken(response, payload);
+    }
+    return next();
+}
 
 const validationLogoutTokensData = async (request, response, next) => {
     let accessToken = (request.headers.authorization).split(" ")[1];
@@ -78,7 +89,8 @@ const validationLogoutTokensData = async (request, response, next) => {
 };
 
 module.exports = {
-    validationLoginData, validationAccesTokenData, validationRefreshTokenData, validationLogoutTokensData
+    validationLoginData, validationAccesTokenDataAsAuthorization, validationRefreshTokenDataAsAuthorization,
+    validationLogoutTokensData, validationRefreshTokenDataAsParameter
 }
 
 

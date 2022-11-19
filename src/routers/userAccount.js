@@ -1,10 +1,10 @@
 const router = require('express').Router();
-const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, changePasswordOnUnloggedUser } = require('../controllers/userAccountController');
-const { checkTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
+const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, changePasswordOnUnloggedUser, updateUser } = require('../controllers/userAccountController');
+const { checkAccessTokenAndAuthRoleMiddleware, checkAccessAndRefreshTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationUsernameOrEmail } = require('../validators/formatValidators/authenticationFormatValidator');
-const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode, formatValidationPassword, formatValidationOldPassword } = require('../validators/formatValidators/userAccountFormatValidator');
-const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationChangePasswordUnloggedUser } = require('../validators/userAccountValidation');
+const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode, formatValidationPassword, formatValidationOldPassword, formatValidationBasicUserAccountData, formatValidationPersonalData, formatValidationBusinessData, formatValidationAdminData, formatValidationModerator } = require('../validators/formatValidators/userAccountFormatValidator');
+const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationChangePasswordUnloggedUser, validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationModeratorRoleData, validationAdminRoleData, validationBusinessRoleData } = require('../validators/userAccountValidation');
 
 router.post("/accounts/create",
     formatValidationUserAccountData,
@@ -31,7 +31,7 @@ router.post("/accounts/password/reset",
 );
 
 router.post("/accounts/password/change",
-    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationPassword,
     formatValidationOldPassword,
     validationChangePasswordLoggedUser,
@@ -53,8 +53,45 @@ router.delete("/accounts/username/delete",
     removeUserByUsername
 );
 
+router.patch("/accounts/edit/personal",
+    checkAccessAndRefreshTokenAndAuthRoleMiddleware([UserRoleType.PERSONAL]),
+    formatValidationBasicUserAccountData,
+    formatValidationPersonalData,
+    validationUpdateEmailAndUsernameData,
+    validationPersonalRoleData,
+    updateUser
+);
+
+router.patch("/accounts/edit/business",
+    checkAccessAndRefreshTokenAndAuthRoleMiddleware([UserRoleType.BUSINESS]),
+    formatValidationBasicUserAccountData,
+    formatValidationBusinessData,
+    validationUpdateEmailAndUsernameData,
+    validationBusinessRoleData,
+    updateUser
+);
+
+router.patch("/accounts/edit/moderator",
+    checkAccessAndRefreshTokenAndAuthRoleMiddleware([UserRoleType.MODERADOR]),
+    formatValidationBasicUserAccountData,
+    formatValidationModerator, // By now is not validating anything.
+    validationUpdateEmailAndUsernameData,
+    validationModeratorRoleData, // By now is not validating anything against database
+    updateUser,
+);
+
+router.patch("/accounts/edit/admin",
+    checkAccessAndRefreshTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR]),
+    formatValidationBasicUserAccountData,
+    formatValidationAdminData, // By now is not validating anything
+    validationUpdateEmailAndUsernameData,
+    validationAdminRoleData, // By now is not validating anything against database
+    updateUser,
+);
+
+
 router.get("/accounts/users/",
-    checkTokenAndAuthRoleMiddleware(UserRoleType.ADMINISTRATOR),
+    checkAccessTokenAndAuthRoleMiddleware(UserRoleType.ADMINISTRATOR),
     getAllUsers
 );
 

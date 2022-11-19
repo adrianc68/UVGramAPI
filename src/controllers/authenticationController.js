@@ -25,11 +25,12 @@ const refreshTokens = async (request, response) => {
     let newRefreshtoken;
     let refreshToken = (request.headers.authorization).split(" ")[1];
     let optionalAccessToken = request.headers.accesstoken;
-    let optionalOldAccessTokenMessage = (optionalAccessToken) ? await removeOptionalAccessToken(optionalAccessToken.split(" ")[1]) : undefined;
+    let optionalOldAccessTokenMessage;
     try {
+        optionalOldAccessTokenMessage = (optionalAccessToken) ? await removeOptionalAccessToken(optionalAccessToken.split(" ")[1]) : undefined;
         let refreshTokenData = await verifyToken(refreshToken);
         let user = await getAccountLoginDataById(refreshTokenData.id);
-        newRefreshtoken = await refreshAccessToken(user.usuario, user.id, user["UserRole.role"], user["Account.email"], refreshTokenData.jti);
+        newRefreshtoken = await refreshAccessToken(user.username, user.id, user["UserRole.role"], user["Account.email"], refreshTokenData.jti);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }

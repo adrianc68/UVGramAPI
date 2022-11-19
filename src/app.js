@@ -23,6 +23,7 @@ app.use(handleJSON);
 app.use(require("./routers/userAccount"));
 app.use(require("./routers/authentication"));
 app.use(require("./routers/user"));
+app.use(require("./routers/data"));
 
 const connetionToServers = async () => {
     try {
@@ -38,4 +39,13 @@ const connetionToServers = async () => {
     }
 }
 
-module.exports = { app, connetionToServers };
+const clearDatabase = async () => {
+    await sequelize.truncate({ cascade: true, restartIdentity: true });
+    await sequelize.query("ALTER SEQUENCE user_id_seq RESTART WITH 1");
+    await sequelize.query("ALTER SEQUENCE educationalprogram_id_seq RESTART WITH 1");
+    await sequelize.query("ALTER SEQUENCE faculty_id_seq RESTART WITH 1");
+    await sequelize.query("ALTER SEQUENCE region_id_seq RESTART WITH 1");
+    await redisClient.flushAll("ASYNC");
+}
+
+module.exports = { app, connetionToServers, clearDatabase };

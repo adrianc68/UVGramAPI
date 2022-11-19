@@ -1,4 +1,3 @@
-
 \connect uvgram_db
 
 SET statement_timeout = 0;
@@ -103,6 +102,23 @@ CREATE TYPE public."enum_AccountVerification_account_status" AS ENUM (
 
 
 ALTER TYPE public."enum_AccountVerification_account_status" OWNER TO dev;
+
+--
+-- Name: enum_Business_category; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_Business_category" AS ENUM (
+    'BLOG_PERSONAL',
+    'PRODUCTO_O_SERVICIO',
+    'ARTE',
+    'MUSICO_O_BANDA',
+    'COMPRAS_O_VENTAS_MINORISTAS',
+    'SALUD_O_BELLEZA',
+    'TIENDAS_COMESTIBLES'
+);
+
+
+ALTER TYPE public."enum_Business_category" OWNER TO dev;
 
 --
 -- Name: enum_Personal_gender; Type: TYPE; Schema: public; Owner: dev
@@ -254,6 +270,18 @@ CREATE TABLE public."Administrator" (
 ALTER TABLE public."Administrator" OWNER TO dev;
 
 --
+-- Name: Block; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."Block" (
+    id_user_blocker bigint NOT NULL,
+    id_user_blocked bigint NOT NULL
+);
+
+
+ALTER TABLE public."Block" OWNER TO dev;
+
+--
 -- Name: Business; Type: TABLE; Schema: public; Owner: dev
 --
 
@@ -270,6 +298,32 @@ CREATE TABLE public."Business" (
 
 
 ALTER TABLE public."Business" OWNER TO dev;
+
+--
+-- Name: EducationalProgram; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."EducationalProgram" (
+    id bigint DEFAULT nextval(('"educationalprogram_id_seq"'::text)::regclass) NOT NULL,
+    educational_program character varying(240) NOT NULL,
+    id_faculty bigint NOT NULL
+);
+
+
+ALTER TABLE public."EducationalProgram" OWNER TO dev;
+
+--
+-- Name: Faculty; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."Faculty" (
+    faculty character varying(120),
+    id_region bigint,
+    id bigint DEFAULT nextval(('"faculty_id_seq"'::text)::regclass) NOT NULL
+);
+
+
+ALTER TABLE public."Faculty" OWNER TO dev;
 
 --
 -- Name: Follower; Type: TABLE; Schema: public; Owner: dev
@@ -313,14 +367,25 @@ ALTER TABLE public."Moderator" OWNER TO dev;
 --
 
 CREATE TABLE public."Personal" (
-    faculty character varying(50),
-    career character varying(50),
     gender public."GenderType",
-    id_user bigint
+    id_user bigint,
+    id_career bigint
 );
 
 
 ALTER TABLE public."Personal" OWNER TO dev;
+
+--
+-- Name: Region; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."Region" (
+    id bigint DEFAULT nextval(('"region_id_seq"'::text)::regclass) NOT NULL,
+    region character varying(120) NOT NULL
+);
+
+
+ALTER TABLE public."Region" OWNER TO dev;
 
 --
 -- Name: Session; Type: TABLE; Schema: public; Owner: dev
@@ -388,6 +453,48 @@ CREATE TABLE public."VerificationCode" (
 ALTER TABLE public."VerificationCode" OWNER TO dev;
 
 --
+-- Name: educationalprogram_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
+--
+
+CREATE SEQUENCE public.educationalprogram_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.educationalprogram_id_seq OWNER TO dev;
+
+--
+-- Name: faculty_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
+--
+
+CREATE SEQUENCE public.faculty_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.faculty_id_seq OWNER TO dev;
+
+--
+-- Name: region_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
+--
+
+CREATE SEQUENCE public.region_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.region_id_seq OWNER TO dev;
+
+--
 -- Name: user_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
 --
 
@@ -406,8 +513,10 @@ ALTER TABLE public.user_id_seq OWNER TO dev;
 --
 
 COPY public."Account" (password, email, id_user, phone_number, birthday) FROM stdin;
-0acbfc311e50b11cb0966c22d2cb887eec45cad411b0bff42789106568b8853b	admin@uvgram.com	1	2281046161	2000-09-13
-3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram2@uvgram.com	2	2281046161	2000-09-13
+3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram@uvgram.com	1	2234567890	2022-01-26
+3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram2@uvgram.com	2	2234567890	2022-01-26
+3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram3@uvgram.com	3	2234567890	2022-01-26
+3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram4@uvgram.com	4	2234567890	2022-01-26
 \.
 
 
@@ -418,6 +527,8 @@ COPY public."Account" (password, email, id_user, phone_number, birthday) FROM st
 COPY public."AccountVerification" (account_status, id_user) FROM stdin;
 NO_BLOQUEADO	1
 NO_BLOQUEADO	2
+NO_BLOQUEADO	3
+NO_BLOQUEADO	4
 \.
 
 
@@ -426,7 +537,15 @@ NO_BLOQUEADO	2
 --
 
 COPY public."Administrator" (created_time, id_user) FROM stdin;
-2022-11-07 04:23:11.33201	1
+2022-11-19 00:09:03.972291	1
+\.
+
+
+--
+-- Data for Name: Block; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."Block" (id_user_blocker, id_user_blocked) FROM stdin;
 \.
 
 
@@ -435,6 +554,25 @@ COPY public."Administrator" (created_time, id_user) FROM stdin;
 --
 
 COPY public."Business" (category, city, postal_code, postal_address, contact_email, phone_contact, organization_name, id_user) FROM stdin;
+\N	\N	\N	\N	\N	\N	\N	3
+\.
+
+
+--
+-- Data for Name: EducationalProgram; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."EducationalProgram" (id, educational_program, id_faculty) FROM stdin;
+1	LICENCIATURA_EN_INGENIERIA_DE_SOFTWARE	1
+\.
+
+
+--
+-- Data for Name: Faculty; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."Faculty" (faculty, id_region, id) FROM stdin;
+FACULTAD_ESTADISTICA_E_INFORMATICA	1	1
 \.
 
 
@@ -443,7 +581,6 @@ COPY public."Business" (category, city, postal_code, postal_address, contact_ema
 --
 
 COPY public."Follower" (id_user_follower, id_user_followed) FROM stdin;
-1	2
 \.
 
 
@@ -460,6 +597,7 @@ COPY public."LoginAttempts" (attempts, login_state, mac_address) FROM stdin;
 --
 
 COPY public."Moderator" (update_date, id_user) FROM stdin;
+\N	2
 \.
 
 
@@ -467,8 +605,17 @@ COPY public."Moderator" (update_date, id_user) FROM stdin;
 -- Data for Name: Personal; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Personal" (faculty, career, gender, id_user) FROM stdin;
-\N	\N	INDIFERENTE	2
+COPY public."Personal" (gender, id_user, id_career) FROM stdin;
+INDIFERENTE	4	\N
+\.
+
+
+--
+-- Data for Name: Region; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."Region" (id, region) FROM stdin;
+1	XALAPA
 \.
 
 
@@ -477,9 +624,6 @@ COPY public."Personal" (faculty, career, gender, id_user) FROM stdin;
 --
 
 COPY public."Session" (id_user, token, created_time, device) FROM stdin;
-1	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJ0b2tlblR5cGUiOiJyZWZyZXNoVG9rZW4iLCJpYXQiOjE2Njg1MzEyNjQsImV4cCI6MTY3MTE1OTI2NCwianRpIjoiYWU5MDRhNTUtNGM4MC00YzJkLWJmNzAtNDFmZjY2OTQ3ZjgzIn0.D-wMtbKypgR1-dgaJ6yg5SA55tjkKdbYH5CCkNRdQ48	2022-11-15 16:54:24.30281	localhost:8080
-1	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJ0b2tlblR5cGUiOiJyZWZyZXNoVG9rZW4iLCJpYXQiOjE2Njg1MzEyNzksImV4cCI6MTY3MTE1OTI3OSwianRpIjoiMWY1MmEyMzUtMTBkZS00NzM0LWFmZDItY2Y5ZTNlZWFjMDhlIn0.wEmrW9LbknwtyXLSjd5p9gSg682laYirDm-2VW-OUPA	2022-11-15 16:54:39.375814	localhost:8080
-1	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjEiLCJ0b2tlblR5cGUiOiJyZWZyZXNoVG9rZW4iLCJpYXQiOjE2Njg1NTE1MjMsImV4cCI6MTY3MTE3OTUyMywianRpIjoiMjA0YjVhZmYtOTI4Zi00NDAxLTkzYzgtNjEzYzZiZjEzM2ExIn0.1ovtw3QruX-wiTh32aIAVtNqihc8T7Xvelh0tmJb8iA	2022-11-15 22:32:03.788885	localhost:8080
 \.
 
 
@@ -488,8 +632,10 @@ COPY public."Session" (id_user, token, created_time, device) FROM stdin;
 --
 
 COPY public."User" (name, presentation, username, id) FROM stdin;
-UVGram		uvgram	1
-Second user		uvgram2	2
+Administrator	\N	uvgram1	1
+Moderator	\N	uvgram2	2
+Business	\N	uvgram3	3
+Personal	\N	uvgram4	4
 \.
 
 
@@ -500,6 +646,8 @@ Second user		uvgram2	2
 COPY public."UserConfiguration" (privacy, id_user) FROM stdin;
 PUBLICO	1
 PUBLICO	2
+PUBLICO	3
+PUBLICO	4
 \.
 
 
@@ -509,7 +657,9 @@ PUBLICO	2
 
 COPY public."UserRole" (id_user, role) FROM stdin;
 1	ADMINISTRADOR
-2	PERSONAL
+2	MODERADOR
+3	EMPRESARIAL
+4	PERSONAL
 \.
 
 
@@ -522,10 +672,31 @@ COPY public."VerificationCode" (code, username, created_time) FROM stdin;
 
 
 --
+-- Name: educationalprogram_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
+--
+
+SELECT pg_catalog.setval('public.educationalprogram_id_seq', 1, true);
+
+
+--
+-- Name: faculty_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
+--
+
+SELECT pg_catalog.setval('public.faculty_id_seq', 1, true);
+
+
+--
+-- Name: region_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
+--
+
+SELECT pg_catalog.setval('public.region_id_seq', 1, true);
+
+
+--
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 2, true);
+SELECT pg_catalog.setval('public.user_id_seq', 4, true);
 
 
 --
@@ -545,11 +716,35 @@ ALTER TABLE ONLY public."Administrator"
 
 
 --
+-- Name: EducationalProgram PK_EducationalProgram; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."EducationalProgram"
+    ADD CONSTRAINT "PK_EducationalProgram" PRIMARY KEY (id);
+
+
+--
+-- Name: Faculty PK_Faculty; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Faculty"
+    ADD CONSTRAINT "PK_Faculty" PRIMARY KEY (id);
+
+
+--
 -- Name: LoginAttempts PK_LoginAttempts; Type: CONSTRAINT; Schema: public; Owner: dev
 --
 
 ALTER TABLE ONLY public."LoginAttempts"
     ADD CONSTRAINT "PK_LoginAttempts" PRIMARY KEY (mac_address);
+
+
+--
+-- Name: Region PK_Region; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Region"
+    ADD CONSTRAINT "PK_Region" PRIMARY KEY (id);
 
 
 --
@@ -590,10 +785,38 @@ CREATE INDEX "IXFK_Administrator_UserRole" ON public."Administrator" USING btree
 
 
 --
+-- Name: IXFK_Block_User; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Block_User" ON public."Block" USING btree (id_user_blocker);
+
+
+--
+-- Name: IXFK_Block_User_02; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Block_User_02" ON public."Block" USING btree (id_user_blocked);
+
+
+--
 -- Name: IXFK_Business_UserRole; Type: INDEX; Schema: public; Owner: dev
 --
 
 CREATE INDEX "IXFK_Business_UserRole" ON public."Business" USING btree (id_user);
+
+
+--
+-- Name: IXFK_EducationalProgram_Faculty; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_EducationalProgram_Faculty" ON public."EducationalProgram" USING btree (id_faculty);
+
+
+--
+-- Name: IXFK_Faculty_Region; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Faculty_Region" ON public."Faculty" USING btree (id_region);
 
 
 --
@@ -615,6 +838,13 @@ CREATE INDEX "IXFK_Follower_User_02" ON public."Follower" USING btree (id_user_f
 --
 
 CREATE INDEX "IXFK_Moderator_UserRole" ON public."Moderator" USING btree (id_user);
+
+
+--
+-- Name: IXFK_Personal_EducationalProgram; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Personal_EducationalProgram" ON public."Personal" USING btree (id_career);
 
 
 --
@@ -670,11 +900,35 @@ ALTER TABLE ONLY public."Administrator"
 
 
 --
+-- Name: Block FK_Block_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Block"
+    ADD CONSTRAINT "FK_Block_User" FOREIGN KEY (id_user_blocker) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Block FK_Blocked_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Block"
+    ADD CONSTRAINT "FK_Blocked_User" FOREIGN KEY (id_user_blocked) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: Business FK_Business_UserRole; Type: FK CONSTRAINT; Schema: public; Owner: dev
 --
 
 ALTER TABLE ONLY public."Business"
     ADD CONSTRAINT "FK_Business_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: EducationalProgram FK_EducationalProgram_Faculty; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."EducationalProgram"
+    ADD CONSTRAINT "FK_EducationalProgram_Faculty" FOREIGN KEY (id_faculty) REFERENCES public."Faculty"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -699,6 +953,14 @@ ALTER TABLE ONLY public."Follower"
 
 ALTER TABLE ONLY public."Moderator"
     ADD CONSTRAINT "FK_Moderator_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Personal FK_Personal_EducationalProgram; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Personal"
+    ADD CONSTRAINT "FK_Personal_EducationalProgram" FOREIGN KEY (id_career) REFERENCES public."EducationalProgram"(id) ON UPDATE SET NULL ON DELETE SET NULL;
 
 
 --

@@ -1,6 +1,6 @@
 const { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser,
     getProfileOfUser, blockUser, unblockUser } = require('../controllers/userController');
-const { checkTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
+const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationFollowingUser, validationUnfollowingUser, validationBlockingUser,
@@ -8,7 +8,7 @@ const { validationFollowingUser, validationUnfollowingUser, validationBlockingUs
 const router = require('express').Router();
 
 router.post("/user/follow/",
-    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationFollowingUser,
@@ -16,7 +16,7 @@ router.post("/user/follow/",
 );
 
 router.delete("/user/unfollow/",
-    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationUnfollowingUser,
@@ -24,21 +24,21 @@ router.delete("/user/unfollow/",
 );
 
 router.get("/user/followed-by/:username/",
-    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     getFollowedUsersOfUser
 );
 
 router.get("/user/followers-of/:username",
-    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     getFollowersOfUser
 );
 
 router.post("/user/block/",
-    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationBlockingUser,
@@ -46,7 +46,7 @@ router.post("/user/block/",
 );
 
 router.post("/user/unblock/",
-    checkTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationUnblockingUser,

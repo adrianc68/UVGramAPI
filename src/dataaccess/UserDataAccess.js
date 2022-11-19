@@ -2,10 +2,14 @@ const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { encondePassword, encodeStringSHA256, encondeSHA512 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
+const { logger } = require("../helpers/logger");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
+const { AdministratorUserRole } = require("../models/AdministratorUserRole");
 const { Block } = require("../models/Block");
+const { BusinessUserRole } = require("../models/BusinessUserRole");
 const { Follower } = require("../models/Follower");
+const { ModeratorUserRole } = require("../models/ModeratorUserRole");
 const { PersonalUserRole } = require("../models/PersonalUserRole");
 const { Session } = require("../models/Session");
 const { User } = require("../models/User");
@@ -271,8 +275,8 @@ const doesVerificationCodeMatches = async (username, verificationCode) => {
 };
 
 /**
- * Save session including a token in database
- * @param {*} session session that must include id_user, token and device
+ * Save session including a refresh token in database
+ * @param {*} session session that must include id_user, token (refresh token) and device
  * @returns true if it was saved otherwise false
  */
 const saveSessionToken = async (session) => {
@@ -292,7 +296,7 @@ const saveSessionToken = async (session) => {
 };
 
 /**
- * Remove session by token in database.
+ * Remove session by token (refresh) in database.
  * @param {*} token the session to be removed.
  * @returns true if it was removed otherwise false.
  */
@@ -318,6 +322,7 @@ const removeSessionToken = async (token) => {
  * Change user password.
  * @param {*} emailOrUsername the email of user.
  * @param {*} password the new password to be changed.
+ * @issue #6977 Model update not return affectedRows
  * @returns true if it was update otherwise false.
  */
 const changePassword = async (emailOrUsername, password) => {
@@ -602,6 +607,182 @@ const isUserBlockedByUser = async (id_user_blocker, id_user_blocked) => {
     return isBlocked;
 }
 
+/**
+ * Update the user's email
+ * @param {*} newEmail the new Email to update
+ * @param {*} id_user the user's id who will get the new email
+ * @issue #6977 Model update not return affectedRows
+ * @returns true if it was updated otherwise false
+ */
+const updateUserEmail = async (newEmail, id_user) => {
+    let isUpdated = false;
+    const t = await sequelize.transaction();
+    try {
+        let user = await User.update({
+            email: newEmail
+        }, {
+            where: {
+                id: id_user
+            },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUpdated;
+}
+
+/**
+ * Update basic data of User (name, presentation, username, phoneNumber and birthdate)
+ * @param {*} newUserData the new user's data
+ * @param {*} id_user the user's id who will get updated.
+ * @param {*} transaction as transaction
+ * @issue #6977 Model update not return affectedRows
+ */
+const updateUserBasicData = async (newUserData, id_user, transaction) => {
+    const { name, presentation, username, phoneNumber, birthdate } = newUserData;
+    try {
+        let user = await User.update({ name, presentation, username, }, {
+            where: { id: id_user },
+            transaction
+        });
+        let account = await Account.update({
+            phone_number: phoneNumber,
+            birthday: birthdate
+        }, {
+            where: { id_user },
+            transaction
+        });
+    } catch (error) {
+        throw error;
+    }
+}
+
+
+/**
+ * Update Personal User Role Data and Basic Data
+ * @param {*} basicData the basic data of user (name, presentation, username, phoneNumber, birthdate)
+ * @param {*} personalData the personal data of User (gender, idCareer)
+ * @param {*} id_user the user's ID
+ * @issue #6977 Model update not return affectedRow
+ * @returns true if it was updated otherwise false
+ */
+const updateUserPersonalData = async (basicData, personalData, id_user) => {
+    let isUpdated = false;
+    const { gender, idCareer } = personalData;
+    const t = await sequelize.transaction();
+    try {
+        let user = await updateUserBasicData(basicData, id_user, t);
+        let userRoleType = await PersonalUserRole.update({
+            gender,
+            id_career: idCareer
+        }, {
+            where: {
+                id_user
+            },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUpdated;
+}
+
+/**
+ * Update Business Role Data and Basic Data
+ * @param {*} basicData the basic data of user (name, presentation, username, phoneNumber, birthdate)
+ * @param {*} businessData the business data of user ( category, city, postalCode, postalAddress, contactEmail, phoneContact, organizationName) 
+ * @param {*} id_user the user's ID
+ * @issue #6977 Model update not return affectedRow
+ * @returns true if it was updated otherwise false
+ */
+const updateBusinessData = async (basicData, businessData, id_user) => {
+    let isUpdated = false;
+    const { category, city, postalCode, postalAddress, contactEmail, phoneContat, organizationName } = businessData;
+    const t = await sequelize.transaction();
+    try {
+        let user = await updateUserBasicData(basicData, id_user, t);
+        let businessData = await BusinessUserRole.update({
+            category,
+            city,
+            postal_code: postalCode,
+            postal_address: postalAddress,
+            contact_email: contactEmail,
+            phone_contact: phoneContat,
+            organization_name: organizationName
+        }, {
+            where: { id_user },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUpdated;
+}
+
+/**
+ * Update Moderator Role Data and Basic Data
+ * @param {*} basicData the basic data of user (name, presentation, username, phoneNumber, birthdate) 
+ * @param {*} moderatorData the moderator data ( Nothing by now )
+ * @param {*} id_user the user's ID
+ * @issue #6977 Model update not return affectedRows
+ * @returns true if it was update otherwise false
+ */
+const updateModeratorData = async (basicData, moderatorData, id_user) => {
+    let isUpdated = false;
+    const { updateDate } = moderatorData; // Update_date should be not modified, but by now is OK.
+    try {
+        const t = await sequelize.transaction();
+        let user = await updateUserBasicData(basicData, id_user, t);
+        let moderatorData = await ModeratorUserRole.update({ update_date: updateDate }, {
+            where: { id_user },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUpdated;
+}
+
+/**
+ * Update Administrator Role Data And Basic Data 
+ * @param {*} basicData the basic data of user (name, presentation, username, phoneNumber, birthdate)
+ * @param {*} adminData the administrator data ( Nothing by now )
+ * @param {*} id_user the user's ID
+ * @issue #6977 Model update not return affectedRows
+ * @returns true if it was updated otherwise false
+ */
+const updateAdministratorData = async (basicData, adminData, id_user) => {
+    let isUpdated = false;
+    const { createdTime } = adminData;
+    try {
+        const t = await sequelize.transaction();
+        let user = await updateUserBasicData(basicData, id_user, t);
+        let adminRoleType = await AdministratorUserRole.update({ createdTime }, {
+            where: { id_user },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUpdated;
+}
+
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
@@ -609,5 +790,6 @@ module.exports = {
     doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken,
     getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedUsersOfUser,
     getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser,
-    changePassword, isOldPasswordValid
+    changePassword, isOldPasswordValid, updateUserPersonalData, updateAdministratorData,
+    updateModeratorData, updateBusinessData
 }

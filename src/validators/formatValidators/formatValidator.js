@@ -15,6 +15,21 @@ const validateEmailData = [
         .withMessage("email format is not valid. must have allowed format: hello@example.com")
 ];
 
+const validateEmailAsOptional = [
+    check("email")
+        .optional({ nullable: false })
+        .not()
+        .isEmpty()
+        .withMessage("email is optional, but is not allowed to be empty")
+        .bail()
+        .isLength({ min: 3, max: 254 })
+        .withMessage("email allowed length: {min: 3, max: 254}")
+        .bail()
+        .isEmail()
+        .normalizeEmail()
+        .withMessage("email format is not valid. must have allowed format: hello@example.com")
+];
+
 const validateUsernameData = [
     check("username")
         .not()
@@ -97,7 +112,6 @@ const validateOldPasswordData = [
         .withMessage("oldpassword must have the allowed length: {min: 6, max: 128}")
 ];
 
-
 const validateVerificationCodeData = [
     body("verificationCode")
         .not()
@@ -149,6 +163,109 @@ const validateOptionalAccessTokenParameterData = [
         .withMessage("Bearer token is not valid, you must provide a valid token format")
 ];
 
+const validateGenderData = [
+    check("gender")
+        .not()
+        .isEmpty()
+        .withMessage("gender is required")
+        .bail()
+        .matches(/^[A-Z]+(\_([A-Z]+))*$/)
+        .withMessage("gender must have the allowed characters: upper letters and separated by underscore if more than 2 words")
+];
+
+const validateIdCareer = [
+    check("idCareer")
+        .not()
+        .isEmpty()
+        .withMessage("idCareer is required")
+        .bail()
+        .matches(/^[\d]*$/)
+        .withMessage("phoneNumber must have the allowed characters: digits")
+];
+
+const validateCategory = [
+    check("category")
+        .not()
+        .isEmpty()
+        .withMessage("category is required")
+        .bail()
+        .matches(/^[A-Z]+(\_([A-Z]+))*$/)
+        .withMessage("category must have the allowed characters: upper letters and separated by underscore if more than 2 words")
+];
+
+const validateCity = [
+    check("city")
+        .not()
+        .isEmpty()
+        .withMessage("city is required")
+        .bail()
+        .isLength({ min: 3, max: 30 })
+        .withMessage("city must have the allowed length: {min: 3, max: 340}")
+        .matches(/^[a-zA-Z]+(\ ([a-zA-Z]+))*$/)
+        .withMessage("username is not valid, must have allowed characters: words, numbers. no allowed spaces and period as last character")
+        .isLowercase()
+        .withMessage("username is not valid, must have allowed characters: only lowercase allowed")
+];
+
+const validatePostalCode = [
+    check("postalCode")
+        .not()
+        .isEmpty()
+        .withMessage("postalCode is required")
+        .bail()
+        .isLength({ min: 4, max: 16 })
+        .withMessage("postalCode must have the allowed length: {min: 4, max: 16}")
+        .matches(/^[\w]+([-_]([\w]+))*$/)
+        .withMessage("postalCode is not valid, must have allowed characters: no spaces")
+];
+
+const validatePostalAddress = [
+    check("postalAddress")
+        .not()
+        .isEmpty()
+        .withMessage("postalAddress is required")
+        .bail()
+        .isLength({ min: 4, max: 420 })
+        .withMessage("postalAddress must have the allowed length: {min: 4, max: 420}")
+        .matches(/^[\w]+(\ ([\w]+))*$/)
+        .withMessage("postalAddress is not valid, mut have allowed characters: words, numbers and no spaces between words")
+]
+
+const validateContactEmail = [
+    check("contactEmail")
+        .not()
+        .isEmpty()
+        .withMessage("contactEmail is required")
+        .bail()
+        .isLength({ min: 3, max: 340 })
+        .withMessage("contactEmail allowed length: {min: 3, max: 340}")
+        .bail()
+        .isEmail()
+        .normalizeEmail()
+        .withMessage("contactEmail format is not valid. must have allowed format: hello@example.com")
+];
+
+const validatePhoneContact = [
+    check("phoneContact")
+        .isLength({ min: 8, max: 15 })
+        .withMessage("phoneContact must have the allowed length: {min: 8, max: 15}")
+        .matches(/^[\d]*$/)
+        .withMessage("phoneContact must have the allowed characters: digits")
+];
+
+const validateOrganizationName = [
+    check("organizationName")
+        .not()
+        .isEmpty()
+        .withMessage("organizationName is required")
+        .bail()
+        .isLength({ min: 3, max: 340 })
+        .withMessage("name must have the allowed length: {min: 3, max: 340}")
+        .bail()
+        .matches(/^[a-zA-Z0-9ñ]+(\ ([a-zA-Z0-9ñ]+))*$/)
+        .withMessage("name is not valid, must have allowed characters: a-zA-Z0-9 and one space between words")
+];
+
 const isValidDate = (dateString) => {
     // Parse the date parts to integers
     var parts = dateString.split("-");
@@ -171,5 +288,7 @@ module.exports = {
     validatePresentationData, validatePasswordData, validatePhoneNumberData,
     validateBirthdateData, validateEmailOrUsernameData, validateVerificationCodeData,
     validateAuthorizationHeaderData, validateAccessTokenParameterData, validateRefreshTokenParameterData,
-    validateOptionalAccessTokenParameterData, validateOldPasswordData
+    validateOptionalAccessTokenParameterData, validateOldPasswordData, validateEmailAsOptional,
+    validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode,
+    validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName
 }

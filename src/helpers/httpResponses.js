@@ -137,5 +137,5 @@ const httpResponseInternalServerError = (response, error) => {
 module.exports = {
     httpResponseInternalServerError, httpResponseValidation, httpResponseUnauthorized,
     httpResponseNotFound, httpResponseOk, httpResponseBadRequest,
-    httpResponseErrorToken, httpResponseForbidden
+    httpResponseErrorToken, httpResponseForbidden, httpResponseNotImplement
 }

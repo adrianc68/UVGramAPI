@@ -1,8 +1,11 @@
+const { isEducationalProgramRegistered } = require("../dataaccess/EducationalProgramDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isEmailRegistered, isUsernameRegistered, isVerificationCodeGenerated, doesVerificationCodeMatches,
     getIdByUsername, isOldPasswordValid, getAccountLoginData, removeVerificationCode } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
+const { CategoryType } = require("../models/enum/CategoryType");
+const { GenderType } = require("../models/enum/GenderType");
 
 const validationisEmailRegisteredWithNext = async (request, response, next) => {
     let isRegistered;
@@ -132,10 +135,59 @@ const validationChangePasswordUnloggedUser = async (request, response, next) => 
     return next();
 }
 
+const validationUpdateEmailAndUsernameData = async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    const { username, email } = request.body;
+    let userData = (await verifyToken(token));
+    if (username && username != userData.username) {
+        let doesExistAnotherUserWithSameUsername = await isUsernameRegistered(username);
+        if (doesExistAnotherUserWithSameUsername) {
+            return httpResponseForbidden(response, "the new username is already taken")
+        }
+    }
+    if (email && email != userData.email) {
+        let doesExistAnotherUserWithSameEmail = await isEmailRegistered(email);
+        if (doesExistAnotherUserWithSameEmail) {
+            return httpResponseForbidden(response, "the new email is already taken");
+        }
+    }
+    return next();
+};
+
+const validationPersonalRoleData = async (request, response, next) => {
+    const { gender, idCareer } = request.body;
+    if (!Object.values(GenderType).includes(gender)) {
+        return httpResponseForbidden(response, "gender provided does not exist");
+    }
+    let doesExistCareer = await isEducationalProgramRegistered(idCareer);
+    if (!doesExistCareer) {
+        return httpResponseForbidden(response, "idCareer provided does not exist");
+    }
+    return next();
+};
+
+const validationBusinessRoleData = async (request, response, next) => {
+    const { category } = request.body;
+    if (!Object.values(CategoryType).includes(category)) {
+        return httpResponseForbidden(response, "category type provided does not exist");
+    }
+    return next();
+};
+
+const validationAdminRoleData = async (request, response, next) => {
+    return next();
+};
+
+const validationModeratorRoleData = async (request, response, next) => {
+    return next();
+};
+
 module.exports = {
     validationisEmailRegisteredWithNext, validationIsUsernameRegisteredWithNext,
     validationIsUsernameRegistered, validationIsEmailRegistered, validationNotGeneratedVerificationCode,
-    validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationChangePasswordUnloggedUser
+    validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationChangePasswordUnloggedUser,
+    validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationAdminRoleData, validationModeratorRoleData,
+    validationBusinessRoleData
 }
 
 

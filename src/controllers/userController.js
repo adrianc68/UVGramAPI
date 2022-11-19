@@ -61,7 +61,8 @@ const getProfileOfUser = async (request, response) => {
     let user;
     try {
         const idUser = await getIdByUsername(username).then(id => { return id });
-        // Methods separated because findAll only return first element on inner array
+        // Methods separated because findAll only returns first element on inner array
+        // find with include and raw support:
         // https://github.com/sequelize/sequelize/issues/3885 #3885 <--- Issue
         user = await getUserProfileUserDataAccess(idUser);
         user.followers = (await getFollowedUsersOfUserUserDataAccess(idUser)).length;
