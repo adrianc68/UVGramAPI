@@ -1,3 +1,4 @@
+const { logger } = require("../helpers/logger");
 const { generateRefreshToken: generateRefreshTokenHelper, generateAccessToken: generateAcessTokenHelper,
     addToken: addTokenHelper, removeToken: removeTokenHelper, verifyToken: verifyTokenHelper,
     TOKEN_STATE, TOKEN_TYPE, checkToken: checkTokenHelper } = require("../helpers/token");
@@ -155,10 +156,11 @@ const verifyToken = async (token) => {
  * @param {*} refreshTokenJTI the id of refreshToken
  * @returns accessToken regenerated
  */
-const refreshLoginAndRemoveOldAccessToken = async (accessToken, username, id, userRole, email, refreshTokenJTI) => {
+const refreshLoginAndRemoveOldAccessToken = async (accessToken, username, id, userRole, email) => {
     let newAccessToken;
     try {
-        newAccessToken = await refreshAccessToken(username, id, userRole, email, refreshTokenJTI);
+        let refresTokenJTI = await getRefreshTokenIdByAccessToken(accessToken);
+        newAccessToken = await refreshAccessToken(username, id, userRole, email, refresTokenJTI);
         await removeTokenHelper(accessToken);
     } catch (error) {
         throw new Error(error);
@@ -166,8 +168,18 @@ const refreshLoginAndRemoveOldAccessToken = async (accessToken, username, id, us
     return newAccessToken;
 }
 
+const getRefreshTokenIdByAccessToken = async (accessToken) => {
+    let refreshTokenId;
+    try {
+        refreshTokenId = (await verifyToken(accessToken)).refreshTokenId;
+    } catch (error) {
+        throw new Error(error);
+    }
+    return refreshTokenId;
+}
+
 module.exports = {
     removeOptionalAccessToken, refreshAccessToken, generateTokens,
     removeToken, verifyToken, getTokenExist, TOKEN_STATE, TOKEN_TYPE,
-    refreshLoginAndRemoveOldAccessToken
+    refreshLoginAndRemoveOldAccessToken, getRefreshTokenIdByAccessToken
 }

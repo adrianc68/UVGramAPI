@@ -47,7 +47,7 @@ const getAccountLoginData = async (emailOrUsername) => {
 /**
  * Get user, account data from database using id
  * @param {*} id the user's id.
- * @returns undefined or the user data retrieved from database.
+ * @returns User including Account and UserRole
  */
 const getAccountLoginDataById = async (id) => {
     const user = await User.findAll({
@@ -618,11 +618,11 @@ const updateUserEmail = async (newEmail, id_user) => {
     let isUpdated = false;
     const t = await sequelize.transaction();
     try {
-        let user = await User.update({
+        let user = await Account.update({
             email: newEmail
         }, {
             where: {
-                id: id_user
+                id_user
             },
             transaction: t
         });
@@ -740,8 +740,8 @@ const updateBusinessData = async (basicData, businessData, id_user) => {
 const updateModeratorData = async (basicData, moderatorData, id_user) => {
     let isUpdated = false;
     const { updateDate } = moderatorData; // Update_date should be not modified, but by now is OK.
+    const t = await sequelize.transaction();
     try {
-        const t = await sequelize.transaction();
         let user = await updateUserBasicData(basicData, id_user, t);
         let moderatorData = await ModeratorUserRole.update({ update_date: updateDate }, {
             where: { id_user },
@@ -767,8 +767,8 @@ const updateModeratorData = async (basicData, moderatorData, id_user) => {
 const updateAdministratorData = async (basicData, adminData, id_user) => {
     let isUpdated = false;
     const { createdTime } = adminData;
+    const t = await sequelize.transaction();
     try {
-        const t = await sequelize.transaction();
         let user = await updateUserBasicData(basicData, id_user, t);
         let adminRoleType = await AdministratorUserRole.update({ createdTime }, {
             where: { id_user },
@@ -791,5 +791,5 @@ module.exports = {
     getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedUsersOfUser,
     getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser,
     changePassword, isOldPasswordValid, updateUserPersonalData, updateAdministratorData,
-    updateModeratorData, updateBusinessData
+    updateModeratorData, updateBusinessData, updateUserEmail
 }

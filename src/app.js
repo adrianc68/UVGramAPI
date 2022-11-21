@@ -10,6 +10,7 @@ const { sequelize } = require("./database/connectionDatabaseSequelize");
 const { handleJSON } = require("./middleware/jsonValidation");
 
 app.set("port", process.env.SV_PORT);
+app.set("host", process.env.SV_HOST);
 // middlewares
 app.disable("x-powered-by");
 app.use(helmet());
@@ -24,6 +25,7 @@ app.use(require("./routers/userAccount"));
 app.use(require("./routers/authentication"));
 app.use(require("./routers/user"));
 app.use(require("./routers/data"));
+app.use(require("./routers/urlVerification"));
 
 const connetionToServers = async () => {
     try {

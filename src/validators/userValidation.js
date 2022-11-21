@@ -1,6 +1,7 @@
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isUserFollowedByUser, getIdByUsername, isUserBlockedByUser, isUsernameRegistered } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 
 const isUserAlreadyFollowedByUser = async (idUserFollower, idUserFollowed) => {
     let isFollowed = false;

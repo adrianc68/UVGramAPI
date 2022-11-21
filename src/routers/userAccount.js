@@ -89,7 +89,6 @@ router.patch("/accounts/edit/admin",
     updateUser,
 );
 
-
 router.get("/accounts/users/",
     checkAccessTokenAndAuthRoleMiddleware(UserRoleType.ADMINISTRATOR),
     getAllUsers
