@@ -42,14 +42,14 @@ const generateRefreshToken = async (payload) => {
  * This method generate and signs a token of type accessToken
  * and it's need a reference to a refreshToken.
  * @param {*} payload data that contain user data
- * @param {*} refreshTokenId must be the refreshToken id (jti).
+ * @param {*} refreshTokenJti must be the refreshToken id (jti).
  * @returns the token generated with jti uuidv4 identifier.
  */
-const generateAccessToken = async (payload, refreshTokenId) => {
+const generateAccessToken = async (payload, refreshTokenJti) => {
     const jti = uuidv4();
     const accessTokenPayload = {
         ...payload,
-        refreshTokenId,
+        refreshTokenJti,
         tokenType: TOKEN_TYPE.ACCESS,
     };
     const accessToken = jwt.sign(

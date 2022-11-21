@@ -20,12 +20,21 @@ const refreshTokens = async (request, response) => {
     let newAccessToken;
     let refreshToken = (request.headers.authorization).split(" ")[1];
     let resultRemoveAccessToken;
-    let optionalAccessToken = (request.headers.accesstoken).split(" ")[1];
     try {
-        resultRemoveAccessToken = (optionalAccessToken) ? await removeToken(optionalAccessToken) : undefined;
         let refreshTokenData = await verifyToken(refreshToken);
         let user = await getAccountLoginDataById(refreshTokenData.id);
         newAccessToken = await refreshAccessToken(user.id, user["UserRole.role"], refreshTokenData.jti);
+
+        if (request.headers.accesstoken) {
+            let optionalAccessToken = (request.headers.accesstoken).split(" ")[1];
+            let optionalTokenData = await verifyToken(optionalAccessToken);
+            if (optionalTokenData.refreshTokenJti == refreshTokenData.jti) {
+                resultRemoveAccessToken = (optionalAccessToken) ? await removeToken(optionalAccessToken) : undefined;
+            } else {
+                resultRemoveAccessToken = "can not remove accessToken that not belongs to refreshToken"
+            }
+        }
+
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }

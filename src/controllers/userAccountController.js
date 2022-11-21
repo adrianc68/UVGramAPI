@@ -130,10 +130,7 @@ const changePasswordOnLoggedUser = async (request, response) => {
     try {
         let token = (request.headers.authorization).split(" ")[1];
         let userLoggedId = await verifyToken(token).then(data => { return data.id });
-
-        logger.debug("testttttt");
         let userEmail = await getAccountLoginDataById(userLoggedId).then(data => { return data.email });
-        logger.debug("--->" + userEmail);
         isUpdated = await changePassword(userEmail, password);
     } catch (error) {
         return httpResponseInternalServerError(response, error);

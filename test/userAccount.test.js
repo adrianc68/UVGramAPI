@@ -2,7 +2,6 @@ const request = require('supertest');
 const { connetionToServers } = require('../src/app');
 const { sequelize } = require("../src/database/connectionDatabaseSequelize");
 const { redisClient } = require('../src/database/connectionRedis');
-const { logger } = require('../src/helpers/logger');
 const { server, delayServerConnections } = require("../src/server")
 
 beforeAll(async () => {
@@ -1229,7 +1228,7 @@ describe('POST /accounts/password/change', () => {
 
     test('POST /accounts/password/change 403 Forbidden Bearer token is not valid', async () => {
         response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}s` }).send({ "password": "hola1234", "oldPassword": undefined });
-        expect(response.body.message.error).toContain("accessToken does not exist");
+        expect(response.body.message.error).toContain("JsonWebTokenError: invalid signature");
         expect(response.statusCode).toBe(403);
     });
 });

@@ -1,4 +1,4 @@
-\connect uvgram_db
+\connect test_uvgram_db
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -402,6 +402,20 @@ CREATE TABLE public."Session" (
 ALTER TABLE public."Session" OWNER TO dev;
 
 --
+-- Name: URLRecover; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."URLRecover" (
+    uuid uuid NOT NULL,
+    action character varying(50) NOT NULL,
+    id_user bigint NOT NULL,
+    token text
+);
+
+
+ALTER TABLE public."URLRecover" OWNER TO dev;
+
+--
 -- Name: User; Type: TABLE; Schema: public; Owner: dev
 --
 
@@ -513,10 +527,10 @@ ALTER TABLE public.user_id_seq OWNER TO dev;
 --
 
 COPY public."Account" (password, email, id_user, phone_number, birthday) FROM stdin;
-3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram@uvgram.com	1	2234567890	2022-01-26
 3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram2@uvgram.com	2	2234567890	2022-01-26
 3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram3@uvgram.com	3	2234567890	2022-01-26
 3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram4@uvgram.com	4	2234567890	2022-01-26
+3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram1@uvgram.com	1	2283687920	2022-01-26
 \.
 
 
@@ -581,6 +595,7 @@ FACULTAD_ESTADISTICA_E_INFORMATICA	1	1
 --
 
 COPY public."Follower" (id_user_follower, id_user_followed) FROM stdin;
+4	2
 \.
 
 
@@ -618,24 +633,15 @@ COPY public."Region" (id, region) FROM stdin;
 1	XALAPA
 \.
 
-
---
--- Data for Name: Session; Type: TABLE DATA; Schema: public; Owner: dev
---
-
-COPY public."Session" (id_user, token, created_time, device) FROM stdin;
-\.
-
-
 --
 -- Data for Name: User; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
 COPY public."User" (name, presentation, username, id) FROM stdin;
-Administrator	\N	uvgram1	1
 Moderator	\N	uvgram2	2
 Business	\N	uvgram3	3
 Personal	\N	uvgram4	4
+Administrator	\N	uvgram1	1
 \.
 
 
@@ -745,6 +751,14 @@ ALTER TABLE ONLY public."LoginAttempts"
 
 ALTER TABLE ONLY public."Region"
     ADD CONSTRAINT "PK_Region" PRIMARY KEY (id);
+
+
+--
+-- Name: URLRecover PK_URLRecover; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."URLRecover"
+    ADD CONSTRAINT "PK_URLRecover" PRIMARY KEY (id_user);
 
 
 --
@@ -859,6 +873,13 @@ CREATE INDEX "IXFK_Personal_UserRole" ON public."Personal" USING btree (id_user)
 --
 
 CREATE INDEX "IXFK_Session_Account" ON public."Session" USING btree (id_user);
+
+
+--
+-- Name: IXFK_URLRecover_Account; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_URLRecover_Account" ON public."URLRecover" USING btree (id_user);
 
 
 --
@@ -977,6 +998,14 @@ ALTER TABLE ONLY public."Personal"
 
 ALTER TABLE ONLY public."Session"
     ADD CONSTRAINT "FK_Session_Account" FOREIGN KEY (id_user) REFERENCES public."Account"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: URLRecover FK_URLRecover_Account; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."URLRecover"
+    ADD CONSTRAINT "FK_URLRecover_Account" FOREIGN KEY (id_user) REFERENCES public."Account"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

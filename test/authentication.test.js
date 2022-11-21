@@ -1,12 +1,11 @@
 const request = require('supertest');
+const { connetionToServers } = require('../src/app');
 const { sequelize } = require("../src/database/connectionDatabaseSequelize");
 const { redisClient } = require("../src/database/connectionRedis");
 const { server, delayServerConnections } = require("../src/server");
 
 beforeAll(async () => {
     await delayServerConnections();
-    await connetionToServers();
-
     await sequelize.truncate({ cascade: true, restartIdentity: true });
     await redisClient.flushAll("ASYNC");
 });
@@ -116,32 +115,32 @@ describe('POST /authentication/login', () => {
 
 describe('POST /authentication/logout', () => {
     test('POST /authentication/logout 404 Resource Not Found ', async () => {
-        response = await request(server).post("/authentication/logoutvvadf").set({ "authorization": "Bearer sadfasdfas", "refreshToken": "Bearer kspdfad" }).send();
+        response = await request(server).post("/authentication/logoutvvadf").set({ "authorization": "Bearer sadfasdfas" }).send();
         expect(response.statusCode).toBe(404);
     });
 
     test('POST /authentication/logout 400 Bad Request authorization is required ', async () => {
-        response = await request(server).post("/authentication/logout").set({ "asdfa": "Bearer sadfasdfas", "refreshToken": "Bearer kspdfad" }).send();
+        response = await request(server).post("/authentication/logout").set({ "asdfa": "Bearer sadfasdfas" }).send();
         expect(response.body.errors[0].msg).toContain("authorization header is required")
         expect(response.statusCode).toBe(400);
     });
 
     test('POST /authentication/logout 400 Bad Request authorization is empty ', async () => {
-        response = await request(server).post("/authentication/logout").set({ "authorization": "", "refreshToken": "Bearer kspdfad" }).send();
+        response = await request(server).post("/authentication/logout").set({ "authorization": "" }).send();
         expect(response.body.errors[0].msg).toContain("authorization header is required")
         expect(response.statusCode).toBe(400);
     });
 
     test('POST /authentication/logout 400 Bad Request authorization is null ', async () => {
-        response = await request(server).post("/authentication/logout").set({ "authorization": null, "refreshToken": "Bearer kspdfad" }).send();
+        response = await request(server).post("/authentication/logout").set({ "authorization": null }).send();
         expect(response.body.errors[0].msg).toContain("Bearer token is not valid, you must provide a valid token format")
         expect(response.statusCode).toBe(400);
     });
 
-    test('POST /authentication/logout 400 Bad Request refreshToken is required ', async () => {
+    test('POST /authentication/logout 400 Bad Request autohrization is malformed ', async () => {
         response = await request(server).post("/authentication/logout").set({ "authorization": "Bearer test" }).send();
-        expect(response.body.errors[0].msg).toContain("refreshToken header is required");
-        expect(response.statusCode).toBe(400);
+        expect(response.body.message.error).toContain("JsonWebTokenError: jwt malformed");
+        expect(response.statusCode).toBe(403);
     });
 
     describe('POST /authentication/logout After user creation', () => {
@@ -181,14 +180,13 @@ describe('POST /authentication/logout', () => {
         });
 
         test('POST /authentication/logout 400 Bad Request RefreshToken Bearer format invalid ', async () => {
-            response = await request(server).post("/authentication/logout").set({ "authorization": `Bearer ${accessToken}`, "refreshToken": `${refreshToken}` }).send();
-            expect(response.body.errors[0].param).toContain("refreshtoken")
+            response = await request(server).post("/authentication/logout").set({ "authorization": `Bearer${accessToken}` }).send();
             expect(response.body.errors[0].msg).toContain('Bearer token is not valid, you must provide a valid token format');
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /authentication/logout 200 Ok Logout successful ', async () => {
-            response = await request(server).post("/authentication/logout").set({ "authorization": `Bearer ${accessToken}`, "refreshToken": `Bearer ${refreshToken}` }).send();
+            response = await request(server).post("/authentication/logout").set({ "authorization": `Bearer ${accessToken}` }).send();
             expect(response.body.message).toContain("logout successful");
             expect(response.statusCode).toBe(200);
         });
@@ -226,7 +224,7 @@ describe('POST /authentication/refresh', () => {
             await redisClient.flushAll("ASYNC");
         });
 
-        test('POST /authentication/refresh 403 Forbidden Refresh accessToken but providing accessToken as authorization', async () => {
+        test('POST /authentication/refresh 403 Forbidden Provide a token of type refresh.', async () => {
             response = await request(server).post("/authentication/refresh").set({ "authorization": `Bearer ${accessToken}` }).send();
             expect(response.body.message.error).toContain("you must provide a token of type refreshToken");
             expect(response.statusCode).toBe(403);
@@ -240,8 +238,10 @@ describe('POST /authentication/refresh', () => {
 
         test('POST /authentication/refresh 200 OK Refresh accessToken without last accessToken', async () => {
             response = await request(server).post("/authentication/refresh").set({ "authorization": `Bearer ${refreshToken}` }).send();
-            expect(response.body.message.accessToken).not.toBeNull();
+            expect(response.body.accessToken).not.toBeNull();
             expect(response.statusCode).toBe(200);
         });
     });
+
+
 });

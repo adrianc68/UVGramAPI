@@ -184,7 +184,7 @@ describe('DEL /user/unfollow/', () => {
 
         test('DEL /user/unfollow 403 Bad Token invalid', async () => {
             response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${accessToken}s` }).send({ "username": "uvgram99" });
-            expect(response.body.message.error).toContain("accessToken does not exist");
+            expect(response.body.message.error).toContain("JsonWebTokenError: invalid signature");
             expect(response.statusCode).toBe(403);
         });
 
@@ -359,7 +359,7 @@ describe('GET /user/followed-by/:username', () => {
 
         test('GET /user/followed-by/:username 403 Forbidden uvgram6 token does not exist', async () => {
             response = await request(server).get("/user/followed-by/uvgram6").set({ "authorization": `Bearer ${accessTokenUser3}s` }).send();
-            expect(response.body.message.error).toContain("accessToken does not exist");
+            expect(response.body.message.error).toContain("JsonWebTokenError: invalid signature");
             expect(response.statusCode).toBe(403);
         });
     });
@@ -526,7 +526,7 @@ describe('GET /user/followers-of/:username', () => {
 
         test('GET /user/followers-of/:username 403 Forbidden uvgram6 token does not exist', async () => {
             response = await request(server).get("/user/followers-of/uvgram6").set({ "authorization": `Bearer ${accessTokenUser3}s` }).send();
-            expect(response.body.message.error).toContain("accessToken does not exist");
+            expect(response.body.message.error).toContain("JsonWebTokenError: invalid signature");
             expect(response.statusCode).toBe(403);
         });
     });

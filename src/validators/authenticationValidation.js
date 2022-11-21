@@ -3,7 +3,6 @@ const { encondePassword } = require("../helpers/cipher");
 const { getAccountLoginData } = require("../dataaccess/userDataAccess");
 const { getTokenExist, TOKEN_TYPE } = require("../dataaccess/tokenDataAccess");
 const { AccountStatusType } = require("../models/enum/AccountStatusType");
-const { logger } = require("../helpers/logger");
 
 const doesExistUser = (user) => {
     let doesExistUser = false;

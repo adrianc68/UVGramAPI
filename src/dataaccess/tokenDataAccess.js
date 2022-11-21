@@ -1,6 +1,5 @@
 const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { logger } = require("../helpers/logger");
 const { generateRefreshToken: generateRefreshTokenHelper, generateAccessToken: generateAcessTokenHelper,
     addToken: addTokenHelper, removeTokenByJTI, verifyToken: verifyTokenHelper,
     TOKEN_STATE, TOKEN_TYPE, getTokenValueRedis } = require("../helpers/token");
@@ -54,7 +53,7 @@ const getTokenExist = async (token, tokenType) => {
     try {
         tokenData = await verifyToken(token);
     } catch (error) {
-        throw new Error(error);
+        throw new Error(error.message);
     }
     if (!tokenData) throw new Error(`${tokenType} does not exist`);
     if (tokenData.tokenType != tokenType) throw new Error(`you must provide a token of type ${tokenType}`);
@@ -143,7 +142,6 @@ const removeToken = async (token) => {
     try {
         let tokenData = await verifyToken(token);
         let result = await removeTokenByJTI(tokenData.jti);
-        logger.debug(result);
         isRemoved = true;
     } catch (error) {
         throw new Error(error);
@@ -159,7 +157,7 @@ const removeToken = async (token) => {
 const deleteAllSessionByAccessToken = async (accessToken) => {
     let isRemoved;
     try {
-        let refreshTokenJTI = (await verifyToken(accessToken)).refreshTokenId;;
+        let refreshTokenJTI = (await verifyToken(accessToken)).refreshTokenJti;;
         let resultRemoveSession = await deleteSessionInDbByRefreshJTI(refreshTokenJTI);
         let resultRemoveRefreshToken = await removeTokenByJTI(refreshTokenJTI);
         let resultRemoveAccesToken = await removeToken(accessToken);
@@ -195,7 +193,7 @@ const verifyToken = async (token) => {
 const refreshLoginAndRemoveOldAccessToken = async (accessToken, id_user, userRole) => {
     let newAccessToken;
     try {
-        let refresTokenJTI = (await verifyToken(accessToken)).refreshTokenId;
+        let refresTokenJTI = (await verifyToken(accessToken)).refreshTokenJti;
         newAccessToken = await refreshAccessToken(username, id_user, userRole, email, refresTokenJTI);
         await removeTokenByJTI(accessToken);
     } catch (error) {

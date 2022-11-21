@@ -3,7 +3,6 @@ const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isEmailRegistered, isUsernameRegistered, isVerificationCodeGenerated, doesVerificationCodeMatches,
     getIdByUsername, isOldPasswordValid, getAccountLoginData, removeVerificationCode, getAccountLoginDataById } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 const { CategoryType } = require("../models/enum/CategoryType");
 const { GenderType } = require("../models/enum/GenderType");
 
