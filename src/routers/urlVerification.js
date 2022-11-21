@@ -1,6 +1,4 @@
 const { changeEmailDataOnConfirmation } = require('../controllers/urlRecoverController');
-const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
-const { UserRoleType } = require('../models/enum/UserRoleType');
 const { validationURLRecover } = require('../validators/urlRecoverValidation');
 const router = require('express').Router();
 

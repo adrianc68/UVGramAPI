@@ -72,56 +72,56 @@ const verifyToken = async (token) => {
 };
 
 /**
- * Add token to redis server.
- * @param {*} token that will act as the key.
- * @param {*} jti the value that will be stored as value.
+ * Add token to REDIS server.
+ * @param {*} token the value that will be stored as value.
+ * @param {*} jti that will act as the key.
  */
 const addToken = async (token, jti) => {
-    const check = await redisClient.EXISTS(token);
+    const check = await redisClient.EXISTS(jti);
     if (check == 1) {
         return;
     }
-    const value = `${TOKEN_STATE.VALID} ${jti}`
-    await redisClient.SET(token, value);
+    const value = `${TOKEN_STATE.VALID} ${token}`
+    await redisClient.SET(jti, value);
     const payload = await verifyToken(token);
-    await redisClient.EXPIREAT(token, +payload.exp);
+    await redisClient.EXPIREAT(jti, +payload.exp);
     return;
 };
 
 /**
- * Check if token is stored in redis server
- * @param {*} token that will act as a key.
- * @returns the token value: token state plus Jti).
+ * Get token value from REDIS server
+ * @param {*} jti as key.
+ * @returns value of key in redis
  */
-const checkToken = async (token) => {
-    const status = await redisClient.GET(token);
+const getTokenValueRedis = async (jti) => {
+    const status = await redisClient.GET(jti);
     return status;
 };
 
 /**
- * Set the token value into invalid in redis server.
+ * Set the token value into invalid in REDIS server.
  * @param {*} token that will act as a key.
  * @param {*} jti the token jti value.
  */
 const blacklistToken = async (token, jti) => {
-    const value = `${TOKEN_STATE.INVALID} ${jti}`
-    const status = await redisClient.SET(token, value);
+    const value = `${TOKEN_STATE.INVALID} ${token}`
+    const status = await redisClient.SET(jti, value);
     if (status == "nil") return;
     const payload = await verifyToken(token);
-    await redisClient.EXPIREAT(token, +payload.exp);
+    await redisClient.EXPIREAT(jti, +payload.exp);
     return;
 };
 
 /**
- * Remove token from redis server.
- * @param {*} token that will act as a key.
+ * Remove token from REDIS server.
+ * @param {*} jti that will act as a key.
  */
-const removeToken = async (token) => {
-    await redisClient.del(token);
+const removeTokenByJTI = async (jti) => {
+    return await redisClient.del(jti);
 };
 
 module.exports = {
     generateRefreshToken, generateAccessToken, verifyToken,
-    addToken, checkToken, blacklistToken,
-    removeToken, TOKEN_STATE, TOKEN_TYPE
+    addToken, getTokenValueRedis, blacklistToken,
+    removeTokenByJTI, TOKEN_STATE, TOKEN_TYPE
 }

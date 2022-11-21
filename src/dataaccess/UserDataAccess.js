@@ -16,6 +16,7 @@ const { User } = require("../models/User");
 const { UserConfiguration } = require("../models/UserConfiguration");
 const { UserRole } = require("../models/UserRole");
 const { VerificationCode } = require("../models/VerificationCode");
+
 /**
  * Get user,account data from database using email or username
  * @param {*} emailOrUsername email or username.
@@ -54,13 +55,15 @@ const getAccountLoginDataById = async (id) => {
         where: {
             id
         },
-        attributes: ["id", "username"],
+        attributes: ["id", "username", "Account.password", "Account.email", "UserRole.role"],
         include: [{
             model: Account,
-            attributes: ["password", "email"]
+            as: "Account",
+            attributes: []
         }, {
             model: UserRole,
-            attributes: ["role"]
+            as: "UserRole",
+            attributes: []
         }],
         plain: true,
         raw: true
@@ -275,50 +278,6 @@ const doesVerificationCodeMatches = async (username, verificationCode) => {
 };
 
 /**
- * Save session including a refresh token in database
- * @param {*} session session that must include id_user, token (refresh token) and device
- * @returns true if it was saved otherwise false
- */
-const saveSessionToken = async (session) => {
-    let isSaved = false;
-    const t = await sequelize.transaction();
-    try {
-        await Session.create({
-            ...session
-        }, { transaction: t });
-        await t.commit();
-        isSaved = true;
-    } catch (error) {
-        await t.rollback();
-        throw new Error(error);
-    }
-    return isSaved;
-};
-
-/**
- * Remove session by token (refresh) in database.
- * @param {*} token the session to be removed.
- * @returns true if it was removed otherwise false.
- */
-const removeSessionToken = async (token) => {
-    let isRemoved = false;
-    const t = await sequelize.transaction();
-    try {
-        await Session.destroy({
-            where: {
-                token
-            }
-        }, { transaction: t });
-        await t.commit();
-        isRemoved = true;
-    } catch (error) {
-        await t.rollback();
-        throw new Error(error);
-    }
-    return isRemoved;
-};
-
-/**
  * Change user password.
  * @param {*} emailOrUsername the email of user.
  * @param {*} password the new password to be changed.
@@ -467,7 +426,7 @@ const isUserFollowedByUser = async (id_user_follower, id_user_followed) => {
  * @param {*} id the user that is following the those users
  * @returns array with users that contain username and name
  */
-const getFollowedUsersOfUser = async (id) => {
+const getFollowedByUser = async (id) => {
     let followedByUser = [];
     try {
         followedByUser = await Follower.findAll({
@@ -787,8 +746,8 @@ module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
     generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
-    doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken,
-    getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedUsersOfUser,
+    doesVerificationCodeMatches, getIdByUsername,
+    getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedByUser,
     getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser,
     changePassword, isOldPasswordValid, updateUserPersonalData, updateAdministratorData,
     updateModeratorData, updateBusinessData, updateUserEmail

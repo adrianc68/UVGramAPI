@@ -1,64 +1,101 @@
+const { Op, Sequelize } = require("sequelize");
+const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { logger } = require("../helpers/logger");
 const { generateRefreshToken: generateRefreshTokenHelper, generateAccessToken: generateAcessTokenHelper,
-    addToken: addTokenHelper, removeToken: removeTokenHelper, verifyToken: verifyTokenHelper,
-    TOKEN_STATE, TOKEN_TYPE, checkToken: checkTokenHelper } = require("../helpers/token");
-const { removeSessionToken } = require("./userDataAccess");
+    addToken: addTokenHelper, removeTokenByJTI, verifyToken: verifyTokenHelper,
+    TOKEN_STATE, TOKEN_TYPE, getTokenValueRedis } = require("../helpers/token");
+const { Session } = require("../models/Session");
+
+const saveSessionTokenInDatabase = async (id_user, jti, device_info) => {
+    let isSaved = false;
+    const t = await sequelize.transaction();
+    try {
+        await Session.create({
+            id_user,
+            token: jti,
+            device: device_info
+        }, { transaction: t });
+        await t.commit();
+        isSaved = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isSaved;
+};
+
+const deleteSessionInDbByRefreshJTI = async (refreshTokenJTI) => {
+    let isRemoved = false;
+    const t = await sequelize.transaction();
+    try {
+        await Session.destroy({
+            where: {
+                token: refreshTokenJTI
+            }
+        }, { transaction: t });
+        await t.commit();
+        isRemoved = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isRemoved;
+};
 
 /**
 * Check that the token has the VALID status and TokenType 
-* is the expected tokenType
 * @param {*} token token to be verified.
 * @param {*} tokenType type of token expected
-* @returns the actual value got from redis database (VALID|INVALID|NILL|Undefined|null)
+* @returns the actual value from redis database (VALID|INVALID|NILL|Undefined|null)
 */
 const getTokenExist = async (token, tokenType) => {
     let value;
+    let tokenData;
     try {
-        value = await checkTokenHelper(token);
+        tokenData = await verifyToken(token);
+    } catch (error) {
+        throw new Error(error);
+    }
+    if (!tokenData) throw new Error(`${tokenType} does not exist`);
+    if (tokenData.tokenType != tokenType) throw new Error(`you must provide a token of type ${tokenType}`);
+    try {
+        value = await getTokenValueRedis(tokenData.jti);
+        if (!value || value == TOKEN_STATE.NIL) {
+            throw (`${tokenType} does not exist`);
+        }
     } catch (error) {
         throw new Error(error, `${tokenType} not found`)
     }
-    if (!value || value == TOKEN_STATE.NIL) {
-        throw new Error(`${tokenType} does not exist`);
-    } else if (value.split(" ")[0] == TOKEN_STATE.INVALID) {
+
+    if (value.split(" ")[0] == TOKEN_STATE.INVALID) {
         throw new Error(`${tokenType} has expired`)
-    }
-    try {
-        let values = await verifyToken(token);
-        if (values.tokenType != tokenType) {
-            throw (`you must provide a token of type ${tokenType}`)
-        }
-    } catch (error) {
-        throw new Error(error, `${tokenType} is not valid`);
     }
     return value;
 };
 
 /**
- * It generates the accessToken and refreshToken
- * @param {*} username data to be save into payload.
+ * It generates the accessToken and refreshToken and save Session into database
  * @param {*} userId data to be save into payload.
  * @param {*} userRole data to be save into payload.
- * @param {*} email data to be save into payload.
+ * @param {*} session data of device who log in to system.
  * @returns the accessToken and refreshToken as JSON object.
  */
-const generateTokens = async (username, userId, userRole, email) => {
+const generateTokens = async (userId, userRole, device_info) => {
     let accessToken;
     let refreshToken;
     try {
         let payloadAccessToken = {
             id: userId,
-            username,
             userRole,
-            email
         };
         refreshToken = await generateRefreshTokenHelper(payloadAccessToken);
         accessToken = await generateAcessTokenHelper(payloadAccessToken, refreshToken.jti);
         await addTokenHelper(refreshToken.token, refreshToken.jti);
         await addTokenHelper(accessToken.token, accessToken.jti);
+        await saveSessionTokenInDatabase(userId, refreshToken.jti, device_info);
     } catch (error) {
-        removeTokenHelper(accessToken.jti);
-        removeTokenHelper(refreshToken.jti);
+        removeTokenByJTI(accessToken.jti);
+        removeTokenByJTI(refreshToken.jti);
         throw new Error(error);
     }
     let tokensCreated = {
@@ -70,26 +107,22 @@ const generateTokens = async (username, userId, userRole, email) => {
 
 /**
  * It generates a new accessToken using a refreshtoken identifier.
- * @param {*} username data to be save into payload.
  * @param {*} userId data to be save into payload.
  * @param {*} userRole data to be save into payload.
- * @param {*} email data to be save into payload.
  * @param {*} refreshTokenJti the identifier of refreshToken
  * @returns the new accessToken as JSON object.
  */
-const refreshAccessToken = async (username, userId, userRole, email, refreshTokenJti) => {
+const refreshAccessToken = async (userId, userRole, refreshTokenJti) => {
     let accessToken;
     try {
         let payloadAccessToken = {
             userId,
-            username,
             userRole,
-            email
         };
         accessToken = await generateAcessTokenHelper(payloadAccessToken, refreshTokenJti);
         await addTokenHelper(accessToken.token, accessToken.jti);
     } catch (error) {
-        removeTokenHelper(accessToken.jti);
+        removeTokenByJTI(accessToken.jti);
         throw new Error(error);
     }
     let tokenCreated = {
@@ -99,42 +132,48 @@ const refreshAccessToken = async (username, userId, userRole, email, refreshToke
 };
 
 /**
- * It receives a optional accessToken and removes if exists from redis server.
- * @param {*} optionalAccessToken the accessToken to be removed
- * @returns undefined if token does not exist and fail message if cannot be removed from redis server
- */
-const removeOptionalAccessToken = async (optionalAccessToken) => {
-    let optionalOldAccessTokenMessage;
-    if (optionalAccessToken) {
-        try {
-            await verifyTokenHelper(optionalAccessToken);
-            await removeTokenHelper(optionalAccessToken);
-        } catch (error) {
-            optionalOldAccessTokenMessage = {
-                message: "Failed to remove access token",
-                errorType: error.message
-            }
-        }
-    }
-    return optionalOldAccessTokenMessage;
-};
-
-/**
  * Remove token from redis server
- * @param {*} token the token to remove that will act as key
+ * This method doesnt remove the token from jwt library (because is not possible)
+ * instead it removes the redis token, which it's where we can validate if token is valid
+ * or it's expired.
+ * @param {*} token the token (can be accessToken or refreshToken) to remove from redis
  */
 const removeToken = async (token) => {
+    let isRemoved;
     try {
-        await removeTokenHelper(token);
+        let tokenData = await verifyToken(token);
+        let result = await removeTokenByJTI(tokenData.jti);
+        logger.debug(result);
+        isRemoved = true;
     } catch (error) {
         throw new Error(error);
     }
+    return isRemoved;
 };
 
 /**
- * Verify if token exist and decode data.
+ * Delete a specific session including both tokens and session db row.
+ * @param {*} accessToken the actual device accessToken
+ * @returns true if was removed otherwise false
+ */
+const deleteAllSessionByAccessToken = async (accessToken) => {
+    let isRemoved;
+    try {
+        let refreshTokenJTI = (await verifyToken(accessToken)).refreshTokenId;;
+        let resultRemoveSession = await deleteSessionInDbByRefreshJTI(refreshTokenJTI);
+        let resultRemoveRefreshToken = await removeTokenByJTI(refreshTokenJTI);
+        let resultRemoveAccesToken = await removeToken(accessToken);
+        isRemoved = true;
+    } catch (error) {
+        throw new Error(error);
+    }
+    return isRemoved;
+}
+
+/**
+ * Verify if token exist return the decoded data.
  * @param {*} token the token to be verified.
- * @returns the JWT data decoded.
+ * @returns the data decoded from JTW
  */
 const verifyToken = async (token) => {
     let tokenVerified;
@@ -149,37 +188,25 @@ const verifyToken = async (token) => {
 /**
  * Refresh login of user removing old access token
  * @param {*} accessToken the accesstoken that will be removed
- * @param {*} username the actual user data
- * @param {*} id the actual user data
+ * @param {*} id_user the actual user data
  * @param {*} userRole the actual user data
- * @param {*} email the actual user data
- * @param {*} refreshTokenJTI the id of refreshToken
  * @returns accessToken regenerated
  */
-const refreshLoginAndRemoveOldAccessToken = async (accessToken, username, id, userRole, email) => {
+const refreshLoginAndRemoveOldAccessToken = async (accessToken, id_user, userRole) => {
     let newAccessToken;
     try {
-        let refresTokenJTI = await getRefreshTokenIdByAccessToken(accessToken);
-        newAccessToken = await refreshAccessToken(username, id, userRole, email, refresTokenJTI);
-        await removeTokenHelper(accessToken);
+        let refresTokenJTI = (await verifyToken(accessToken)).refreshTokenId;
+        newAccessToken = await refreshAccessToken(username, id_user, userRole, email, refresTokenJTI);
+        await removeTokenByJTI(accessToken);
     } catch (error) {
         throw new Error(error);
     }
     return newAccessToken;
 }
 
-const getRefreshTokenIdByAccessToken = async (accessToken) => {
-    let refreshTokenId;
-    try {
-        refreshTokenId = (await verifyToken(accessToken)).refreshTokenId;
-    } catch (error) {
-        throw new Error(error);
-    }
-    return refreshTokenId;
-}
 
 module.exports = {
-    removeOptionalAccessToken, refreshAccessToken, generateTokens,
-    removeToken, verifyToken, getTokenExist, TOKEN_STATE, TOKEN_TYPE,
-    refreshLoginAndRemoveOldAccessToken, getRefreshTokenIdByAccessToken
+    refreshAccessToken, generateTokens, removeToken,
+    verifyToken, getTokenExist, TOKEN_STATE, TOKEN_TYPE,
+    refreshLoginAndRemoveOldAccessToken, deleteAllSessionByAccessToken
 }

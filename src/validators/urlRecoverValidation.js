@@ -1,5 +1,6 @@
 const { getDataURLRecover } = require("../dataaccess/urlRecoverDataAccess");
-const { httpResponseForbidden } = require("../helpers/httpResponses");
+const { httpResponseNotFound } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 
 const validationURLRecover = async (request, response, next) => {
     let uri = request.query;
@@ -8,10 +9,10 @@ const validationURLRecover = async (request, response, next) => {
         result = await getDataURLRecover(uri);
         response.locals.data = result;
     } catch (error) {
-        return httpResponseForbidden(response, "URL is not found");
+        return httpResponseNotFound(response, "URL is not found");
     }
-    if(!result) {
-        return httpResponseForbidden(response, "URL has expired");
+    if (!result) {
+        return httpResponseNotFound(response, "URL has expired");
     }
     return next();
 };

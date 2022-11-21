@@ -1,11 +1,12 @@
 const request = require('supertest');
-const { connetionToServers } = require('../src/app');
 const { sequelize } = require("../src/database/connectionDatabaseSequelize");
 const { redisClient } = require("../src/database/connectionRedis");
 const { server, delayServerConnections } = require("../src/server");
 
 beforeAll(async () => {
     await delayServerConnections();
+    await connetionToServers();
+
     await sequelize.truncate({ cascade: true, restartIdentity: true });
     await redisClient.flushAll("ASYNC");
 });

@@ -3,6 +3,7 @@ const { encondePassword } = require("../helpers/cipher");
 const { getAccountLoginData } = require("../dataaccess/userDataAccess");
 const { getTokenExist, TOKEN_TYPE } = require("../dataaccess/tokenDataAccess");
 const { AccountStatusType } = require("../models/enum/AccountStatusType");
+const { logger } = require("../helpers/logger");
 
 const doesExistUser = (user) => {
     let doesExistUser = false;
@@ -75,22 +76,8 @@ const validationRefreshTokenDataAsParameter = async (request, response, next) =>
     return next();
 }
 
-const validationLogoutTokensData = async (request, response, next) => {
-    let accessToken = (request.headers.authorization).split(" ")[1];
-    let refreshToken = (request.headers.refreshtoken).split(" ")[1];
-    try {
-        await getTokenExist(refreshToken, TOKEN_TYPE.REFRESH);
-        await getTokenExist(accessToken, TOKEN_TYPE.ACCESS);
-    } catch (error) {
-        const payload = { error: error.message }
-        return httpResponseErrorToken(response, payload);
-    }
-    return next();
-};
-
 module.exports = {
-    validationLoginData, validationAccesTokenDataAsAuthorization, validationRefreshTokenDataAsAuthorization,
-    validationLogoutTokensData, validationRefreshTokenDataAsParameter
+    validationLoginData, validationAccesTokenDataAsAuthorization, validationRefreshTokenDataAsAuthorization, validationRefreshTokenDataAsParameter
 }
 
 

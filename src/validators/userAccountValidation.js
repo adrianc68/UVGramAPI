@@ -1,7 +1,7 @@
 const { isEducationalProgramRegistered } = require("../dataaccess/EducationalProgramDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isEmailRegistered, isUsernameRegistered, isVerificationCodeGenerated, doesVerificationCodeMatches,
-    getIdByUsername, isOldPasswordValid, getAccountLoginData, removeVerificationCode } = require("../dataaccess/userDataAccess");
+    getIdByUsername, isOldPasswordValid, getAccountLoginData, removeVerificationCode, getAccountLoginDataById } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const { CategoryType } = require("../models/enum/CategoryType");
@@ -104,8 +104,9 @@ const validationChangePasswordLoggedUser = async (request, response, next) => {
     let { oldPassword } = request.body;
     let isValidOldPassword = false;
     try {
-        let userData = await verifyToken(token).then(data => { return data });
-        isValidOldPassword = await isOldPasswordValid(oldPassword, userData.email);
+        let tokenDataId = await verifyToken(token).then(data => { return data.id });
+        let userEmail = (await getAccountLoginDataById(tokenDataId)).email;
+        isValidOldPassword = await isOldPasswordValid(oldPassword, userEmail);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -138,7 +139,8 @@ const validationChangePasswordUnloggedUser = async (request, response, next) => 
 const validationUpdateEmailAndUsernameData = async (request, response, next) => {
     const token = (request.headers.authorization).split(" ")[1];
     const { username, email } = request.body;
-    let userData = (await verifyToken(token));
+    let tokenDataId = (await verifyToken(token)).id;
+    let userData = await getAccountLoginDataById(tokenDataId);
     if (username && username != userData.username) {
         let doesExistAnotherUserWithSameUsername = await isUsernameRegistered(username);
         if (doesExistAnotherUserWithSameUsername) {

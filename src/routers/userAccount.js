@@ -54,7 +54,7 @@ router.delete("/accounts/username/delete",
 );
 
 router.patch("/accounts/edit/personal",
-    checkAccessAndRefreshTokenAndAuthRoleMiddleware([UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.PERSONAL]),
     formatValidationBasicUserAccountData,
     formatValidationPersonalData,
     validationUpdateEmailAndUsernameData,
@@ -63,7 +63,7 @@ router.patch("/accounts/edit/personal",
 );
 
 router.patch("/accounts/edit/business",
-    checkAccessAndRefreshTokenAndAuthRoleMiddleware([UserRoleType.BUSINESS]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.BUSINESS]),
     formatValidationBasicUserAccountData,
     formatValidationBusinessData,
     validationUpdateEmailAndUsernameData,
@@ -72,7 +72,7 @@ router.patch("/accounts/edit/business",
 );
 
 router.patch("/accounts/edit/moderator",
-    checkAccessAndRefreshTokenAndAuthRoleMiddleware([UserRoleType.MODERADOR]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.MODERADOR]),
     formatValidationBasicUserAccountData,
     formatValidationModerator, // By now is not validating anything.
     validationUpdateEmailAndUsernameData,
@@ -81,7 +81,7 @@ router.patch("/accounts/edit/moderator",
 );
 
 router.patch("/accounts/edit/admin",
-    checkAccessAndRefreshTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR]),
     formatValidationBasicUserAccountData,
     formatValidationAdminData, // By now is not validating anything
     validationUpdateEmailAndUsernameData,

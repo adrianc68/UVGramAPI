@@ -1,4 +1,4 @@
-const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedUsersOfUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
+const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
     , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
@@ -32,7 +32,7 @@ const unfollowUser = async (request, response) => {
     return httpResponseOk(response, `user has unfollow to ${username}`);
 }
 
-const getFollowedUsersOfUser = async (request, response) => {
+const getFollowedByUser = async (request, response) => {
     let username = request.params.username;
     const idUser = await getIdByUsername(username).then(id => { return id });
     let message;
@@ -103,4 +103,4 @@ const unblockUser = async (request, response) => {
 
 
 
-module.exports = { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser, getProfileOfUser, blockUser, unblockUser }
+module.exports = { followUser, unfollowUser, getFollowedByUser, getFollowersOfUser, getProfileOfUser, blockUser, unblockUser }

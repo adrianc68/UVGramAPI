@@ -1,7 +1,7 @@
-const { verifyToken, refreshAccessToken, removeToken, refreshLoginAndRemoveOldAccessToken } = require("../dataaccess/tokenDataAccess");
-const { generateURLChangeEmailConfirmation, doesURLChangeEmailConfirmationAlreadyGenerated } = require("../dataaccess/urlRecoverDataAccess");
+const { verifyToken, refreshLoginAndRemoveOldAccessToken } = require("../dataaccess/tokenDataAccess");
+const { generateURLChangeEmailConfirmation, doesURLChangeEmailConfirmationAlreadyGenerated, removeURLChangeEmailConfiguration } = require("../dataaccess/urlRecoverDataAccess");
 const { deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode,
-    getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, getIdByUsername, updateAdministratorData, updateModeratorData } = require("../dataaccess/userDataAccess");
+    getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, getIdByUsername, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseNotImplement, httpResponseRedirect } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const createURL = require("../helpers/urlHelper");
@@ -32,66 +32,53 @@ const updateUser = async (request, response) => {
     let newAccessToken;
     let emailMessage;
     const { email, name, presentation, username, phoneNumber, birthdate } = request.body;
-    let basicData = { name, presentation, username, phoneNumber, email, birthdate };
     const accessToken = (request.headers.authorization).split(" ")[1];
-    const refreshToken = (request.headers.refreshtoken).split(" ")[1];
-    let refreshTokenData;
     let accessTokenData;
+    let oldUserData;
     try {
-        refreshTokenData = await verifyToken(refreshToken);
         accessTokenData = await verifyToken(accessToken);
-        if (accessTokenData.userRole == UserRoleType.PERSONAL) {
+        let basicData = { name, presentation, username, phoneNumber, email, birthdate };
+        let idUser = accessTokenData.id;
+        let userRole = accessTokenData.userRole;
+        oldUserData = await getAccountLoginDataById(idUser);
+        if (userRole == UserRoleType.PERSONAL) {
             const { gender, idCareer } = request.body;
             let personalData = { gender, idCareer }
-            isUpdated = await updateUserPersonalData(basicData, personalData, accessTokenData.userId);
-        } else if (accessTokenData.userRole == UserRoleType.BUSINESS) {
+            isUpdated = await updateUserPersonalData(basicData, personalData, idUser);
+        } else if (userRole == UserRoleType.BUSINESS) {
             const { category, city, postalCode, postalAddress, contactEmail, phoneContact, organizationName } = request.body;
             let businessData = { category, city, postalCode, postalAddress, contactEmail, phoneContact, organizationName };
-            isUpdated = await updateBusinessData(basicData, businessData, accessTokenData.userId);
-        } else if (accessTokenData.userRole == UserRoleType.MODERADOR) {
+            isUpdated = await updateBusinessData(basicData, businessData, idUser);
+        } else if (userRole == UserRoleType.MODERADOR) {
             const { updateDate } = request.body;
             let moderatorData = { updateDate }
-            isUpdated = await updateModeratorData(basicData, moderatorData, accessTokenData.userId);
-        } else if (accessTokenData.userRole == UserRoleType.ADMINISTRATOR) {
+            isUpdated = await updateModeratorData(basicData, moderatorData, idUser);
+        } else if (userRole == UserRoleType.ADMINISTRATOR) {
             const { createdTime } = request.body;
             let adminData = { createdTime }
-            isUpdated = await updateAdministratorData(basicData, adminData, accessTokenData.userId);
+            isUpdated = await updateAdministratorData(basicData, adminData, idUser);
         }
     } catch (error) {
         throw httpResponseInternalServerError(response, error);
     }
-
     try {
-        if (isUpdated && username != accessTokenData.username) {
-            newAccessToken = await refreshLoginAndRemoveOldAccessToken(accessToken, username, accessTokenData.userId, accessTokenData.userRole, accessTokenData.email, refreshTokenData.jti);
-            newAccessToken = newAccessToken.accessToken.token;
-            accessToken = newAccessToken;
-        }
-    } catch (error) {
-        let route = "/authentication/logout";
-        let message = "username was changed but an error ocurred while refreshing the token, pleas log in again."
-        return httpResponseRedirect(request, response, route, message);
-    }
-
-    try {
-        if (isUpdated && email != accessTokenData.email) {
-            let isAlreadyURLGenerated = await doesURLChangeEmailConfirmationAlreadyGenerated(accessTokenData.userId);
+        if (isUpdated && email != oldUserData.email) {
+            let isAlreadyURLGenerated = await doesURLChangeEmailConfirmationAlreadyGenerated(oldUserData.id);
             if (!isAlreadyURLGenerated) {
                 let address = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
-                let data = await generateURLChangeEmailConfirmation(accessTokenData.userId, email, address, accessToken);
-                logger.debug("URL GENERATED: " + data);
-                logger.trace("NEED TO SEND LINK TO EMAIL");
-                logger.trace("NEED TO SEND LINK TO EMAIL");
-                emailMessage = "a confirmation address has been sent to the new email";
-                // SEND TO EMAIL
-                // SEND TO EMAIL
-                // SENED TO EMAIL 
+                let data = await generateURLChangeEmailConfirmation(oldUserData.id, email, address);
+                // ********************************************
+                // SEND THE VERIFICATION CODE TO EMAIL!!!!
+                // BY NOW RETURN THE CODE TO CLIENT
+                // IF CODE WILL BE SEND TO EMAIL THEN CHANGE THE TEST OR THEY WILL FAIL.
+                // ********************************************
+                emailMessage = "a confirmation address has been sent to the new email" + data;
             } else {
                 emailMessage = "please wait 5 minutes to generate another confirmation address";
             }
         }
     } catch (error) {
-        // REMOVE GENERATED URL ON ERROR
+        await removeURLChangeEmailConfiguration(oldUserData.id);
         logger.warn(error);
         emailMessage = "cannot change email, try later";
     }
@@ -142,8 +129,12 @@ const changePasswordOnLoggedUser = async (request, response) => {
     let isUpdated;
     try {
         let token = (request.headers.authorization).split(" ")[1];
-        email = await verifyToken(token).then(data => { return data.email });
-        isUpdated = await changePassword(email, password);
+        let userLoggedId = await verifyToken(token).then(data => { return data.id });
+
+        logger.debug("testttttt");
+        let userEmail = await getAccountLoginDataById(userLoggedId).then(data => { return data.email });
+        logger.debug("--->" + userEmail);
+        isUpdated = await changePassword(userEmail, password);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }

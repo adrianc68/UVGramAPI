@@ -1,6 +1,6 @@
-const { removeOptionalAccessToken, refreshAccessToken, verifyToken, removeToken, generateTokens } = require("../dataaccess/tokenDataAccess");
-const { getAccountLoginData, getAccountLoginDataById, saveSessionToken, removeSessionToken } = require("../dataaccess/userDataAccess");
-const { httpResponseOk, httpResponseInternalServerError, httpResponseErrorToken, httpResponseUnauthorized } = require("../helpers/httpResponses");
+const { generateTokens, deleteAllSessionByAccessToken, verifyToken, removeToken, refreshAccessToken } = require("../dataaccess/tokenDataAccess");
+const { getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/userDataAccess");
+const { httpResponseOk, httpResponseInternalServerError, httpResponseUnauthorized } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 
 const createTokens = async (request, response) => {
@@ -8,13 +8,8 @@ const createTokens = async (request, response) => {
     let tokens;
     try {
         let user = await getAccountLoginData(emailOrUsername);
-        tokens = await generateTokens(user.username, user.id, user["UserRole.role"], user["Account.email"]);
-        let session = {
-            id_user: user.id,
-            token: tokens.refreshToken,
-            device: request.headers.host
-        }
-        await saveSessionToken(session);
+        let device_info = request.headers.host;
+        tokens = await generateTokens(user.id, user["UserRole.role"], device_info);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -22,39 +17,36 @@ const createTokens = async (request, response) => {
 };
 
 const refreshTokens = async (request, response) => {
-    let newRefreshtoken;
+    let newAccessToken;
     let refreshToken = (request.headers.authorization).split(" ")[1];
-    let optionalAccessToken = request.headers.accesstoken;
-    let optionalOldAccessTokenMessage;
+    let resultRemoveAccessToken;
+    let optionalAccessToken = (request.headers.accesstoken).split(" ")[1];
     try {
-        optionalOldAccessTokenMessage = (optionalAccessToken) ? await removeOptionalAccessToken(optionalAccessToken.split(" ")[1]) : undefined;
+        resultRemoveAccessToken = (optionalAccessToken) ? await removeToken(optionalAccessToken) : undefined;
         let refreshTokenData = await verifyToken(refreshToken);
         let user = await getAccountLoginDataById(refreshTokenData.id);
-        newRefreshtoken = await refreshAccessToken(user.username, user.id, user["UserRole.role"], user["Account.email"], refreshTokenData.jti);
+        newAccessToken = await refreshAccessToken(user.id, user["UserRole.role"], refreshTokenData.jti);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
     const payload = {
-        accessToken: newRefreshtoken.accessToken.token,
-        optionalAccessTokenMessage: optionalOldAccessTokenMessage
+        accessToken: newAccessToken.accessToken.token,
+        optionalAccessTokenMessage: resultRemoveAccessToken
     }
     return httpResponseOk(response, payload);
 };
 
-const logOutToken = async (request, response) => {
+const logoutSession = async (request, response) => {
     let accessToken = (request.headers.authorization).split(" ")[1];
-    let refreshToken = (request.headers.refreshtoken).split(" ")[1];
     try {
-        await removeToken(accessToken);
-        await removeToken(refreshToken);
-        await removeSessionToken(refreshToken);
+        await deleteAllSessionByAccessToken(accessToken);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, "logout successful");
 };
 
-const checkAuthRole = (roles) => async (request, response, next) => {
+const checkRolesAuth = (roles) => async (request, response, next) => {
     const token = (request.headers.authorization).split(" ")[1];
     let userRoleData;
     try {
@@ -73,4 +65,4 @@ const sayHello = async (request, response) => {
     return response.send("Welcome! This is just for testing purposes");
 };
 
-module.exports = { createTokens, refreshTokens, logOutToken, checkAuthRole, sayHello }
+module.exports = { createTokens, refreshTokens, logoutSession, checkRolesAuth, sayHello }

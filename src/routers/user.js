@@ -1,5 +1,5 @@
-const { followUser, unfollowUser, getFollowedUsersOfUser, getFollowersOfUser,
-    getProfileOfUser, blockUser, unblockUser } = require('../controllers/userController');
+const { followUser, unfollowUser, getFollowersOfUser,
+    getProfileOfUser, blockUser, unblockUser, getFollowedByUser } = require('../controllers/userController');
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
@@ -27,7 +27,7 @@ router.get("/user/followed-by/:username/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
-    getFollowedUsersOfUser
+    getFollowedByUser
 );
 
 router.get("/user/followers-of/:username",
