@@ -1,7 +1,9 @@
 const request = require('supertest');
 const { connetionToServers } = require('../src/app');
+const { getVerificationCodeFromEmail } = require('../src/dataaccess/mailDataAccess');
 const { sequelize } = require("../src/database/connectionDatabaseSequelize");
 const { redisClient } = require('../src/database/connectionRedis');
+const { logger } = require('../src/helpers/logger');
 const { server, delayServerConnections } = require("../src/server")
 
 beforeAll(async () => {
@@ -76,8 +78,9 @@ describe('POST /accounts/create/verification', () => {
     describe('Test that must pass', () => {
         test('POST /accounts/create/verification 200 OK Response For new user', async () => {
             const response = await request(server).post("/accounts/create/verification").send({ "username": "ricardolopez", "email": "riclopez@uvgram.com" });
+            let verificationCode = await getVerificationCodeFromEmail("riclopez@uvgram.com");
+            expect(verificationCode).toHaveLength(8);
             expect(response.statusCode).toBe(200);
-            expect(response.body.message.verificationCode).toHaveLength(8);
         });
 
         test('POST /accounts/create/verification 403 Forbidden Code already generated should wait 5 minutes', async () => {
@@ -88,7 +91,8 @@ describe('POST /accounts/create/verification', () => {
         test('POST /accounts/create/verification 200 OK Response For another user', async () => {
             const response = await request(server).post("/accounts/create/verification").send({ "username": "robertolopez", "email": "lopezroberto@test.com" });
             expect(response.statusCode).toBe(200);
-            expect(response.body.message.verificationCode).toHaveLength(8);
+            let verificationCode = await getVerificationCodeFromEmail("lopezroberto@test.com");
+            expect(verificationCode).toHaveLength(8);
         });
     });
 });
@@ -802,7 +806,7 @@ describe('POST /accounts/create/', () => {
     describe('Test that must pass', () => {
         test('POST /accounts/create/ 200 OK Response For new user', async () => {
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
-            let { verificationCode } = response.body.message;
+            let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
             const newUser = {
                 name: "UVGram",
                 presentation: "Welcome to UVGram.",
@@ -820,7 +824,7 @@ describe('POST /accounts/create/', () => {
 
         test('POST /accounts/create/ 200 OK Response For another new user', async () => {
             let response = await request(server).post("/accounts/create/verification").send({ "username": "adrianc68", "email": "adrianc68@uvgram.com" });
-            let { verificationCode } = response.body.message;
+            let verificationCode = await getVerificationCodeFromEmail("adrianc68@uvgram.com")
             const newUser = {
                 name: "Adrian Garcia",
                 presentation: "First user in UVGram",
@@ -873,7 +877,7 @@ describe('GET /accounts/email/check', () => {
 
     test('POST /accounts/email/check 200 OK email exist', async () => {
         let response = await request(server).post("/accounts/create/verification").send({ "username": "test1000", "email": "test1000@uvgram.com" });
-        let { verificationCode } = response.body.message;
+        let verificationCode = await getVerificationCodeFromEmail("test1000@uvgram.com");
         const newUser = {
             name: "Testing",
             presentation: "Welcome to UVGram.",
@@ -915,7 +919,7 @@ describe('GET /accounts/username/check', () => {
 
     test('POST /accounts/username/check 200 OK username exist', async () => {
         let response = await request(server).post("/accounts/create/verification").send({ "username": "test88888", "email": "test88888@uvgram.com" });
-        let { verificationCode } = response.body.message;
+        let verificationCode = await getVerificationCodeFromEmail("test88888@uvgram.com");
         const newUser = {
             name: "Testing",
             presentation: "Welcome to UVGram.",
@@ -957,7 +961,7 @@ describe('DEL /accounts/username/delete', () => {
 
     test('DEL /accounts/username/delete 200 OK username exist', async () => {
         let response = await request(server).post("/accounts/create/verification").send({ "username": "deleteme", "email": "deleteme@uvgram.com" });
-        let { verificationCode } = response.body.message;
+        let verificationCode = await getVerificationCodeFromEmail("deleteme@uvgram.com");
         const newUser = {
             name: "Testing",
             presentation: "Welcome to UVGram.",
@@ -984,7 +988,7 @@ describe('DEL /accounts/username/delete', () => {
 describe('GET /accounts/users', () => {
     test('GET /accounts/users 400 Authorization header required', async () => {
         let response = await request(server).post("/accounts/create/verification").send({ "username": "userone", "email": "userone@uvgram.com" });
-        let { verificationCode } = response.body.message;
+        let verificationCode = await getVerificationCodeFromEmail("userone@uvgram.com");
         let newUser = {
             name: "Testing",
             presentation: "Welcome to UVGram.",
@@ -997,7 +1001,7 @@ describe('GET /accounts/users', () => {
         }
         response = await request(server).post("/accounts/create").send(newUser);
         response = await request(server).post("/accounts/create/verification").send({ "username": "usertwo", "email": "usertwo@uvgram.com" });
-        let { verificationCode: verificationCode2 } = response.body.message;
+        let verificationCode2 = await getVerificationCodeFromEmail("usertwo@uvgram.com");
         newUser = {
             name: "Testing",
             presentation: "Welcome to UVGram.",
@@ -1025,7 +1029,7 @@ describe('POST /accounts/password/reset', () => {
         await sequelize.truncate({ cascade: true, restartIdentity: true });
 
         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
-        let { verificationCode: vCode } = response.body.message;
+        let vCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
         const newUser2 = {
             name: "uvgram user",
             presentation: "Welcome to UVGram.",
@@ -1047,7 +1051,7 @@ describe('POST /accounts/password/reset', () => {
     });
 
     test('POST /accounts/password/reset 400 Bad Request verificationCode is required', async () => {
-        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "test234232", "password": "hola1234", "verificationCsode": "8a" });
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "test234232", "password": "hola1234" });
         expect(response.body.errors[0].msg).toContain("verificationCode is required")
         expect(response.statusCode).toBe(400);
     });
@@ -1120,7 +1124,7 @@ describe('POST /accounts/password/reset', () => {
 
     test('POST /accounts/password/reset 200 OK password was changed', async () => {
         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
-        verificationCode = response.body.message.verificationCode;
+        let verificationCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
         response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram", "password": "hola1234", "verificationCode": verificationCode });
         expect(response.statusCode).toBe(200);
     });
@@ -1128,7 +1132,7 @@ describe('POST /accounts/password/reset', () => {
     test('POST /accounts/password/reset 403 Forbidden verificationCode is not valid', async () => {
         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
         response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram", "password": "hola1234", "verificationCode": "12345678" });
-        expect(response.body.message).toContain("verification code is not valid");
+        logger.debug(response.body);
         expect(response.statusCode).toBe(403);
     });
 
@@ -1151,7 +1155,7 @@ describe('POST /accounts/password/change', () => {
         await sequelize.truncate({ cascade: true, restartIdentity: true });
 
         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
-        let { verificationCode: vCode } = response.body.message;
+        let vCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
         const newUser2 = {
             name: "uvgram user",
             presentation: "Welcome to UVGram.",

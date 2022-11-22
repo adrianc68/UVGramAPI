@@ -27,17 +27,19 @@ const getAccountLoginData = async (emailOrUsername) => {
         where: {
             [Op.or]: [{ username: emailOrUsername }, { '$Account.email$': emailOrUsername }]
         },
-        attributes: ["id", "username"],
+        attributes: ["id", "username", "Account.password", "Account.email", "UserRole.role", "Account.AccountVerification.account_status"],
         include: [{
             model: Account,
-            attributes: ["password", "email"],
+            attributes: [],
             include: [{
                 model: AccountVerification,
-                attributes: ["account_status"]
+                as: "AccountVerification",
+                attributes: []
             }]
         }, {
             model: UserRole,
-            attributes: ["role"]
+            as: "UserRole",
+            attributes: []
         }],
         plain: true,
         raw: true

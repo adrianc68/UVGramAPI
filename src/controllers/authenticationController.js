@@ -7,9 +7,9 @@ const createTokens = async (request, response) => {
     let { emailOrUsername } = request.body;
     let tokens;
     try {
-        let user = await getAccountLoginData(emailOrUsername);
+        let userData = await getAccountLoginData(emailOrUsername);
         let device_info = request.headers.host;
-        tokens = await generateTokens(user.id, user["UserRole.role"], device_info);
+        tokens = await generateTokens(userData.id, userData.role, device_info);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -22,8 +22,8 @@ const refreshTokens = async (request, response) => {
     let resultRemoveAccessToken;
     try {
         let refreshTokenData = await verifyToken(refreshToken);
-        let user = await getAccountLoginDataById(refreshTokenData.id);
-        newAccessToken = await refreshAccessToken(user.id, user["UserRole.role"], refreshTokenData.jti);
+        let userData = await getAccountLoginDataById(refreshTokenData.id);
+        newAccessToken = await refreshAccessToken(userData.id, userData.role, refreshTokenData.jti);
 
         if (request.headers.accesstoken) {
             let optionalAccessToken = (request.headers.accesstoken).split(" ")[1];

@@ -5,7 +5,7 @@ const { NODE_ENV, NODEMAILER_HOST, NODEMAILER_PORT, NODEMAILER_USER, NODEMAILER_
 } = process.env;
 
 const createClient = () => {
-    if (NODE_ENV == "TEST") { // CHANGE PROD TO TEST
+    if (NODE_ENV == "TEST") {
         return nodemailer.createTransport({
             host: TEST_NODEMAILER_HOST,
             port: TEST_NODEMAILER_PORT,
@@ -22,6 +22,7 @@ const createClient = () => {
                 user: TEST_NODEMAILER_USER,
                 pass: TEST_NODEMAILER_PASS,
             },
+            // UNCOMMENT THIS TO CHANGE TO GOOGLE SERVER
             // host: NODEMAILER_HOST,
             // port: NODEMAILER_PORT,
             // auth: {

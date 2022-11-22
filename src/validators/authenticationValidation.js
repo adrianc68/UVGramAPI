@@ -23,12 +23,12 @@ const doesPasswordMatch = (passwordA, passwordB) => {
 const validationLoginData = async (request, response, next) => {
     const { emailOrUsername, password } = request.body;
     try {
-        await getAccountLoginData(emailOrUsername).then(user => {
-            if (doesExistUser(user)) {
-                if (user["Account.AccountVerification.account_status"] == AccountStatusType.BLOCKED) {
+        await getAccountLoginData(emailOrUsername).then(userData => {
+            if (doesExistUser(userData)) {
+                if (userData.account_status == AccountStatusType.BLOCKED) {
                     return httpResponseForbidden(response, "user has been kicked from server")
                 }
-                if (doesPasswordMatch(encondePassword(password), user["Account.password"])) {
+                if (doesPasswordMatch(encondePassword(password), userData.password)) {
                     return next();
                 } else {
                     return httpResponseForbidden(response, "password does not match");

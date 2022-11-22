@@ -115,20 +115,14 @@ const validationChangePasswordLoggedUser = async (request, response, next) => {
     return next();
 }
 
-const validationChangePasswordUnloggedUser = async (request, response, next) => {
-    let { emailOrUsername, verificationCode } = request.body;
+const validationEmailOrUsernameRejectOnNotExist = async (request, response, next) => {
+    let { emailOrUsername } = request.body;
     let userData;
-    let isValidCode;
     try {
         userData = await getAccountLoginData(emailOrUsername);
-        isValidCode = await doesVerificationCodeMatches(userData.username, verificationCode);
         if (!userData) {
             return httpResponseForbidden(response, "username does not exist");
         }
-        if (!isValidCode) {
-            return httpResponseForbidden(response, "verification code is not valid");
-        }
-        await removeVerificationCode(userData.username);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -186,7 +180,7 @@ const validationModeratorRoleData = async (request, response, next) => {
 module.exports = {
     validationisEmailRegisteredWithNext, validationIsUsernameRegisteredWithNext,
     validationIsUsernameRegistered, validationIsEmailRegistered, validationNotGeneratedVerificationCode,
-    validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationChangePasswordUnloggedUser,
+    validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist,
     validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationAdminRoleData, validationModeratorRoleData,
     validationBusinessRoleData
 }

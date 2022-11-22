@@ -1,6 +1,6 @@
-const { getDataURLRecover } = require("../dataaccess/urlRecoverDataAccess");
-const { httpResponseNotFound } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
+const { getDataURLRecover, doesURLVerificationAlreadyGenerated } = require("../dataaccess/urlRecoverDataAccess");
+const { getAccountLoginData } = require("../dataaccess/userDataAccess");
+const { httpResponseNotFound, httpResponseForbidden, httpResponseInternalServerError } = require("../helpers/httpResponses");
 
 const validationURLRecover = async (request, response, next) => {
     let uri = request.query;
@@ -17,5 +17,19 @@ const validationURLRecover = async (request, response, next) => {
     return next();
 };
 
+const validationIsURLRecoverAlreadyGeneratedByEmailOrUsername = async (request, response, next) => {
+    let { emailOrUsername } = request.body;
+    try {
+        let userData = await getAccountLoginData(emailOrUsername);
+        let isAlreadyURLGenerated = await doesURLVerificationAlreadyGenerated(userData.id);
+        if (isAlreadyURLGenerated) {
+            return httpResponseForbidden(response, "please wait 5 minutes to generate another one");
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return next();
+}
 
-module.exports = { validationURLRecover }
+
+module.exports = { validationURLRecover, validationIsURLRecoverAlreadyGeneratedByEmailOrUsername }

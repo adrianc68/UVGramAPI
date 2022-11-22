@@ -25,10 +25,29 @@ const sendEmailCodeVerification = async (codeVerification, to) => {
     return isSend;
 }
 
-const sendEmailURLConfirmation = async (url, to) => {
+const sendEmailChangeURLConfirmation = async (url, to) => {
     let isSend = false;
     try {
         let html = (fs.readFileSync(path.join(__dirname, "../resources/html/changeConfirmationURL.html"), 'utf8'));
+        html = html.replace("{url}", url);
+        html = html.replace("{email}", to);
+        let result = await mailer.sendMail({
+            from: `${mailer.options.auth.user}`,
+            to,
+            subject: `UVGram URL Verification`,
+            html,
+        });
+        isSend = (result.accepted.length != 0);
+    } catch (error) {
+        throw new Error(error.message);
+    }
+    return isSend;
+}
+
+const sendEmailPasswordURLConfirmation = async (url, to) => {
+    let isSend = false;
+    try {
+        let html = (fs.readFileSync(path.join(__dirname, "../resources/html/updatePasswordURL.html"), 'utf8'));
         html = html.replace("{url}", url);
         html = html.replace("{email}", to);
         let result = await mailer.sendMail({
@@ -52,7 +71,7 @@ const sendEmailURLConfirmation = async (url, to) => {
  * @param {*} to the client email who received the server email
  * @returns verificationCode from MailHog
  */
-const getConfirmationCodeEmailTest = async (to) => {
+const getVerificationCodeFromEmail = async (to) => {
     let code;
     await axios.get(`http://${TEST_NODEMAILER_HOST}:${TEST_NODEMAILER_PORT_APIV2}/api/v2/search?kind=to&query=${encodeURIComponent(to)}&start=0&limit=1`).then(response => {
         if ((response.data.items).length != 0) {
@@ -62,7 +81,7 @@ const getConfirmationCodeEmailTest = async (to) => {
             let indexOfSpan = html.search('<span id=3D"verificationcode"');
             html = html.substring(indexOfSpan);
             let indexOfFirstEndSpan = html.search(">");
-            html = html.substring(indexOfFirstEndSpan+1);
+            html = html.substring(indexOfFirstEndSpan + 1);
             let indexOfEndSpan = html.search("<");
             html = html.substring(0, indexOfEndSpan);
             code = html;
@@ -78,24 +97,29 @@ const getConfirmationCodeEmailTest = async (to) => {
  * @param {*} to the client email who received the server email
  * @returns url from MailHog
  */
-const getEmailURLConfirmation = async (to) => {
+const getURLConfirmationFromEmail = async (to) => {
     let url;
-    await axios.get(`http://${TEST_NODEMAILER_HOST}:${TEST_NODEMAILER_PORT_APIV2}/api/v2/search?kind=to&query=${encodeURIComponent(to)}&start=0&limit=1`).then(response => {
-        if ((response.data.items).length != 0) {
-            let html = (response.data.items[0].Raw.Data).toString();
-            html = html.replaceAll("\n\r", "");
-            html = html.replaceAll("\r\n", "");
-            let indexOfHref = html.search('class=3D"btn" target=3D"_blank" href=3D"');
-            html = html.substring(indexOfHref);
-            let indexOfProtocol = html.search('http');
-            html = html.substring(indexOfProtocol);
-            let indexOfDoubleQuote = html.search('">');
-            html = html.substring(0, indexOfDoubleQuote);
-            url = html;
-        }
-    })
+    try {
+        await axios.get(`http://${TEST_NODEMAILER_HOST}:${TEST_NODEMAILER_PORT_APIV2}/api/v2/search?kind=to&query=${encodeURIComponent(to)}&start=0&limit=1`).then(response => {
+            if ((response.data.items).length != 0) {
+                let html = (response.data.items[0].Raw.Data).toString();
+                html = html.replaceAll("\n\r", "");
+                html = html.replaceAll("\r\n", "");
+                let indexOfHref = html.search('class=3D"btn" target=3D"_blank" href=3D"');
+                html = html.substring(indexOfHref);
+                let indexOfProtocol = html.search('http');
+                html = html.substring(indexOfProtocol);
+                let indexOfDoubleQuote = html.search('">');
+                html = html.substring(0, indexOfDoubleQuote);
+                url = html;
+            }
+        })
+    } catch (error) {
+        throw new Error(error);
+    }
+
     return url;
 }
 
-module.exports = { sendEmailCodeVerification, sendEmailURLConfirmation, getConfirmationCodeEmailTest, getEmailURLConfirmation }
+module.exports = { sendEmailCodeVerification, sendEmailChangeURLConfirmation, getVerificationCodeFromEmail, getURLConfirmationFromEmail, sendEmailPasswordURLConfirmation }
 

@@ -39,7 +39,7 @@ const generateURLChangeEmailConfirmation = async (id_user, newEmail, address) =>
  * @param {*} id_user the user id to remove the URL verification
  * @returns true if was removed otherwise false
  */
-const removeURLChangeEmailConfiguration = async (id_user) => {
+const removeURLVerification = async (id_user) => {
     let isRemoved = false;
     const t = await sequelize.transaction();
     try {
@@ -83,7 +83,7 @@ const getDataURLRecover = async (uri) => {
  * @param {*} id_user the user id which need to be verified.
  * @returns true is already generated otherwise false.
  */
-const doesURLChangeEmailConfirmationAlreadyGenerated = async (id_user) => {
+const doesURLVerificationAlreadyGenerated = async (id_user) => {
     let isAlreadyGenerated = false;
     try {
         let result = await URLRecover.findOne({ where: { id_user }, raw: true });
@@ -95,7 +95,29 @@ const doesURLChangeEmailConfirmationAlreadyGenerated = async (id_user) => {
 }
 
 
+const generateURLUpdatePasswordConfirmation = async (id_user, emailOrUsername, address) => {
+    let url;
+    const t = await sequelize.transaction();
+    let data;
+    try {
+        data = await URLRecover.create({
+            uuid: uuidv4(),
+            action: ActionURLRecoverType.CHANGE_PASSWORD,
+            id_user,
+        }, { transaction: t });
+        let payload = { emailOrUsername: emailOrUsername }
+        url = `${address}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CHANGE_PASSWORD.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+        await t.commit();
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return url;
+}
+
+
+
 module.exports = {
-    generateURLChangeEmailConfirmation, getDataURLRecover, doesURLChangeEmailConfirmationAlreadyGenerated,
-    removeURLChangeEmailConfiguration
+    generateURLChangeEmailConfirmation, getDataURLRecover, doesURLVerificationAlreadyGenerated,
+    removeURLVerification, generateURLUpdatePasswordConfirmation
 }

@@ -46,13 +46,4 @@ const connetionToServers = async () => {
     }
 }
 
-const clearDatabase = async () => {
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
-    await sequelize.query("ALTER SEQUENCE user_id_seq RESTART WITH 1");
-    await sequelize.query("ALTER SEQUENCE educationalprogram_id_seq RESTART WITH 1");
-    await sequelize.query("ALTER SEQUENCE faculty_id_seq RESTART WITH 1");
-    await sequelize.query("ALTER SEQUENCE region_id_seq RESTART WITH 1");
-    await redisClient.flushAll("ASYNC");
-}
-
-module.exports = { app, connetionToServers, clearDatabase };
+module.exports = { app, connetionToServers };

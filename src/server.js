@@ -1,4 +1,7 @@
-const { app, connetionToServers, clearDatabase } = require("./app");
+const axios = require('axios');
+const { app, connetionToServers } = require("./app");
+const { sequelize } = require("./database/connectionDatabaseSequelize");
+const { redisClient } = require("./database/connectionRedis");
 const { logger } = require("./helpers/logger");
 
 const server = app.listen({
@@ -21,4 +24,18 @@ async function delayServerConnections() {
     logger.info("************** ************** **************");
 };
 
-module.exports = { server, delayServerConnections }
+const clearDatabase = async () => {
+    await sequelize.truncate({ cascade: true, restartIdentity: true });
+    await sequelize.query("ALTER SEQUENCE user_id_seq RESTART WITH 1");
+    await sequelize.query("ALTER SEQUENCE educationalprogram_id_seq RESTART WITH 1");
+    await sequelize.query("ALTER SEQUENCE faculty_id_seq RESTART WITH 1");
+    await sequelize.query("ALTER SEQUENCE region_id_seq RESTART WITH 1");
+    await redisClient.flushAll("ASYNC");
+}
+
+const clearMessagesMailHog = async () => {
+    await axios.delete(`http://${process.env.TEST_NODEMAILER_HOST}:${process.env.TEST_NODEMAILER_PORT_APIV2}/api/v1/messages`);
+}
+
+
+module.exports = { server, delayServerConnections, clearMessagesMailHog, clearDatabase }

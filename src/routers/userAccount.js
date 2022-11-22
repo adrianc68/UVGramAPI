@@ -1,10 +1,12 @@
 const router = require('express').Router();
-const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, changePasswordOnUnloggedUser, updateUser } = require('../controllers/userAccountController');
+const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, changePasswordOnUnloggedUser, updateUser, createURLVerification } = require('../controllers/userAccountController');
+const { generateURLUpdatePasswordConfirmation } = require('../dataaccess/urlRecoverDataAccess');
 const { checkAccessTokenAndAuthRoleMiddleware, checkAccessAndRefreshTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationUsernameOrEmail } = require('../validators/formatValidators/authenticationFormatValidator');
 const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode, formatValidationPassword, formatValidationOldPassword, formatValidationBasicUserAccountData, formatValidationPersonalData, formatValidationBusinessData, formatValidationAdminData, formatValidationModerator } = require('../validators/formatValidators/userAccountFormatValidator');
-const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationChangePasswordUnloggedUser, validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationModeratorRoleData, validationAdminRoleData, validationBusinessRoleData } = require('../validators/userAccountValidation');
+const { validationIsURLRecoverAlreadyGeneratedByEmailOrUsername } = require('../validators/urlRecoverValidation');
+const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist, validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationModeratorRoleData, validationAdminRoleData, validationBusinessRoleData } = require('../validators/userAccountValidation');
 
 router.post("/accounts/create",
     formatValidationUserAccountData,
@@ -23,10 +25,10 @@ router.post("/accounts/create/verification",
 );
 
 router.post("/accounts/password/reset",
-    formatValidationPassword,
     formatValidationUsernameOrEmail,
-    formatValidationVerificationCode,
-    changePasswordOnUnloggedUser,
+    validationEmailOrUsernameRejectOnNotExist,
+    validationIsURLRecoverAlreadyGeneratedByEmailOrUsername,
+    createURLVerification
 );
 
 router.post("/accounts/password/change",
