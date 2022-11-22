@@ -1,8 +1,9 @@
+const { sendEmailCodeVerification, sendEmailURLConfirmation } = require("../dataaccess/mailDataAccess");
 const { verifyToken, refreshLoginAndRemoveOldAccessToken } = require("../dataaccess/tokenDataAccess");
 const { generateURLChangeEmailConfirmation, doesURLChangeEmailConfirmationAlreadyGenerated, removeURLChangeEmailConfiguration } = require("../dataaccess/urlRecoverDataAccess");
 const { deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode,
     getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, getIdByUsername, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData } = require("../dataaccess/userDataAccess");
-const { httpResponseInternalServerError, httpResponseOk, httpResponseNotImplement, httpResponseRedirect } = require("../helpers/httpResponses");
+const { httpResponseInternalServerError, httpResponseOk, httpResponseNotImplement, httpResponseRedirect, httpResponseForbidden } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const createURL = require("../helpers/urlHelper");
 const { UserRoleType } = require("../models/enum/UserRoleType");
@@ -66,13 +67,13 @@ const updateUser = async (request, response) => {
             let isAlreadyURLGenerated = await doesURLChangeEmailConfirmationAlreadyGenerated(oldUserData.id);
             if (!isAlreadyURLGenerated) {
                 let address = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
-                let data = await generateURLChangeEmailConfirmation(oldUserData.id, email, address);
-                // ********************************************
-                // SEND THE VERIFICATION CODE TO EMAIL!!!!
-                // BY NOW RETURN THE CODE TO CLIENT
-                // IF CODE WILL BE SEND TO EMAIL THEN CHANGE THE TEST OR THEY WILL FAIL.
-                // ********************************************
-                emailMessage = "a confirmation address has been sent to the new email" + data;
+                let url = await generateURLChangeEmailConfirmation(oldUserData.id, email, address);
+                if (url) {
+                    let result = await sendEmailURLConfirmation(url, email);
+                    emailMessage = "a confirmation address has been sent to the new email";
+                } else {
+                    throw new Error("cannot generate url");
+                }
             } else {
                 emailMessage = "please wait 5 minutes to generate another confirmation address";
             }
@@ -108,20 +109,22 @@ const removeUserByUsername = async (request, response) => {
 };
 
 const createVerificationCode = async (request, response) => {
-    let { username } = request.body;
-    let verificationCode;
+    let { username, email } = request.body;
+    let isGenerated = false;
     try {
-        verificationCode = await generateCodeVerification(username);
-        // ********************************************
-        // SEND THE VERIFICATION CODE TO EMAIL!!!!
-        // BY NOW RETURN THE CODE TO CLIENT
-        // IF CODE WILL BE SEND TO EMAIL THEN CHANGE THE TEST OR THEY WILL FAIL.
-        // ********************************************
+        let verificationCode = await generateCodeVerification(username);
+        if (verificationCode) {
+            let isSentToEmail = await sendEmailCodeVerification(verificationCode, email);
+            isGenerated = isSentToEmail;
+        }
     } catch (error) {
         if (verificationCode) await removeVerificationCode(verificationCode);
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, { verificationCode });
+    if (!isGenerated) {
+        return httpResponseForbidden(response, "can not generate verification code, try later");
+    }
+    return httpResponseOk(response, isGenerated);
 };
 
 const changePasswordOnLoggedUser = async (request, response) => {

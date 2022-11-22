@@ -3,6 +3,7 @@ const { URLRecover } = require("../models/URLRecover");
 const { v4: uuidv4 } = require("uuid");
 const { ActionURLRecoverType } = require("../models/enum/ActionURLRecoverType");
 const { encryptAES, decryptAES } = require("../helpers/aes-encryption");
+const { logger } = require("../helpers/logger");
 
 /**
  * Generate a URL as verification that will be send to an email
@@ -11,7 +12,7 @@ const { encryptAES, decryptAES } = require("../helpers/aes-encryption");
  * @param {*} id_user the userID who need change email
  * @param {*} newEmail the newEmail which will replace the old one.
  * @param {*} address address that contain ip and port e.g. http://127.0.0.1:8080
- * @returns 
+ * @returns url or null
  */
 const generateURLChangeEmailConfirmation = async (id_user, newEmail, address) => {
     let url;
@@ -43,12 +44,14 @@ const removeURLChangeEmailConfiguration = async (id_user) => {
     const t = await sequelize.transaction();
     try {
         let data = await URLRecover.destroy({
-            where: id_user
+            where: { id_user }
         }, { transaction: t });
+        await t.commit();
         if (data == 1) {
             isRemoved = true;
         }
     } catch (error) {
+        await t.rollback();
         throw new Error(error);
     }
     return isRemoved;

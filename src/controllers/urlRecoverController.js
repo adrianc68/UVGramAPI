@@ -1,4 +1,4 @@
-const { removeURLChangeEmailConfirmation } = require("../dataaccess/urlRecoverDataAccess");
+const { removeURLChangeEmailConfiguration } = require("../dataaccess/urlRecoverDataAccess");
 const { updateUserEmail } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
@@ -6,11 +6,10 @@ const { logger } = require("../helpers/logger");
 const changeEmailDataOnConfirmation = async (request, response) => {
     let isUpdated = false;
     let resultData = response.locals.data;
-    logger.debug(resultData);
     try {
-        let resultRemoveURL = await removeURLChangeEmailConfirmation(resultData.uuid);
+        let resultRemoveURL = await removeURLChangeEmailConfiguration(resultData.id_user);
         if (resultRemoveURL) {
-            isUpdated = await updateUserEmail(resultData.email, resultData.email.id_user);
+            isUpdated = await updateUserEmail(resultData.newEmail, resultData.id_user);
         };
     } catch (error) {
         return httpResponseInternalServerError(response, error);

@@ -26,7 +26,6 @@ router.post("/accounts/password/reset",
     formatValidationPassword,
     formatValidationUsernameOrEmail,
     formatValidationVerificationCode,
-    validationChangePasswordUnloggedUser,
     changePasswordOnUnloggedUser,
 );
 

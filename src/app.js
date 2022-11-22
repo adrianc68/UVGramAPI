@@ -7,6 +7,7 @@ const cors = require("cors");
 const { logger } = require("./helpers/logger");
 const { redisClient, REDIS_PORT_CONNECTED_TO } = require("./database/connectionRedis");
 const { sequelize } = require("./database/connectionDatabaseSequelize");
+const { mailer } = require("./database/connetionEmail");
 const { handleJSON } = require("./middleware/jsonValidation");
 
 app.set("port", process.env.SV_PORT);
@@ -35,6 +36,10 @@ const connetionToServers = async () => {
         });
         await redisClient.connect().then(x => {
             logger.info(`Redis Client initialized on port ${REDIS_PORT_CONNECTED_TO}`);
+        });
+
+        await mailer.verify().then(x => {
+            logger.info(`Nodemailer initialized on port ${mailer.options.port}`);
         });
     } catch (error) {
         logger.fatal(error);
