@@ -6,7 +6,8 @@ const Faculty = sequelize.define("Faculty", {
     id: {
         type: DataTypes.BIGINT,
         allowNull: false,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
     },
     faculty: {
         type: DataTypes.STRING

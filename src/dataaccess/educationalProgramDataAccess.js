@@ -76,4 +76,71 @@ const isEducationalProgramRegistered = async (id) => {
     return isRegistered;
 }
 
-module.exports = { getAllEducationalProgram, getAllFacultyAvailables, getAllRegion, isEducationalProgramRegistered }
+/**
+ * Add education program to faculty 
+ * @param {*} educational_program educational program or career name
+ * @param {*} id_faculty faculto to be added
+ * @returns true if was created otherwise false
+ */
+const addEducationalProgramToFaculty = async (educational_program, id_faculty) => {
+    let isRegistered = true;
+    const t = await sequelize.transaction();
+    try {
+        let data = await EducationalProgram.create({
+            educational_program,
+            id_faculty
+        }, { transaction: t });
+        await t.commit();
+        isRegistered = true;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isRegistered;
+}
+
+/**
+ * Add faculty to region
+ * @param {*} faculty faculty name
+ * @param {*} id_region id of region to be added
+ * @returns true if was created otherwise false
+ */
+const addFacultyToRegion = async (faculty, id_region) => {
+    let isRegistered = true;
+    const t = await sequelize.transaction();
+    try {
+        let data = await Faculty.create({
+            faculty,
+            id_region
+        }, { transaction: t });
+        await t.commit();
+        isRegistered = true;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isRegistered;
+};
+
+/**
+ * Add region to database
+ * @param {*} region region name
+ * @returns true if created otherwise false
+ */
+const addRegion = async (region) => {
+    let isRegistered = true;
+    const t = await sequelize.transaction();
+    try {
+        let data = await Region.create({
+            region,
+        }, { transaction: t });
+        await t.commit();
+        isRegistered = true;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isRegistered;
+}
+
+module.exports = { getAllEducationalProgram, getAllFacultyAvailables, getAllRegion, isEducationalProgramRegistered, addRegion, addFacultyToRegion, addEducationalProgramToFaculty }

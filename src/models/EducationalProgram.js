@@ -7,7 +7,8 @@ const EducationalProgram = sequelize.define("EducationalProgram", {
     id: {
         type: DataTypes.BIGINT,
         allowNull: false,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
     },
     educational_program: {
         type: DataTypes.STRING

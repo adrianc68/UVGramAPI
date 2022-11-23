@@ -1,4 +1,5 @@
-const { getAllEducationalProgram, getAllFacultyAvailables, getAllRegion } = require('../controllers/educationalProgramController');
+const { getAllEducationalProgram, getAllFacultyAvailables, getAllRegion, addNewEducationalProgramToFaculty, addNewFacultyToRegion, addNewRegion } = require('../controllers/educationalProgramController');
+
 const router = require('express').Router();
 
 router.get("/data/faculty/",
@@ -12,5 +13,21 @@ router.get("/data/educationalprogram/",
 router.get("/data/region/",
     getAllRegion
 );
+
+// ADD IN LATER VERSION AUTH ADMIN ROLE FOR THIS ROUTES
+router.post("/data/faculty",
+    addNewFacultyToRegion
+);
+
+// ADD IN LATER VERSION AUTH ADMIN ROLE FOR THIS ROUTES
+router.post("/data/region",
+    addNewRegion
+);
+
+// ADD IN LATER VERSION AUTH ADMIN ROLE FOR THIS ROUTES
+router.post("/data/educationalprogram",
+    addNewEducationalProgramToFaculty
+);
+
 
 module.exports = router;
