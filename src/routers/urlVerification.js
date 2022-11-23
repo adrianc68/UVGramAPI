@@ -1,18 +1,22 @@
-const { changeEmailDataOnConfirmation } = require('../controllers/urlRecoverController');
-const { changePasswordOnUnloggedUser } = require('../controllers/userAccountController');
+const { changeEmailDataOnURLConfirmation, getRedirectionURLOnConfirmation, changePasswordOnUnloggedUserAndLogInOnURLConfirmation } = require('../controllers/urlRecoverController');
+const { formatValidationPassword } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationURLRecover } = require('../validators/urlRecoverValidation');
 const router = require('express').Router();
 
 router.get("/accounts/verification/url/confirm_email?:data",
     validationURLRecover,
-    changeEmailDataOnConfirmation
+    changeEmailDataOnURLConfirmation
 );
 
 router.get("/accounts/verification/url/change_password?:data",
     validationURLRecover,
-    
-    // RETURN TEMPORAL TOKEN
-    // changePasswordOnUnloggedUser,
+    getRedirectionURLOnConfirmation
+);
+
+router.post("/accounts/password/reset/confirmation?:data",
+    formatValidationPassword,
+    validationURLRecover,
+    changePasswordOnUnloggedUserAndLogInOnURLConfirmation
 );
 
 module.exports = router;

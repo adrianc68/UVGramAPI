@@ -1,5 +1,6 @@
 const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
+const { logger } = require("../helpers/logger");
 const { generateRefreshToken: generateRefreshTokenHelper, generateAccessToken: generateAcessTokenHelper,
     addToken: addTokenHelper, removeTokenByJTI, verifyToken: verifyTokenHelper,
     TOKEN_STATE, TOKEN_TYPE, getTokenValueRedis } = require("../helpers/token");
@@ -41,6 +42,8 @@ const deleteSessionInDbByRefreshJTI = async (refreshTokenJTI) => {
     return isRemoved;
 };
 
+
+
 /**
 * Check that the token has the VALID status and TokenType 
 * @param {*} token token to be verified.
@@ -56,6 +59,12 @@ const getTokenExist = async (token, tokenType) => {
         throw new Error(error.message);
     }
     if (!tokenData) throw new Error(`${tokenType} does not exist`);
+    if (tokenType == TOKEN_TYPE.ACCESS) {
+        let hasRefreshToken = await getTokenValueRedis(tokenData.refreshTokenJti);
+        if (hasRefreshToken == null || (hasRefreshToken.split(" ")[0] == TOKEN_STATE.INVALID)) {
+            throw new Error(`refreshToken of accessToken has expired`);
+        }
+    }
     if (tokenData.tokenType != tokenType) throw new Error(`you must provide a token of type ${tokenType}`);
     try {
         value = await getTokenValueRedis(tokenData.jti);
@@ -197,14 +206,43 @@ const refreshLoginAndRemoveOldAccessToken = async (accessToken, id_user, userRol
         newAccessToken = await refreshAccessToken(username, id_user, userRole, email, refresTokenJTI);
         await removeTokenByJTI(accessToken);
     } catch (error) {
-        throw new Error(error);
+        throw error;
     }
     return newAccessToken;
 }
 
+/**
+ * Delete refresh token from db and redis.
+ * @param {*} id_user the user id to remove sessions
+ * @returns true is all session was removed
+ */
+const deleteAllSessionsByUserId = async (id_user) => {
+    let isAllSessionRemoved = false;
+    try {
+        let result = await Session.findAll({
+            where: {
+                id_user
+            },
+        });
+        if (result.length != 0) {
+            await Promise.all(result.map(async (session) => {
+                try {
+                    await removeTokenByJTI(session.token);
+                    await session.destroy();
+                } catch (error) {
+                    throw error;
+                }
+            }));
+            isAllSessionRemoved = true;
+        }
+    } catch (error) {
+        throw error;
+    }
+    return isAllSessionRemoved
+}
 
 module.exports = {
     refreshAccessToken, generateTokens, removeToken,
     verifyToken, getTokenExist, TOKEN_STATE, TOKEN_TYPE,
-    refreshLoginAndRemoveOldAccessToken, deleteAllSessionByAccessToken
+    refreshLoginAndRemoveOldAccessToken, deleteAllSessionByAccessToken, deleteAllSessionsByUserId
 }

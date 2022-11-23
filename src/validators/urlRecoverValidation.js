@@ -1,6 +1,7 @@
-const { getDataURLRecover, doesURLVerificationAlreadyGenerated } = require("../dataaccess/urlRecoverDataAccess");
+const { getDataURLRecover, doesURLVerificationAlreadyGenerated, removeURLVerification } = require("../dataaccess/urlRecoverDataAccess");
 const { getAccountLoginData } = require("../dataaccess/userDataAccess");
 const { httpResponseNotFound, httpResponseForbidden, httpResponseInternalServerError } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 
 const validationURLRecover = async (request, response, next) => {
     let uri = request.query;
@@ -9,7 +10,7 @@ const validationURLRecover = async (request, response, next) => {
         result = await getDataURLRecover(uri);
         response.locals.data = result;
     } catch (error) {
-        return httpResponseNotFound(response, "URL is not found");
+        return httpResponseNotFound(response, "URL is not valid");
     }
     if (!result) {
         return httpResponseNotFound(response, "URL has expired");

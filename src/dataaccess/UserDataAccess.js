@@ -577,6 +577,10 @@ const isUserBlockedByUser = async (id_user_blocker, id_user_blocked) => {
  */
 const updateUserEmail = async (newEmail, id_user) => {
     let isUpdated = false;
+
+    logger.debug(newEmail);
+    logger.debug(id_user);
+
     const t = await sequelize.transaction();
     try {
         let user = await Account.update({
@@ -587,6 +591,7 @@ const updateUserEmail = async (newEmail, id_user) => {
             },
             transaction: t
         });
+        logger.debug(user);
         await t.commit();
         isUpdated = true;
     } catch (error) {

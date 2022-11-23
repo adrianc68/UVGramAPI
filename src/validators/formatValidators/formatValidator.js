@@ -266,6 +266,14 @@ const validateOrganizationName = [
         .withMessage("name is not valid, must have allowed characters: a-zA-Z0-9 and one space between words")
 ];
 
+const validateUUIDTemporalToken = [
+    check("temporalToken")
+        .not()
+        .isEmpty()
+        .withMessage("temporalToken is required")
+        .bail()
+];
+
 const isValidDate = (dateString) => {
     // Parse the date parts to integers
     var parts = dateString.split("-");
@@ -290,5 +298,6 @@ module.exports = {
     validateAuthorizationHeaderData, validateAccessTokenParameterData, validateRefreshTokenParameterData,
     validateOptionalAccessTokenParameterData, validateOldPasswordData, validateEmailAsOptional,
     validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode,
-    validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName
+    validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName,
+    validateUUIDTemporalToken
 }

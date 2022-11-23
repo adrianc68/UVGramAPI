@@ -5,7 +5,12 @@ const axios = require('axios');
 const { logger } = require("../helpers/logger");
 const { TEST_NODEMAILER_HOST, TEST_NODEMAILER_PORT_APIV2 } = process.env;
 
-
+/**
+ * Send code verification URL confirmation to an specific email
+ * @param {*} url the url that was generated.
+ * @param {*} to email address who will receive the mail
+ * @returns true if sent otherwise false
+ */
 const sendEmailCodeVerification = async (codeVerification, to) => {
     let isSend = false;
     try {
@@ -25,6 +30,12 @@ const sendEmailCodeVerification = async (codeVerification, to) => {
     return isSend;
 }
 
+/**
+ * Send change email URL confirmation to an specific email
+ * @param {*} url the url that was generated.
+ * @param {*} to email address who will receive the mail
+ * @returns true if sent otherwise false
+ */
 const sendEmailChangeURLConfirmation = async (url, to) => {
     let isSend = false;
     try {
@@ -44,6 +55,12 @@ const sendEmailChangeURLConfirmation = async (url, to) => {
     return isSend;
 }
 
+/**
+ * Send password recover URL confirmation to an specific email
+ * @param {*} url the url that was generated.
+ * @param {*} to email address who will receive the mail
+ * @returns true if sent otherwise false
+ */
 const sendEmailPasswordURLConfirmation = async (url, to) => {
     let isSend = false;
     try {
@@ -117,7 +134,6 @@ const getURLConfirmationFromEmail = async (to) => {
     } catch (error) {
         throw new Error(error);
     }
-
     return url;
 }
 

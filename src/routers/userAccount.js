@@ -1,7 +1,6 @@
 const router = require('express').Router();
-const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, changePasswordOnUnloggedUser, updateUser, createURLVerification } = require('../controllers/userAccountController');
-const { generateURLUpdatePasswordConfirmation } = require('../dataaccess/urlRecoverDataAccess');
-const { checkAccessTokenAndAuthRoleMiddleware, checkAccessAndRefreshTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
+const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, updateUser, createURLVerification } = require('../controllers/userAccountController');
+const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationUsernameOrEmail } = require('../validators/formatValidators/authenticationFormatValidator');
 const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode, formatValidationPassword, formatValidationOldPassword, formatValidationBasicUserAccountData, formatValidationPersonalData, formatValidationBusinessData, formatValidationAdminData, formatValidationModerator } = require('../validators/formatValidators/userAccountFormatValidator');

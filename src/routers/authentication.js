@@ -2,8 +2,8 @@ const router = require('express').Router();
 const { createTokens, refreshTokens, logoutSession, sayHello, checkRolesAuth } = require('../controllers/authenticationController');
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
-const { validationLoginData, validationRefreshTokenDataAsAuthorization, validationLogoutTokensData } = require('../validators/authenticationValidation');
-const { formatValidationLogin, formatValidationAuthorizationToken, formatValidationRefreshTokenAsParameter, formatValidationOptionalAccessToken } = require('../validators/formatValidators/authenticationFormatValidator');
+const { validationLoginData, validationRefreshTokenDataAsAuthorization } = require('../validators/authenticationValidation');
+const { formatValidationLogin, formatValidationAuthorizationToken, formatValidationOptionalAccessToken } = require('../validators/formatValidators/authenticationFormatValidator');
 
 router.post("/authentication/login",
     formatValidationLogin,

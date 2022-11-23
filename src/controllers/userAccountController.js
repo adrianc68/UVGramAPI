@@ -1,9 +1,9 @@
 const { sendEmailCodeVerification, sendEmailChangeURLConfirmation, sendEmailPasswordURLConfirmation } = require("../dataaccess/mailDataAccess");
-const { verifyToken } = require("../dataaccess/tokenDataAccess");
-const { generateURLChangeEmailConfirmation, doesURLVerificationAlreadyGenerated, removeURLVerification, generateURLUpdatePasswordConfirmation } = require("../dataaccess/urlRecoverDataAccess");
+const { verifyToken, generateTokens } = require("../dataaccess/tokenDataAccess");
+const { generateURLChangeEmailConfirmation, doesURLVerificationAlreadyGenerated, removeURLVerification, generateURLUpdatePasswordConfirmation, getDataURLRecoverByUUID } = require("../dataaccess/urlRecoverDataAccess");
 const { deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode,
     getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData } = require("../dataaccess/userDataAccess");
-const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
+const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden, httpResponseUnauthorized } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const createURL = require("../helpers/urlHelper");
 const { UserRoleType } = require("../models/enum/UserRoleType");
@@ -113,18 +113,17 @@ const removeUserByUsername = async (request, response) => {
 
 const createURLVerification = async (request, response) => {
     let { emailOrUsername } = request.body;
-    let isGenerated = false;
+    let message;
     try {
         let userData = await getAccountLoginData(emailOrUsername);
         let address = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
-        let url = await generateURLUpdatePasswordConfirmation(userData.id, emailOrUsername, address);
-        if (url) {
-            let result = await sendEmailPasswordURLConfirmation(url, userData.email);
-            if (!result) {
+        let urlResult = await generateURLUpdatePasswordConfirmation(userData.id, emailOrUsername, address);
+        if (urlResult) {
+            let emailResult = await sendEmailPasswordURLConfirmation(urlResult, userData.email);
+            if (!emailResult) {
                 throw new Error("can not send email");
             }
-            emailMessage = "a confirmation address has been sent to the new email";
-            isGenerated = true;
+            message = "a confirmation address has been sent to the new email";
         } else {
             throw new Error("can not generate a new url");
         }
@@ -133,7 +132,7 @@ const createURLVerification = async (request, response) => {
         logger.warn(error);
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, isGenerated);
+    return httpResponseOk(response, message);
 }
 
 const createVerificationCode = async (request, response) => {
@@ -169,17 +168,6 @@ const changePasswordOnLoggedUser = async (request, response) => {
     return httpResponseOk(response, isUpdated);
 };
 
-const changePasswordOnUnloggedUser = async (request, response) => {
-    let { password, emailOrUsername } = request.body;
-    let isUpdated;
-    try {
-        isUpdated = await changePassword(emailOrUsername, password);
-    } catch (error) {
-        return httpResponseInternalServerError(response, error);
-    }
-    return httpResponseOk(response, { isUpdated });
-};
-
 const getAllUsers = async (request, response) => {
     let users;
     try {
@@ -193,6 +181,6 @@ const getAllUsers = async (request, response) => {
 
 module.exports = {
     addUser, removeUserByUsername, createVerificationCode,
-    getAllUsers, changePasswordOnLoggedUser, changePasswordOnUnloggedUser,
+    getAllUsers, changePasswordOnLoggedUser,
     updateUser, createURLVerification
 }

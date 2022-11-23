@@ -1,7 +1,6 @@
 const { generateTokens, deleteAllSessionByAccessToken, verifyToken, removeToken, refreshAccessToken } = require("../dataaccess/tokenDataAccess");
 const { getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError, httpResponseUnauthorized } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 
 const createTokens = async (request, response) => {
     let { emailOrUsername } = request.body;

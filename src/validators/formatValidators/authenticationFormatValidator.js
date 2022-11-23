@@ -1,6 +1,6 @@
 const { httpResponseValidation } = require('../../helpers/httpResponses');
 const { validatePasswordData, validateEmailOrUsernameData, validateAuthorizationHeaderData,
-    validateRefreshTokenParameterData, validateAccessTokenParameterData, validateOptionalAccessTokenParameterData, validateUsernameInParams } = require('./formatValidator');
+    validateRefreshTokenParameterData, validateAccessTokenParameterData, validateOptionalAccessTokenParameterData, validateUsernameInParams, validateUUIDTemporalToken } = require('./formatValidator');
 
 const formatValidationLogin = [
     validateEmailOrUsernameData,
@@ -55,6 +55,6 @@ const formatValidationOptionalAccessToken = [
 
 module.exports = {
     formatValidationRefreshAndAccessToken, formatValidationAccessTokenAsParameter, formatValidationRefreshTokenAsParameter,
-    formatValidationLogin, formatValidationAuthorizationToken, formatValidationOptionalAccessToken, formatValidationUsernameOrEmail
+    formatValidationLogin, formatValidationAuthorizationToken, formatValidationOptionalAccessToken, formatValidationUsernameOrEmail,
 }
 
