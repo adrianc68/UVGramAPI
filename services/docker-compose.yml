@@ -10,14 +10,14 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=
-      - POSTGRES_PASSWORD=
-      - POSTGRES_DB=
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=soydesarrollador
+      - POSTGRES_DB=uvgram_db
     volumes:
       - ./prod/database/data:/var/lib/postgresql/data
       - ./prod/database/dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
     networks:
-      db_network:
+      prod_network:
         aliases:
           - db_prod_host
   redis:
@@ -35,7 +35,7 @@ services:
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:
-      redis_network:
+      prod_network:
         aliases:
           - redis_prod_host
   db_test:
@@ -48,14 +48,14 @@ services:
     ports:
       - "5433:5432"
     environment:
-      - POSTGRES_USER=
-      - POSTGRES_PASSWORD=
-      - POSTGRES_DB=
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=soydesarrollador
+      - POSTGRES_DB=test_uvgram_db
     volumes:
       - ./testing/database/data/:/var/lib/postgresql/data
       - ./testing/database/dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
     networks:
-      db_network:
+      test_network:
         aliases:
           - db_test_host
   redis_test:
@@ -73,20 +73,32 @@ services:
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:
-      redis_network:
+      test_network:
         aliases:
           - redis_test_host
+  mailhog_test:
+    build:
+      context: ./testing
+      dockerfile: "./dkfs/DockerfileMAH"
+    container_name: "test_uvgram_mailhog"
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      test_network:
+        aliases:
+          - mail_test_host
 volumes:
   testing: {}
   prod: {}
 networks:
-  db_network:
-    name: db_net
+  prod_network:
+    name: prod_net
     driver: bridge
     ipam: 
       driver: default
-  redis_network:
-    name: res_net
+  test_network:
+    name: test_net
     driver: bridge
     ipam:
       driver: default

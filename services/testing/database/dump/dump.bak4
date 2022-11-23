@@ -1,4 +1,4 @@
-\connect uvgram_db
+\connect test_uvgram_db
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -402,20 +402,6 @@ CREATE TABLE public."Session" (
 ALTER TABLE public."Session" OWNER TO dev;
 
 --
--- Name: URLRecover; Type: TABLE; Schema: public; Owner: dev
---
-
-CREATE TABLE public."URLRecover" (
-    uuid uuid NOT NULL,
-    id_user bigint NOT NULL,
-    action character varying(50) NOT NULL,
-    token text
-);
-
-
-ALTER TABLE public."URLRecover" OWNER TO dev;
-
---
 -- Name: User; Type: TABLE; Schema: public; Owner: dev
 --
 
@@ -642,14 +628,6 @@ COPY public."Session" (id_user, token, created_time, device) FROM stdin;
 
 
 --
--- Data for Name: URLRecover; Type: TABLE DATA; Schema: public; Owner: dev
---
-
-COPY public."URLRecover" (uuid, id_user, action, token) FROM stdin;
-\.
-
-
---
 -- Data for Name: User; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
@@ -770,14 +748,6 @@ ALTER TABLE ONLY public."Region"
 
 
 --
--- Name: URLRecover PK_URLRecover; Type: CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."URLRecover"
-    ADD CONSTRAINT "PK_URLRecover" PRIMARY KEY (id_user);
-
-
---
 -- Name: User PK_User; Type: CONSTRAINT; Schema: public; Owner: dev
 --
 
@@ -889,13 +859,6 @@ CREATE INDEX "IXFK_Personal_UserRole" ON public."Personal" USING btree (id_user)
 --
 
 CREATE INDEX "IXFK_Session_Account" ON public."Session" USING btree (id_user);
-
-
---
--- Name: IXFK_URLRecover_Account; Type: INDEX; Schema: public; Owner: dev
---
-
-CREATE INDEX "IXFK_URLRecover_Account" ON public."URLRecover" USING btree (id_user);
 
 
 --
@@ -1014,14 +977,6 @@ ALTER TABLE ONLY public."Personal"
 
 ALTER TABLE ONLY public."Session"
     ADD CONSTRAINT "FK_Session_Account" FOREIGN KEY (id_user) REFERENCES public."Account"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: URLRecover FK_URLRecover_Account; Type: FK CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."URLRecover"
-    ADD CONSTRAINT "FK_URLRecover_Account" FOREIGN KEY (id_user) REFERENCES public."Account"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

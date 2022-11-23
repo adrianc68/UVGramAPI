@@ -10,8 +10,8 @@ router.get("/accounts/verification/url/confirm_email?:data",
 
 router.get("/accounts/verification/url/change_password?:data",
     validationURLRecover,
-
-    // RETURN HTML to user 
+    
+    // RETURN TEMPORAL TOKEN
     // changePasswordOnUnloggedUser,
 );
 
