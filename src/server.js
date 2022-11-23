@@ -31,6 +31,7 @@ const clearDatabase = async () => {
     await sequelize.query("ALTER SEQUENCE faculty_id_seq RESTART WITH 1");
     await sequelize.query("ALTER SEQUENCE region_id_seq RESTART WITH 1");
     await redisClient.flushAll("ASYNC");
+    await clearMessagesMailHog();
 }
 
 const clearMessagesMailHog = async () => {

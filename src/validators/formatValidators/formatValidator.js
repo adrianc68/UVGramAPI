@@ -1,4 +1,7 @@
 const { check, body, header } = require('express-validator');
+const { CategoryType } = require('../../models/enum/CategoryType');
+const { GenderType } = require('../../models/enum/GenderType');
+const { UserRoleType } = require('../../models/enum/UserRoleType');
 
 const validateEmailData = [
     check("email")
@@ -169,6 +172,11 @@ const validateGenderData = [
         .isEmpty()
         .withMessage("gender is required")
         .bail()
+        .custom((value, { req }) => {
+            return valueExistInEnumType(value, GenderType)
+        })
+        .withMessage(`gender must be one this: ${Object.values(GenderType)}`)
+        .bail()
         .matches(/^[A-Z]+(\_([A-Z]+))*$/)
         .withMessage("gender must have the allowed characters: upper letters and separated by underscore if more than 2 words")
 ];
@@ -189,6 +197,11 @@ const validateCategory = [
         .isEmpty()
         .withMessage("category is required")
         .bail()
+        .custom((value, { req }) => {
+            return valueExistInEnumType(value, CategoryType)
+        })
+        .withMessage(`category must be one this: ${Object.values(CategoryType)}`)
+        .bail()
         .matches(/^[A-Z]+(\_([A-Z]+))*$/)
         .withMessage("category must have the allowed characters: upper letters and separated by underscore if more than 2 words")
 ];
@@ -202,9 +215,7 @@ const validateCity = [
         .isLength({ min: 3, max: 30 })
         .withMessage("city must have the allowed length: {min: 3, max: 340}")
         .matches(/^[a-zA-Z]+(\ ([a-zA-Z]+))*$/)
-        .withMessage("username is not valid, must have allowed characters: words, numbers. no allowed spaces and period as last character")
-        .isLowercase()
-        .withMessage("username is not valid, must have allowed characters: only lowercase allowed")
+        .withMessage("city is not valid, must have allowed characters: words, numbers. no allowed spaces and period as last character")
 ];
 
 const validatePostalCode = [
@@ -274,6 +285,25 @@ const validateUUIDTemporalToken = [
         .bail()
 ];
 
+const validateNewRoleTypeData = [
+    check("newRoleType")
+        .not()
+        .isEmpty()
+        .withMessage("newRoleType is required")
+        .toUpperCase()
+        .custom((value, { req }) => {
+            return valueExistInEnumType(value, UserRoleType)
+        })
+        .withMessage(`newRoleType must be one this: ${Object.values(UserRoleType)}`)
+];
+
+const valueExistInEnumType = (value, enumType) => {
+    if (Object.values(enumType).includes(value)) {
+        return true;
+    }
+    return false;
+}
+
 const isValidDate = (dateString) => {
     // Parse the date parts to integers
     var parts = dateString.split("-");
@@ -299,5 +329,5 @@ module.exports = {
     validateOptionalAccessTokenParameterData, validateOldPasswordData, validateEmailAsOptional,
     validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode,
     validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName,
-    validateUUIDTemporalToken
+    validateUUIDTemporalToken, validateNewRoleTypeData
 }

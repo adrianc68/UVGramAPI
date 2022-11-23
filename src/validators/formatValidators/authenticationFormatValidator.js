@@ -10,7 +10,7 @@ const formatValidationLogin = [
     }
 ];
 
-const formatValidationUsernameOrEmail = [
+const formatValidationEmailOrUsername = [
     validateEmailOrUsernameData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
@@ -55,6 +55,6 @@ const formatValidationOptionalAccessToken = [
 
 module.exports = {
     formatValidationRefreshAndAccessToken, formatValidationAccessTokenAsParameter, formatValidationRefreshTokenAsParameter,
-    formatValidationLogin, formatValidationAuthorizationToken, formatValidationOptionalAccessToken, formatValidationUsernameOrEmail,
+    formatValidationLogin, formatValidationAuthorizationToken, formatValidationOptionalAccessToken, formatValidationEmailOrUsername,
 }
 

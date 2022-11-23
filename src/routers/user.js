@@ -8,7 +8,7 @@ const { validationFollowingUser, validationUnfollowingUser, validationBlockingUs
 const router = require('express').Router();
 
 router.post("/user/follow/",
-    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationFollowingUser,
@@ -16,7 +16,7 @@ router.post("/user/follow/",
 );
 
 router.delete("/user/unfollow/",
-    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationUnfollowingUser,
@@ -24,21 +24,21 @@ router.delete("/user/unfollow/",
 );
 
 router.get("/user/followed-by/:username/",
-    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     getFollowedByUser
 );
 
 router.get("/user/followers-of/:username",
-    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     getFollowersOfUser
 );
 
 router.post("/user/block/",
-    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationBlockingUser,
@@ -46,7 +46,7 @@ router.post("/user/block/",
 );
 
 router.post("/user/unblock/",
-    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.PERSONAL]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationUnblockingUser,

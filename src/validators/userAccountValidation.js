@@ -1,8 +1,10 @@
 const { isEducationalProgramRegistered } = require("../dataaccess/EducationalProgramDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isEmailRegistered, isUsernameRegistered, isVerificationCodeGenerated, doesVerificationCodeMatches,
-    getIdByUsername, isOldPasswordValid, getAccountLoginData, removeVerificationCode, getAccountLoginDataById } = require("../dataaccess/userDataAccess");
-const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
+    isOldPasswordValid, getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/userDataAccess");
+const { encrytAES, decryptAES } = require("../helpers/aes-encryption");
+const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden, httpResponseUnauthorized } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 const { CategoryType } = require("../models/enum/CategoryType");
 const { GenderType } = require("../models/enum/GenderType");
 
@@ -177,12 +179,26 @@ const validationModeratorRoleData = async (request, response, next) => {
     return next();
 };
 
+const validationSecretKey = async (request, response, next) => {
+    const { key } = request.body;
+    let isValidKey
+    try {
+        isValidKey = (decryptAES(key) == process.env.SERVER_KEY);
+        if (!isValidKey) {
+            return httpResponseUnauthorized(response);
+        }
+    } catch (error) {
+        return httpResponseUnauthorized(response);
+    }
+    next();
+}
+
 module.exports = {
     validationisEmailRegisteredWithNext, validationIsUsernameRegisteredWithNext,
     validationIsUsernameRegistered, validationIsEmailRegistered, validationNotGeneratedVerificationCode,
     validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist,
     validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationAdminRoleData, validationModeratorRoleData,
-    validationBusinessRoleData
+    validationBusinessRoleData, validationSecretKey,
 }
 
 

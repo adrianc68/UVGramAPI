@@ -1,8 +1,8 @@
 const { sendEmailCodeVerification, sendEmailChangeURLConfirmation, sendEmailPasswordURLConfirmation } = require("../dataaccess/mailDataAccess");
-const { verifyToken, generateTokens } = require("../dataaccess/tokenDataAccess");
+const { verifyToken, generateTokens, deleteAllSessionsByUserId } = require("../dataaccess/tokenDataAccess");
 const { generateURLChangeEmailConfirmation, doesURLVerificationAlreadyGenerated, removeURLVerification, generateURLUpdatePasswordConfirmation, getDataURLRecoverByUUID } = require("../dataaccess/urlRecoverDataAccess");
 const { deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode,
-    getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData } = require("../dataaccess/userDataAccess");
+    getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden, httpResponseUnauthorized } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const createURL = require("../helpers/urlHelper");
@@ -50,7 +50,7 @@ const updateUser = async (request, response) => {
             const { category, city, postalCode, postalAddress, contactEmail, phoneContact, organizationName } = request.body;
             let businessData = { category, city, postalCode, postalAddress, contactEmail, phoneContact, organizationName };
             isUpdated = await updateBusinessData(basicData, businessData, idUser);
-        } else if (userRole == UserRoleType.MODERADOR) {
+        } else if (userRole == UserRoleType.MODERATOR) {
             const { updateDate } = request.body;
             let moderatorData = { updateDate }
             isUpdated = await updateModeratorData(basicData, moderatorData, idUser);
@@ -178,9 +178,24 @@ const getAllUsers = async (request, response) => {
     return httpResponseOk(response, users);
 };
 
+const changeUserRoleByEmailOrUsername = async (request, response) => {
+    const { emailOrUsername, newRoleType } = request.body;
+    let isUpdated;
+    try {
+        let userData = await getAccountLoginData(emailOrUsername);
+        isUpdated = await changeUserRoleType(userData.id, newRoleType.toUpperCase());
+        if (isUpdated) {
+            let resultSession = await deleteAllSessionsByUserId(userData.id);
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, { isUpdated })
+}
+
 
 module.exports = {
     addUser, removeUserByUsername, createVerificationCode,
     getAllUsers, changePasswordOnLoggedUser,
-    updateUser, createURLVerification
+    updateUser, createURLVerification, changeUserRoleByEmailOrUsername
 }

@@ -2,12 +2,12 @@ const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { encondePassword, encodeStringSHA256, encondeSHA512 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
-const { logger } = require("../helpers/logger");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
 const { AdministratorUserRole } = require("../models/AdministratorUserRole");
 const { Block } = require("../models/Block");
 const { BusinessUserRole } = require("../models/BusinessUserRole");
+const { UserRoleType } = require("../models/enum/UserRoleType");
 const { Follower } = require("../models/Follower");
 const { ModeratorUserRole } = require("../models/ModeratorUserRole");
 const { PersonalUserRole } = require("../models/PersonalUserRole");
@@ -577,10 +577,6 @@ const isUserBlockedByUser = async (id_user_blocker, id_user_blocked) => {
  */
 const updateUserEmail = async (newEmail, id_user) => {
     let isUpdated = false;
-
-    logger.debug(newEmail);
-    logger.debug(id_user);
-
     const t = await sequelize.transaction();
     try {
         let user = await Account.update({
@@ -591,7 +587,6 @@ const updateUserEmail = async (newEmail, id_user) => {
             },
             transaction: t
         });
-        logger.debug(user);
         await t.commit();
         isUpdated = true;
     } catch (error) {
@@ -749,6 +744,57 @@ const updateAdministratorData = async (basicData, adminData, id_user) => {
     return isUpdated;
 }
 
+/**
+ * Change user role type in database.
+ * @param {*} id_user the user id to change role type
+ * @param {*} userRoleType the new UserRoleType
+ * @returns true is updated otherwise false
+ */
+const changeUserRoleType = async (id_user, userRoleType) => {
+    let isUpdated = false;
+    const t = await sequelize.transaction();
+    try {
+        let userRoleData = await UserRole.findOne({
+            where: {id_user}
+        });
+
+        if (userRoleData) {
+            if (userRoleType == UserRoleType.PERSONAL) {
+                let result = await PersonalUserRole.findOne({ where: {id_user} });
+                if (!result) {
+                    await PersonalUserRole.create({ id_user }, { transaction: t });
+                }
+            } else if (userRoleType == UserRoleType.BUSINESS) {
+                let result = await BusinessUserRole.findOne({ where: {id_user} });
+                if (!result) {
+                    await BusinessUserRole.create({ id_user }, { transaction: t });
+                }
+            } else if (userRoleType == UserRoleType.MODERATOR) {
+                let result = await ModeratorUserRole.findOne({ where: {id_user} });
+                if (!result) {
+                    await ModeratorUserRole.create({ id_user }, { transaction: t });
+                }
+            } else if (userRoleType == UserRoleType.ADMINISTRATOR) {
+                let result = await AdministratorUserRole.findOne({ where: {id_user} });
+                if (!result) {
+                    await AdministratorUserRole.create({ id_user }, { transaction: t });
+                }
+            }
+            await userRoleData.update(
+                { role: userRoleType }, {
+                where: { id_user },
+                transaction: t
+            });
+            await t.commit();
+            isUpdated = true;
+        }
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isUpdated;
+}
+
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
@@ -757,5 +803,5 @@ module.exports = {
     getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedByUser,
     getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser,
     changePassword, isOldPasswordValid, updateUserPersonalData, updateAdministratorData,
-    updateModeratorData, updateBusinessData, updateUserEmail
+    updateModeratorData, updateBusinessData, updateUserEmail, changeUserRoleType
 }
