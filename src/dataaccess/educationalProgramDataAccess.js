@@ -1,6 +1,5 @@
 const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { logger } = require("../helpers/logger");
 const { EducationalProgram } = require("../models/EducationalProgram");
 const { Faculty } = require("../models/Faculty");
 const { Region } = require("../models/Region");

@@ -2,7 +2,6 @@ const { mailer } = require("../database/connetionEmail");
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-const { logger } = require("../helpers/logger");
 const { TEST_NODEMAILER_HOST, TEST_NODEMAILER_PORT_APIV2 } = process.env;
 
 /**
@@ -120,14 +119,16 @@ const getURLConfirmationFromEmail = async (to) => {
         await axios.get(`http://${TEST_NODEMAILER_HOST}:${TEST_NODEMAILER_PORT_APIV2}/api/v2/search?kind=to&query=${encodeURIComponent(to)}&start=0&limit=1`).then(response => {
             if ((response.data.items).length != 0) {
                 let html = (response.data.items[0].Raw.Data).toString();
-                html = html.replaceAll("\n\r", "");
-                html = html.replaceAll("\r\n", "");
+                // html = html.replaceAll("\n\r", "");
+                // html = html.replaceAll("\r\n", "");
                 let indexOfHref = html.search('class=3D"btn" target=3D"_blank" href=3D"');
                 html = html.substring(indexOfHref);
                 let indexOfProtocol = html.search('http');
                 html = html.substring(indexOfProtocol);
                 let indexOfDoubleQuote = html.search('">');
                 html = html.substring(0, indexOfDoubleQuote);
+                html = html.replaceAll("=\r\n", "");
+                html = html.replaceAll("=3D", "=");
                 url = html;
             }
         })

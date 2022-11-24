@@ -1,15 +1,11 @@
 const request = require('supertest');
 const { connetionToServers } = require('../src/app');
 const { getVerificationCodeFromEmail } = require('../src/dataaccess/mailDataAccess');
-const { sequelize } = require("../src/database/connectionDatabaseSequelize");
-const { redisClient } = require("../src/database/connectionRedis");
 const { server, delayServerConnections, clearDatabase } = require("../src/server");
 
 beforeAll(async () => {
     await delayServerConnections();
     await clearDatabase();
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
-    await redisClient.flushAll("ASYNC");
 
     response = await request(server).post("/data/region/").send({ "region": "PUEBLA" });
     response = await request(server).post("/data/region/").send({ "region": "VERACRUZ" });
@@ -30,8 +26,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
     server.close();
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
-    await redisClient.flushAll("ASYNC");
     await clearDatabase();
 });
 

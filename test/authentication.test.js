@@ -1,21 +1,16 @@
 const request = require('supertest');
 const { connetionToServers } = require('../src/app');
 const { getVerificationCodeFromEmail } = require('../src/dataaccess/mailDataAccess');
-const { sequelize } = require("../src/database/connectionDatabaseSequelize");
-const { redisClient } = require("../src/database/connectionRedis");
-const { server, delayServerConnections, clearMessagesMailHog } = require("../src/server");
+const { server, delayServerConnections, clearMessagesMailHog, clearDatabase } = require("../src/server");
 
 beforeAll(async () => {
-    await clearMessagesMailHog();
     await delayServerConnections();
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
-    await redisClient.flushAll("ASYNC");
+    await clearDatabase();
 });
 
 afterAll(async () => {
     server.close();
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
-    await redisClient.flushAll("ASYNC");
+    await clearDatabase();
 });
 
 describe('POST /authentication/login', () => {
@@ -90,8 +85,7 @@ describe('POST /authentication/login', () => {
         });
 
         afterAll(async () => {
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
-            await redisClient.flushAll("ASYNC");
+            await clearDatabase();
         });
 
         test('POST /authentication/login 200 OK', async () => {
@@ -149,8 +143,7 @@ describe('POST /authentication/logout', () => {
         let accessToken;
         let refreshToken;
         beforeAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
             const newUser = {
@@ -170,8 +163,8 @@ describe('POST /authentication/logout', () => {
         });
 
         afterAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
+
         });
 
         test('POST /authentication/logout 400 Bad Request AccessToken Bearer format invalid ', async () => {
@@ -200,8 +193,7 @@ describe('POST /authentication/refresh', () => {
         let accessToken;
         let refreshToken;
         beforeAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
 
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
@@ -222,8 +214,7 @@ describe('POST /authentication/refresh', () => {
         });
 
         afterAll(async () => {
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
-            await redisClient.flushAll("ASYNC");
+            await clearDatabase();
         });
 
         test('POST /authentication/refresh 403 Forbidden Provide a token of type refresh.', async () => {

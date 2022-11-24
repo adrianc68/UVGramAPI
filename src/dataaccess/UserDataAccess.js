@@ -11,7 +11,6 @@ const { UserRoleType } = require("../models/enum/UserRoleType");
 const { Follower } = require("../models/Follower");
 const { ModeratorUserRole } = require("../models/ModeratorUserRole");
 const { PersonalUserRole } = require("../models/PersonalUserRole");
-const { Session } = require("../models/Session");
 const { User } = require("../models/User");
 const { UserConfiguration } = require("../models/UserConfiguration");
 const { UserRole } = require("../models/UserRole");

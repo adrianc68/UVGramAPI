@@ -4,18 +4,16 @@ const { getVerificationCodeFromEmail } = require('../src/dataaccess/mailDataAcce
 const { sequelize } = require("../src/database/connectionDatabaseSequelize");
 const { redisClient } = require("../src/database/connectionRedis");
 const { logger } = require('../src/helpers/logger');
-const { server, delayServerConnections } = require("../src/server");
+const { server, delayServerConnections, clearDatabase } = require("../src/server");
 
 beforeAll(async () => {
     await delayServerConnections();
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
-    await redisClient.flushAll("ASYNC");
+    await clearDatabase();
 });
 
 afterAll(async () => {
     server.close();
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
-    await redisClient.flushAll("ASYNC");
+    await clearDatabase();
 });
 
 describe('POST /user/follow/', () => {
@@ -28,13 +26,11 @@ describe('POST /user/follow/', () => {
         let accessToken;
 
         afterAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
         });
 
         beforeAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
 
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
@@ -109,13 +105,12 @@ describe('DEL /user/unfollow/', () => {
         let accessToken;
 
         afterAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
+
         });
 
         beforeAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
 
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
@@ -213,13 +208,13 @@ describe('GET /user/followed-by/:username', () => {
         let accessTokenUser5;
 
         afterAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
+
         });
 
         beforeAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
+
 
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram1", "email": "uvgram1@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("uvgram1@uvgram.com");
@@ -381,13 +376,13 @@ describe('GET /user/followers-of/:username', () => {
         let accessTokenUser5;
 
         afterAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
+
         });
 
         beforeAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
+
 
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram1", "email": "uvgram1@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("uvgram1@uvgram.com");
@@ -544,13 +539,13 @@ describe('POST /user/block/', () => {
         let accessToken;
 
         afterAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
+
         });
 
         beforeAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
+
 
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
@@ -627,13 +622,12 @@ describe('POST /user/unblock/', () => {
         let accessToken;
 
         afterAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
+
         });
 
         beforeAll(async () => {
-            await redisClient.flushAll("ASYNC");
-            await sequelize.truncate({ cascade: true, restartIdentity: true });
+            await clearDatabase();
 
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");

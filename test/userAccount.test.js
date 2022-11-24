@@ -1,21 +1,110 @@
 const request = require('supertest');
 const { connetionToServers } = require('../src/app');
-const { getVerificationCodeFromEmail } = require('../src/dataaccess/mailDataAccess');
-const { sequelize } = require("../src/database/connectionDatabaseSequelize");
-const { redisClient } = require('../src/database/connectionRedis');
-const { logger } = require('../src/helpers/logger');
+const { getVerificationCodeFromEmail, getURLConfirmationFromEmail } = require('../src/dataaccess/mailDataAccess');
 const { CategoryType } = require('../src/models/enum/CategoryType');
 const { GenderType } = require('../src/models/enum/GenderType');
 const { server, delayServerConnections, clearMessagesMailHog, clearDatabase } = require("../src/server")
 
 beforeAll(async () => {
     await delayServerConnections();
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
+    await clearDatabase();
 });
 
 afterAll(async () => {
     server.close();
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
+    await clearDatabase();
+});
+
+describe('On URL and code generation Test', () => {
+    // CAN FAIL BY MAILHOG ENCODING (URL in mailhog add 3D and \n\r )
+    // CAN FAIL BY MAILHOG ENCODING (URL in mailhog add 3D and \n\r )
+    // CAN FAIL BY MAILHOG ENCODING (URL in mailhog add 3D and \n\r )
+    let accessToken;
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        let vCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
+        const newUser = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode: vCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+        response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
+        response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
+    });
+
+    beforeEach(async () => {
+        // Don't change username on this test or will fail.
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+    })
+
+    describe('POST /accounts/password/reset/confirmation/?:data', () => {
+        test('POST /accounts/password/reset/confirmation/?:data 200 OK', async () => {
+            response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram@uvgram.com" });
+            let url = await getURLConfirmationFromEmail("uvgram@uvgram.com");
+            url = url.substring(url.search("/accounts"))
+            response = await request(server).get(url);
+            let urlDecoded = response.body.message.redirect;
+            urlDecoded = urlDecoded.substring(urlDecoded.search("/accounts"))
+            response = await request(server).post(urlDecoded).send({ "password": "hola1234" });
+            expect(response.body.message.refreshToken).not.toBeNull();
+            expect(response.body.message.accessToken).not.toBeNull();
+            expect(response.body.message.isUpdated).toBe(true);
+            expect(response.statusCode).toBe(200);
+        });
+    });
+
+    describe('POST /accounts/verification/url/change_password?:data', () => {
+        test('POST /accounts/verification/url/change_password?:data 200 OK', async () => {
+            response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram" });
+            let url = await getURLConfirmationFromEmail("uvgram@uvgram.com");
+            url = url.substring(url.search("/accounts"));
+            response = await request(server).get(url);
+            let urlDecoded = response.body.message.redirect;
+            urlDecoded = urlDecoded.substring(urlDecoded.search("/accounts"))
+            response = await request(server).post(urlDecoded).send({ "password": "hola1234" });
+            expect(response.body.message.refreshToken).not.toBeNull();
+            expect(response.body.message.accessToken).not.toBeNull();
+            expect(response.statusCode).toBe(200);
+        });
+    });
+
+    describe('POST /accounts/verification/url/confirm_email?:data', () => {
+        test('POST /accounts/verification/url/confirm_email?:data 200 OK', async () => {
+            response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+                name: "uvgram user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram",
+                phoneNumber: "2212345678",
+                email: "uvgram99@uvgram.com",
+                birthdate: "2000-01-01",
+                idCareer: 1,
+                gender: GenderType.FEMININE
+            });
+            let url = await getURLConfirmationFromEmail("uvgram99@uvgram.com");
+            url = url.substring(url.search("/accounts"));
+            response = await request(server).get(url);
+            expect(response.body.isUpdated).toBe(true);
+            expect(response.statusCode).toBe(200);
+        });
+    });
+
+
+
 });
 
 describe('POST /accounts/create/verification', () => {
@@ -1025,13 +1114,11 @@ describe('POST /accounts/password/change', () => {
     let accessToken;
 
     afterAll(async () => {
-        await redisClient.flushAll("ASYNC");
-        await sequelize.truncate({ cascade: true, restartIdentity: true });
-    })
-    beforeAll(async () => {
-        await redisClient.flushAll("ASYNC");
-        await sequelize.truncate({ cascade: true, restartIdentity: true });
+        await clearDatabase();
+    });
 
+    beforeAll(async () => {
+        await clearDatabase();
         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
         let vCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
         const newUser2 = {
@@ -1120,13 +1207,12 @@ describe('POST /accounts/password/reset', () => {
     let accessToken2;
 
     afterAll(async () => {
-        await redisClient.flushAll("ASYNC");
-        await sequelize.truncate({ cascade: true, restartIdentity: true });
+        await clearDatabase();
+
     });
 
     beforeAll(async () => {
-        await redisClient.flushAll("ASYNC");
-        await sequelize.truncate({ cascade: true, restartIdentity: true });
+        await clearDatabase();
 
         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
         let vCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
@@ -1356,8 +1442,6 @@ describe('PATCH /accounts/edit/admin', () => {
     });
 });
 
-
-
 describe('PATCH /accounts/edit/moderator', () => {
     let accessToken;
     afterAll(async () => {
@@ -1490,8 +1574,6 @@ describe('PATCH /accounts/edit/moderator', () => {
         expect(response.statusCode).toBe(200);
     });
 });
-
-
 
 describe('PATCH /accounts/edit/business', () => {
     let accessToken;
@@ -1808,8 +1890,6 @@ describe('PATCH /accounts/edit/business', () => {
     });
 });
 
-
-
 describe('PATCH /accounts/edit/personal', () => {
     let accessToken;
     afterAll(async () => {
@@ -1991,4 +2071,99 @@ describe('PATCH /accounts/edit/personal', () => {
         expect(response.statusCode).toBe(200);
     });
 });
- 
+
+describe('POST /accounts/users/roles/change', () => {
+    let accessToken;
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
+        let verificationCode = await getVerificationCodeFromEmail("uvgram2@uvgram.com");
+        const newUser2 = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram2",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser2);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+        response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
+        response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "DERECHO", "idFaculty": "1" });
+    });
+
+    beforeEach(async () => {
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+    })
+
+    test('PATCH /accounts/edit/personal 200 OK Change to administrator', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "administrador" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to moderator', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "moderador" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to business', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "empresarial" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to personal', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "personal" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to administrator again', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "administrador" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to moderator again', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "moderador" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to business again', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "empresarial" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to personal again', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "personal" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 404 Not Found Resource not found', async () => {
+        response = await request(server).post("/accounts/users/roles/changes").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "personal" });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('PATCH /accounts/edit/personal 400 Bad Request invalid user role type', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "coco" });
+        expect(response.body.errors[0].msg).toContain("newRoleType must be one this:")
+        expect(response.statusCode).toBe(400);
+    });
+});
+
+

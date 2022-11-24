@@ -3,7 +3,6 @@ const { URLRecover } = require("../models/URLRecover");
 const { v4: uuidv4 } = require("uuid");
 const { ActionURLRecoverType } = require("../models/enum/ActionURLRecoverType");
 const { encryptAES, decryptAES } = require("../helpers/aes-encryption");
-const { logger } = require("../helpers/logger");
 
 const decryptURI = async (uri) => {
     let parameters;

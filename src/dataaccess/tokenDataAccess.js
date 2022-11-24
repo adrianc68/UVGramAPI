@@ -1,6 +1,5 @@
 const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { logger } = require("../helpers/logger");
 const { generateRefreshToken: generateRefreshTokenHelper, generateAccessToken: generateAcessTokenHelper,
     addToken: addTokenHelper, removeTokenByJTI, verifyToken: verifyTokenHelper,
     TOKEN_STATE, TOKEN_TYPE, getTokenValueRedis } = require("../helpers/token");
