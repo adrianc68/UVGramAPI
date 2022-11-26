@@ -1,6 +1,7 @@
 const request = require('supertest');
 const { connetionToServers } = require('../src/app');
 const { getVerificationCodeFromEmail, getURLConfirmationFromEmail } = require('../src/dataaccess/mailDataAccess');
+const { logger } = require('../src/helpers/logger');
 const { CategoryType } = require('../src/models/enum/CategoryType');
 const { GenderType } = require('../src/models/enum/GenderType');
 const { server, delayServerConnections, clearMessagesMailHog, clearDatabase } = require("../src/server")
@@ -1050,7 +1051,7 @@ describe('DEL /accounts/username/delete', () => {
         expect(response.statusCode).toBe(400);
     });
 
-    test('DEL /accounts/username/delete 200 OK username exist', async () => {
+    test('DEL /accounts/username/delete 200 400 Bad Request', async () => {
         let response = await request(server).post("/accounts/create/verification").send({ "username": "deleteme", "email": "deleteme@uvgram.com" });
         let verificationCode = await getVerificationCodeFromEmail("deleteme@uvgram.com");
         const newUser = {
@@ -1065,14 +1066,15 @@ describe('DEL /accounts/username/delete', () => {
         }
         response = await request(server).post("/accounts/create").send(newUser);
         response = await request(server).del("/accounts/username/delete").send({ "username": "deleteme" });
-        expect(response.body.message).toContain("1 entity(s) was removed");
-        expect(response.statusCode).toBe(200);
+        expect(response.body.errors[0].msg).toContain("authorization header is required");
+        expect(response.statusCode).toBe(400);
     });
 
-    test('DEL /accounts/username/delete OK 0 entities was removed', async () => {
+    test('DEL /accounts/username/delete OK 400 Bad Request', async () => {
         response = await request(server).del("/accounts/username/delete").send({ "username": "test23423" });
-        expect(response.body.message).toContain("0 entity(s) was removed");
-        expect(response.statusCode).toBe(200);
+        expect(response.body.errors[0].msg).toContain("authorization header is required");
+
+        expect(response.statusCode).toBe(400);
     });
 });
 
