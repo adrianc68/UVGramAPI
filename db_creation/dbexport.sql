@@ -1,4 +1,59 @@
-\connect test_uvgram_db
+\connect postgres
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: DATABASE postgres; Type: COMMENT; Schema: -; Owner: dev
+--
+
+COMMENT ON DATABASE postgres IS 'default administrative connection database';
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- Database "uvgram_db" dump
+--
+
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 15.1 (Debian 15.1-1.pgdg110+1)
+-- Dumped by pg_dump version 15.1 (Debian 15.1-1.pgdg110+1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: uvgram_db; Type: DATABASE; Schema: -; Owner: dev
+--
+
+CREATE DATABASE uvgram_db WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
+
+
+ALTER DATABASE uvgram_db OWNER TO dev;
+
+\connect uvgram_db
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -300,6 +355,34 @@ CREATE TABLE public."Business" (
 ALTER TABLE public."Business" OWNER TO dev;
 
 --
+-- Name: Comment; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."Comment" (
+    comment character varying(2200) NOT NULL,
+    created_time timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    id bigint DEFAULT nextval(('"comment_id_seq"'::text)::regclass) NOT NULL,
+    id_post bigint NOT NULL,
+    id_user bigint NOT NULL,
+    uuid character varying(11) NOT NULL
+);
+
+
+ALTER TABLE public."Comment" OWNER TO dev;
+
+--
+-- Name: CommentLike; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."CommentLike" (
+    id_comment bigint NOT NULL,
+    id_user bigint NOT NULL
+);
+
+
+ALTER TABLE public."CommentLike" OWNER TO dev;
+
+--
 -- Name: EducationalProgram; Type: TABLE; Schema: public; Owner: dev
 --
 
@@ -376,6 +459,35 @@ CREATE TABLE public."Personal" (
 ALTER TABLE public."Personal" OWNER TO dev;
 
 --
+-- Name: Post; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."Post" (
+    description character varying(2200),
+    comments_allowed boolean DEFAULT true NOT NULL,
+    likes_allowed boolean DEFAULT true NOT NULL,
+    id_user bigint NOT NULL,
+    id bigint DEFAULT nextval(('"post_id_seq"'::text)::regclass) NOT NULL,
+    uuid character varying(11) NOT NULL,
+    filepath text NOT NULL
+);
+
+
+ALTER TABLE public."Post" OWNER TO dev;
+
+--
+-- Name: PostLike; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."PostLike" (
+    id_user bigint NOT NULL,
+    id_post bigint NOT NULL
+);
+
+
+ALTER TABLE public."PostLike" OWNER TO dev;
+
+--
 -- Name: Region; Type: TABLE; Schema: public; Owner: dev
 --
 
@@ -407,8 +519,8 @@ ALTER TABLE public."Session" OWNER TO dev;
 
 CREATE TABLE public."URLRecover" (
     uuid uuid NOT NULL,
-    action character varying(50) NOT NULL,
     id_user bigint NOT NULL,
+    action character varying(50) NOT NULL,
     token text
 );
 
@@ -467,6 +579,20 @@ CREATE TABLE public."VerificationCode" (
 ALTER TABLE public."VerificationCode" OWNER TO dev;
 
 --
+-- Name: comment_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
+--
+
+CREATE SEQUENCE public.comment_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.comment_id_seq OWNER TO dev;
+
+--
 -- Name: educationalprogram_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
 --
 
@@ -493,6 +619,20 @@ CREATE SEQUENCE public.faculty_id_seq
 
 
 ALTER TABLE public.faculty_id_seq OWNER TO dev;
+
+--
+-- Name: post_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
+--
+
+CREATE SEQUENCE public.post_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.post_id_seq OWNER TO dev;
 
 --
 -- Name: region_id_seq; Type: SEQUENCE; Schema: public; Owner: dev
@@ -527,10 +667,6 @@ ALTER TABLE public.user_id_seq OWNER TO dev;
 --
 
 COPY public."Account" (password, email, id_user, phone_number, birthday) FROM stdin;
-3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram2@uvgram.com	2	2234567890	2022-01-26
-3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram3@uvgram.com	3	2234567890	2022-01-26
-3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram4@uvgram.com	4	2234567890	2022-01-26
-3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	uvgram1@uvgram.com	1	2283687920	2022-01-26
 \.
 
 
@@ -539,10 +675,6 @@ COPY public."Account" (password, email, id_user, phone_number, birthday) FROM st
 --
 
 COPY public."AccountVerification" (account_status, id_user) FROM stdin;
-NO_BLOQUEADO	1
-NO_BLOQUEADO	2
-NO_BLOQUEADO	3
-NO_BLOQUEADO	4
 \.
 
 
@@ -551,7 +683,6 @@ NO_BLOQUEADO	4
 --
 
 COPY public."Administrator" (created_time, id_user) FROM stdin;
-2022-11-19 00:09:03.972291	1
 \.
 
 
@@ -568,7 +699,22 @@ COPY public."Block" (id_user_blocker, id_user_blocked) FROM stdin;
 --
 
 COPY public."Business" (category, city, postal_code, postal_address, contact_email, phone_contact, organization_name, id_user) FROM stdin;
-\N	\N	\N	\N	\N	\N	\N	3
+\.
+
+
+--
+-- Data for Name: Comment; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."Comment" (comment, created_time, id, id_post, id_user, uuid) FROM stdin;
+\.
+
+
+--
+-- Data for Name: CommentLike; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."CommentLike" (id_comment, id_user) FROM stdin;
 \.
 
 
@@ -577,7 +723,6 @@ COPY public."Business" (category, city, postal_code, postal_address, contact_ema
 --
 
 COPY public."EducationalProgram" (id, educational_program, id_faculty) FROM stdin;
-1	LICENCIATURA_EN_INGENIERIA_DE_SOFTWARE	1
 \.
 
 
@@ -586,7 +731,6 @@ COPY public."EducationalProgram" (id, educational_program, id_faculty) FROM stdi
 --
 
 COPY public."Faculty" (faculty, id_region, id) FROM stdin;
-FACULTAD_ESTADISTICA_E_INFORMATICA	1	1
 \.
 
 
@@ -595,7 +739,6 @@ FACULTAD_ESTADISTICA_E_INFORMATICA	1	1
 --
 
 COPY public."Follower" (id_user_follower, id_user_followed) FROM stdin;
-4	2
 \.
 
 
@@ -612,7 +755,6 @@ COPY public."LoginAttempts" (attempts, login_state, mac_address) FROM stdin;
 --
 
 COPY public."Moderator" (update_date, id_user) FROM stdin;
-\N	2
 \.
 
 
@@ -621,7 +763,22 @@ COPY public."Moderator" (update_date, id_user) FROM stdin;
 --
 
 COPY public."Personal" (gender, id_user, id_career) FROM stdin;
-INDIFERENTE	4	\N
+\.
+
+
+--
+-- Data for Name: Post; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."Post" (description, comments_allowed, likes_allowed, id_user, id, uuid, filepath) FROM stdin;
+\.
+
+
+--
+-- Data for Name: PostLike; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."PostLike" (id_user, id_post) FROM stdin;
 \.
 
 
@@ -630,18 +787,30 @@ INDIFERENTE	4	\N
 --
 
 COPY public."Region" (id, region) FROM stdin;
-1	XALAPA
 \.
+
+
+--
+-- Data for Name: Session; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."Session" (id_user, token, created_time, device) FROM stdin;
+\.
+
+
+--
+-- Data for Name: URLRecover; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."URLRecover" (uuid, id_user, action, token) FROM stdin;
+\.
+
 
 --
 -- Data for Name: User; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
 COPY public."User" (name, presentation, username, id) FROM stdin;
-Moderator	\N	uvgram2	2
-Business	\N	uvgram3	3
-Personal	\N	uvgram4	4
-Administrator	\N	uvgram1	1
 \.
 
 
@@ -650,10 +819,6 @@ Administrator	\N	uvgram1	1
 --
 
 COPY public."UserConfiguration" (privacy, id_user) FROM stdin;
-PUBLICO	1
-PUBLICO	2
-PUBLICO	3
-PUBLICO	4
 \.
 
 
@@ -662,10 +827,6 @@ PUBLICO	4
 --
 
 COPY public."UserRole" (id_user, role) FROM stdin;
-1	ADMINISTRADOR
-2	MODERADOR
-3	EMPRESARIAL
-4	PERSONAL
 \.
 
 
@@ -678,31 +839,45 @@ COPY public."VerificationCode" (code, username, created_time) FROM stdin;
 
 
 --
+-- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
+--
+
+SELECT pg_catalog.setval('public.comment_id_seq', 1, false);
+
+
+--
 -- Name: educationalprogram_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.educationalprogram_id_seq', 1, true);
+SELECT pg_catalog.setval('public.educationalprogram_id_seq', 1, false);
 
 
 --
 -- Name: faculty_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.faculty_id_seq', 1, true);
+SELECT pg_catalog.setval('public.faculty_id_seq', 1, false);
+
+
+--
+-- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
+--
+
+SELECT pg_catalog.setval('public.post_id_seq', 1, false);
 
 
 --
 -- Name: region_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.region_id_seq', 1, true);
+SELECT pg_catalog.setval('public.region_id_seq', 1, false);
 
 
 --
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 4, true);
+SELECT pg_catalog.setval('public.user_id_seq', 1, false);
 
 
 --
@@ -719,6 +894,14 @@ ALTER TABLE ONLY public."Account"
 
 ALTER TABLE ONLY public."Administrator"
     ADD CONSTRAINT "PK_Administrator" PRIMARY KEY (id_user);
+
+
+--
+-- Name: Comment PK_Comment; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Comment"
+    ADD CONSTRAINT "PK_Comment" PRIMARY KEY (id);
 
 
 --
@@ -743,6 +926,14 @@ ALTER TABLE ONLY public."Faculty"
 
 ALTER TABLE ONLY public."LoginAttempts"
     ADD CONSTRAINT "PK_LoginAttempts" PRIMARY KEY (mac_address);
+
+
+--
+-- Name: Post PK_Publication; Type: CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Post"
+    ADD CONSTRAINT "PK_Publication" PRIMARY KEY (id);
 
 
 --
@@ -820,6 +1011,34 @@ CREATE INDEX "IXFK_Business_UserRole" ON public."Business" USING btree (id_user)
 
 
 --
+-- Name: IXFK_CommentLike_Comment; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_CommentLike_Comment" ON public."CommentLike" USING btree (id_comment);
+
+
+--
+-- Name: IXFK_CommentLike_User; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_CommentLike_User" ON public."CommentLike" USING btree (id_user);
+
+
+--
+-- Name: IXFK_Comment_Post; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Comment_Post" ON public."Comment" USING btree (id_post);
+
+
+--
+-- Name: IXFK_Comment_User; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Comment_User" ON public."Comment" USING btree (id_user);
+
+
+--
 -- Name: IXFK_EducationalProgram_Faculty; Type: INDEX; Schema: public; Owner: dev
 --
 
@@ -866,6 +1085,27 @@ CREATE INDEX "IXFK_Personal_EducationalProgram" ON public."Personal" USING btree
 --
 
 CREATE INDEX "IXFK_Personal_UserRole" ON public."Personal" USING btree (id_user);
+
+
+--
+-- Name: IXFK_PostLike_Post; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_PostLike_Post" ON public."PostLike" USING btree (id_post);
+
+
+--
+-- Name: IXFK_PostLike_User; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_PostLike_User" ON public."PostLike" USING btree (id_user);
+
+
+--
+-- Name: IXFK_Publication_User; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Publication_User" ON public."Post" USING btree (id_user);
 
 
 --
@@ -945,6 +1185,30 @@ ALTER TABLE ONLY public."Business"
 
 
 --
+-- Name: CommentLike FK_CommentLike_Comment; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."CommentLike"
+    ADD CONSTRAINT "FK_CommentLike_Comment" FOREIGN KEY (id_comment) REFERENCES public."Comment"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Comment FK_Comment_Post; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Comment"
+    ADD CONSTRAINT "FK_Comment_Post" FOREIGN KEY (id_post) REFERENCES public."Post"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Comment FK_Comment_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Comment"
+    ADD CONSTRAINT "FK_Comment_User" FOREIGN KEY (id_user) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
 -- Name: EducationalProgram FK_EducationalProgram_Faculty; Type: FK CONSTRAINT; Schema: public; Owner: dev
 --
 
@@ -990,6 +1254,30 @@ ALTER TABLE ONLY public."Personal"
 
 ALTER TABLE ONLY public."Personal"
     ADD CONSTRAINT "FK_Personal_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: PostLike FK_PostLike_Post; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."PostLike"
+    ADD CONSTRAINT "FK_PostLike_Post" FOREIGN KEY (id_post) REFERENCES public."Post"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: PostLike FK_PostLike_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."PostLike"
+    ADD CONSTRAINT "FK_PostLike_User" FOREIGN KEY (id_user) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Post FK_Publication_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Post"
+    ADD CONSTRAINT "FK_Publication_User" FOREIGN KEY (id_user) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

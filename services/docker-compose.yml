@@ -26,6 +26,7 @@ services:
       dockerfile: "./dkfs/DockerfileRES"
     image: redis:latest
     container_name: "uvgram_redis"
+    restart: always
     command: redis-server --requirepass development
     ports:
       - "6379:6379"
@@ -63,6 +64,7 @@ services:
       context: ./testing
       dockerfile: "./dkfs/DockerfileRES"
     image: redis:latest
+    restart: always
     container_name: "test_uvgram_redis"
     command: redis-server --requirepass development
     ports:
@@ -81,6 +83,8 @@ services:
       context: ./testing
       dockerfile: "./dkfs/DockerfileMAH"
     container_name: "test_uvgram_mailhog"
+    image: mailhog:latest
+    restart: always
     ports:
       - "8025:8025"
       - "1025:1025"
