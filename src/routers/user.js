@@ -53,11 +53,6 @@ router.post("/user/unblock/",
     unblockUser
 );
 
-
-
-
-
-
 // Need to get profile image and publications
 router.get("/:username/",
     formatValidationAccountUsername,

@@ -1,7 +1,6 @@
-const { getDataURLRecover, doesURLVerificationAlreadyGenerated, removeURLVerification } = require("../dataaccess/urlRecoverDataAccess");
+const { getDataURLRecover, doesURLVerificationAlreadyGenerated } = require("../dataaccess/urlRecoverDataAccess");
 const { getAccountLoginData } = require("../dataaccess/userDataAccess");
 const { httpResponseNotFound, httpResponseForbidden, httpResponseInternalServerError } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 
 const validationURLRecover = async (request, response, next) => {
     let uri = request.query;

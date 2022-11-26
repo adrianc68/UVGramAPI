@@ -754,27 +754,27 @@ const changeUserRoleType = async (id_user, userRoleType) => {
     const t = await sequelize.transaction();
     try {
         let userRoleData = await UserRole.findOne({
-            where: {id_user}
+            where: { id_user }
         });
 
         if (userRoleData) {
             if (userRoleType == UserRoleType.PERSONAL) {
-                let result = await PersonalUserRole.findOne({ where: {id_user} });
+                let result = await PersonalUserRole.findOne({ where: { id_user } });
                 if (!result) {
                     await PersonalUserRole.create({ id_user }, { transaction: t });
                 }
             } else if (userRoleType == UserRoleType.BUSINESS) {
-                let result = await BusinessUserRole.findOne({ where: {id_user} });
+                let result = await BusinessUserRole.findOne({ where: { id_user } });
                 if (!result) {
                     await BusinessUserRole.create({ id_user }, { transaction: t });
                 }
             } else if (userRoleType == UserRoleType.MODERATOR) {
-                let result = await ModeratorUserRole.findOne({ where: {id_user} });
+                let result = await ModeratorUserRole.findOne({ where: { id_user } });
                 if (!result) {
                     await ModeratorUserRole.create({ id_user }, { transaction: t });
                 }
             } else if (userRoleType == UserRoleType.ADMINISTRATOR) {
-                let result = await AdministratorUserRole.findOne({ where: {id_user} });
+                let result = await AdministratorUserRole.findOne({ where: { id_user } });
                 if (!result) {
                     await AdministratorUserRole.create({ id_user }, { transaction: t });
                 }

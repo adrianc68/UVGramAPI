@@ -27,6 +27,8 @@ app.use(require("./routers/authentication"));
 app.use(require("./routers/user"));
 app.use(require("./routers/data"));
 app.use(require("./routers/urlVerification"));
+app.use(require("./routers/post"));
+app.use(require("./routers/comment"));
 
 const connetionToServers = async () => {
     try {
@@ -37,7 +39,6 @@ const connetionToServers = async () => {
         await redisClient.connect().then(x => {
             logger.info(`Redis Client initialized on port ${REDIS_PORT_CONNECTED_TO}`);
         });
-
         await mailer.verify().then(x => {
             logger.info(`Nodemailer initialized on port ${mailer.options.port}`);
         });

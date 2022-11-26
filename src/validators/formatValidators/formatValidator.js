@@ -3,6 +3,19 @@ const { CategoryType } = require('../../models/enum/CategoryType');
 const { GenderType } = require('../../models/enum/GenderType');
 const { UserRoleType } = require('../../models/enum/UserRoleType');
 
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+const filesWhiteList = {
+    'image/png': "10490000",
+    'image/jpeg': "10490000",
+    'image/jpg': "10490000",
+    'image/webp': "10490000",
+    'video/mp4': "3600000000",
+    'video/quicktime': "3600000000"
+}
+
 const validateEmailData = [
     check("email")
         .trim()
@@ -297,6 +310,57 @@ const validateNewRoleTypeData = [
         .withMessage(`newRoleType must be one this: ${Object.values(UserRoleType)}`)
 ];
 
+const validatePostFileData = [
+    upload.single("file"),
+    check("file")
+        .custom((value, { req }) => {
+            if (filesWhiteList[req.file.mimetype] == null) {
+                return false;
+            }
+            return req.file.mimetype
+        })
+        .withMessage(`file must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+        .bail()
+        .custom((value, { req }) => {
+            if (req.file.size > filesWhiteList[req.file.mimetype]) {
+                throw new Error(`file size can not be more than ${filesWhiteList[req.file.mimetype]} bytes`);
+            }
+            return req.file.size
+        })
+];
+
+const validatePostDescriptionData = [
+    check("description")
+        .optional({ nullable: true })
+        .bail()
+        .isLength({ min: 0, max: 2200 })
+        .withMessage("description must have the allowed length: {min: 0, max: 2200}")
+];
+
+const validatePostCommentsAllowed = [
+    check("commentsAllowed")
+        .not()
+        .isEmpty()
+        .withMessage("commentsAllowed is required")
+        .bail()
+        .toUpperCase()
+        .not()
+        .isBoolean()
+        .withMessage("commentsAllowed must be boolean value")
+];
+
+const validatePostLikesAllowed = [
+    check("likesAllowed")
+        .not()
+        .isEmpty()
+        .withMessage("likesAllowed is required")
+        .bail()
+        .toUpperCase()
+        .not()
+        .isBoolean()
+        .withMessage("likesAllowed must be boolean value")
+];
+
 const valueExistInEnumType = (value, enumType) => {
     if (Object.values(enumType).includes(value)) {
         return true;
@@ -329,5 +393,6 @@ module.exports = {
     validateOptionalAccessTokenParameterData, validateOldPasswordData, validateEmailAsOptional,
     validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode,
     validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName,
-    validateUUIDTemporalToken, validateNewRoleTypeData
+    validateUUIDTemporalToken, validateNewRoleTypeData, validatePostFileData,
+    validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed
 }

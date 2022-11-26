@@ -49,6 +49,7 @@ router.get("/accounts/email/check",
 );
 
 router.delete("/accounts/username/delete",
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR]),
     formatValidationAccountUsername,
     removeUserByUsername
 );

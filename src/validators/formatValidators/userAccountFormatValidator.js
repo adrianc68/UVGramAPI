@@ -102,13 +102,10 @@ const formatValidationNewRoleType = [
     }
 ];
 
-
-
 module.exports = {
     formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername,
     formatValidationVerificationCode, formatValidationOldPassword, formatValidationPassword,
     formatValidationBasicUserAccountData, formatValidationPersonalData, formatValidationBusinessData,
     formatValidationAdminData, formatValidationModerator, formatValidationNewRoleType
-
 }
 
