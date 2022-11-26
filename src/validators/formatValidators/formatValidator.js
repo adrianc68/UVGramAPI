@@ -361,12 +361,42 @@ const validatePostLikesAllowed = [
         .withMessage("likesAllowed must be boolean value")
 ];
 
+const validatePostUUID = [
+    check("uuid")
+        .not()
+        .isEmpty()
+        .withMessage("uuid of post is required")
+        .bail()
+        .isLength({ min: 8, max: 16 })
+        .withMessage("uuid of post must have the allowed length: {min: 8, max: 16}")
+];
+
+const validateCommentUUID = [
+    check("uuid")
+        .not()
+        .isEmpty()
+        .withMessage("uuid of comment is required")
+        .bail()
+        .isLength({ min: 8, max: 16 })
+        .withMessage("uuid of comment must have the allowed length: {min: 8, max: 16}")
+];
+
+const validateCommentData = [
+    check("comment")
+        .not()
+        .isEmpty()
+        .withMessage("comment is required")
+        .bail()
+        .isLength({ min: 1, max: 2200 })
+        .withMessage("comment must have the allowed length: {min: 1, max: 2200}")
+];
+
 const valueExistInEnumType = (value, enumType) => {
     if (Object.values(enumType).includes(value)) {
         return true;
     }
     return false;
-}
+};
 
 const isValidDate = (dateString) => {
     // Parse the date parts to integers
@@ -394,5 +424,6 @@ module.exports = {
     validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode,
     validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName,
     validateUUIDTemporalToken, validateNewRoleTypeData, validatePostFileData,
-    validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed
+    validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed,
+    validatePostUUID, validateCommentUUID, validateCommentData
 }

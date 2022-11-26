@@ -1,5 +1,5 @@
 const { httpResponseValidation } = require('../../helpers/httpResponses');
-const { validatePostFileData, validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed } = require('./formatValidator');
+const { validatePostFileData, validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed, validatePostUUID } = require('./formatValidator');
 
 const formatValidationPostData = [
     validatePostFileData,
@@ -11,6 +11,13 @@ const formatValidationPostData = [
     }
 ];
 
+const formatValidationUUIDPostData = [
+    validatePostUUID,
+    (request, response, next) => {
+        return httpResponseValidation(request, response, next);
+    }
+];
+
 module.exports = {
-    formatValidationPostData
+    formatValidationPostData, formatValidationUUIDPostData
 }

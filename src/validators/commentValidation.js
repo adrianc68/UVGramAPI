@@ -1,4 +1,5 @@
 const { getCommentByUUID, getIdCommentByUUID, isCommentLikedByUser } = require("../dataaccess/commentDataAccess");
+const { getPostByUUID, getPostById } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { httpResponseForbidden, httpResponseInternalServerError } = require("../helpers/httpResponses");
 
@@ -48,8 +49,27 @@ const validationIsCommentAlreadyDislikedByUser = async (request, response, next)
         return httpResponseForbidden(response, "comment is already disliked");
     }
     return next();
+};
+
+const validationDeleteCommentIfOwner = async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    const { uuid } = request.body;
+    try {
+        const userDataId = await verifyToken(token).then(data => { return data.id });
+        const commentData = await getCommentByUUID(uuid);
+        if (userDataId != commentData.id_user) {
+            let postData = await getPostById(commentData.id_post);
+            if (userDataId != postData.id_user) {
+                return httpResponseForbidden(response, "you can only delete a comment if it is your own or if you are the owner of the post")
+            }
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(response, error)
+    }
+    return next();
 }
 
 module.exports = {
-    validationDoesExistCommentUUID, validationIsCommentAlreadyLikedByUser, validationIsCommentAlreadyDislikedByUser
+    validationDoesExistCommentUUID, validationIsCommentAlreadyLikedByUser, validationIsCommentAlreadyDislikedByUser,
+    validationDeleteCommentIfOwner
 }

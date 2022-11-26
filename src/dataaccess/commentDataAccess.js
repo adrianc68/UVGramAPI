@@ -145,7 +145,7 @@ const getIdCommentByUUID = async (uuid) => {
 /**
  * Get comment by UUID
  * @param {*} uuid the uuid identifier
- * @returns comment data or undefined
+ * @returns all comment data or undefined
  */
 const getCommentByUUID = async (uuid) => {
     let comment;
@@ -218,9 +218,33 @@ const getUsersWhoLikeCommentById = async (id_comment) => {
     return users;
 }
 
+/**
+ * Delete a comment by id
+ * @param {*} id the comment id
+ * @returns true if removed otherwise false
+ */
+const deleteCommentById = async (id) => {
+    let isDeleted = false;
+    const t = await sequelize.transaction();
+    try {
+        let data = await Comment.destroy({
+            where: { id },
+            transaction: t
+        });
+        await t.commit();
+        if (data > 0) {
+            isDeleted = true;
+        }
+    } catch (error) {
+        throw error;
+    }
+    return isDeleted;
+}
+
 
 module.exports = {
     createCommentInPost, getAllCommentsByIdPost, likeCommentByIds,
     dislikeCommentByIds, getIdCommentByUUID, getCommentByUUID,
-    isCommentLikedByUser, getUsersWhoLikeCommentById, getCommentsLikesById
+    isCommentLikedByUser, getUsersWhoLikeCommentById, getCommentsLikesById,
+    deleteCommentById
 }

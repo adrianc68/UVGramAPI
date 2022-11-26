@@ -2,13 +2,14 @@ const { getPostsByUsername, createPost, getPostDataByUUID, likePost, dislikePost
 const { getAllPostFromUserId } = require('../dataaccess/postDataAccess');
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
-const { formatValidationPostData } = require('../validators/formatValidators/postFormatValidator');
+const { formatValidationPostData, formatValidationUUIDPostData } = require('../validators/formatValidators/postFormatValidator');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationDoesExistPostUUID, validationIsPostAlreadyLikedByUser, validationIsPostAlreadyDislikedByUser } = require('../validators/postValidation');
 const { validationRejectOnUsernameNotRegistered } = require('../validators/userValidation');
 const router = require('express').Router();
 
 router.get("/post/details/:uuid",
+    formatValidationUUIDPostData,
     validationDoesExistPostUUID,
     getPostDataByUUID
 );
@@ -27,6 +28,7 @@ router.post("/post/create/",
 
 router.post("/post/like",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    formatValidationUUIDPostData,
     validationDoesExistPostUUID,
     validationIsPostAlreadyLikedByUser,
     likePost
@@ -34,6 +36,7 @@ router.post("/post/like",
 
 router.post("/post/dislike",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    formatValidationUUIDPostData,
     validationDoesExistPostUUID,
     validationIsPostAlreadyDislikedByUser,
     dislikePost,
@@ -41,6 +44,7 @@ router.post("/post/dislike",
 
 router.get("/post/details/likes/:uuid",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    formatValidationUUIDPostData,
     validationDoesExistPostUUID,
     getUsersWhoLikesPost
 );

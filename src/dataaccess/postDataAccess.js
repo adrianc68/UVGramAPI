@@ -53,6 +53,24 @@ const getPostByUUID = async (uuid) => {
 };
 
 /**
+ * Get all post data by id
+ * @param {*} id the post id
+ * @returns all data or undefined
+ */
+const getPostById = async (id) => {
+    let post;
+    try {
+        post = await Post.findOne({
+            where: { id },
+            raw: true
+        });
+    } catch (error) {
+        throw error;
+    }
+    return post;
+}
+
+/**
  * Get ID of post by uuid
  * @param {*} uuid the post identifier
  * @returns id or undefined
@@ -224,5 +242,6 @@ module.exports = {
     getAllPostFromUserId, createPostByUserId, getPostByUUID,
     getIdPostByPostUUID, likePostByIds, isPostLikedByUser,
     dislikePostByIds, getPostLikesById, getUsersWhoLikePostById,
+    getPostById
 
 }

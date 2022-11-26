@@ -1,8 +1,9 @@
-const { createCommentInPost, getAllCommentsByIdPost, getIdCommentByUUID, likeCommentByIds, dislikeCommentByIds, getUsersWhoLikeCommentById } = require("../dataaccess/commentDataAccess");
+const { createCommentInPost, getAllCommentsByIdPost, getIdCommentByUUID, likeCommentByIds, dislikeCommentByIds, getUsersWhoLikeCommentById, getCommentByUUID, deleteCommentById } = require("../dataaccess/commentDataAccess");
 const { getIdPostByPostUUID } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isUserFollowedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 
 const createCommentPost = async (request, response) => {
     const token = (request.headers.authorization).split(" ")[1];
@@ -86,7 +87,19 @@ const getUsersWhoLikesComment = async (request, response) => {
     return httpResponseOk(response, { likedBy });
 }
 
+const deleteComment = async (request, response) => {
+    const { uuid } = request.body;
+    let isDeleted = false;
+    try {
+        const commentData = await getCommentByUUID(uuid);
+        isDeleted = await deleteCommentById(commentData.id);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error)
+    }
+    return httpResponseOk(response, isDeleted)
+}
+
 module.exports = {
     createCommentPost, getAllCommentsOfUUIDPost, likeComment,
-    dislikeComment, getUsersWhoLikesComment
+    dislikeComment, getUsersWhoLikesComment, deleteComment
 }
