@@ -1,8 +1,10 @@
-const { Sequelize } = require("sequelize");
+const { Sequelize, Op } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { generateRandomUUID } = require("../helpers/generateCode");
+const { logger } = require("../helpers/logger");
 const { Comment } = require("../models/Comment");
 const { CommentLike } = require("../models/CommentLike");
+const { NestedComment } = require("../models/NestedComment");
 const { User } = require("../models/User");
 
 /**
@@ -41,32 +43,74 @@ const createCommentInPost = async (comment, id_post, id_user) => {
  * @param {*} id_post the post to get the comments.
  * @returns [data] or [] with 0 elements. */
 const getAllCommentsByIdPost = async (id_post) => {
-    let posts = [];
+    let comments = [];
     try {
-        posts = await Comment.findAll({
-            where: { id_post },
+        let parentComments = await Comment.findAll({
+            where: {
+                id_post,
+                '$NestedComments.parent_id_comment$': { [Op.eq]: null },
+                '$NestedComments.child_id_comment$': { [Op.eq]: null }
+            },
             attributes: {
-                include: ["comment", "created_time", "uuid", "User.username",
+                include: ["User.username", "comment", "created_time", "uuid", "id",
                     [Sequelize.fn('COUNT', Sequelize.col("id_comment")), 'likes']
                 ],
-                exclude: ["id", "id_post", "id_user"]
+                exclude: ["id_post", "id_user"]
             },
             include: [{
-                model: User,
-                attributes: [],
+                model: NestedComment,
+                attributes: []
             }, {
                 model: CommentLike,
                 attributes: []
+            }, {
+                model: User,
+                attributes: []
             }
             ],
-            group: ["comment", "created_time", "uuid", "username"],
+            group: ["username", "Comment.comment", "Comment.created_time", "Comment.uuid", "Comment.id",],
             raw: true,
         });
+        await Promise.all(parentComments.map(async function (parentComment) {
+            try {
+                let childComments = await Comment.findAll({
+                    where: {
+                        '$NestedComments.parent_id_comment$': parentComment.id
+                    },
+                    attributes: {
+                        include: ["User.username", "comment", "created_time", "uuid",
+                            [Sequelize.fn('COUNT', Sequelize.col("id_comment")), 'likes']
+                        ],
+                        exclude: ["id_post", "id_user", "id"]
+                    },
+                    include: [{
+                        model: NestedComment,
+                        attributes: []
+                    }, {
+                        model: User,
+                        attributes: []
+                    }, {
+                        model: CommentLike,
+                        attributes: []
+                    }],
+                    group: ["username", "Comment.comment", "Comment.created_time", "Comment.uuid", "Comment.id",],
+                    raw: true,
+                });
+                delete parentComment["id"]
+                parentComment.answers = childComments;
+
+            } catch (error) {
+                throw error;
+            }
+        }));
+        comments = parentComments
     } catch (error) {
         throw error;
     }
-    return posts;
-}
+    return comments;
+};
+
+
 
 /**
  * Like a comment by IDS
@@ -241,10 +285,40 @@ const deleteCommentById = async (id) => {
     return isDeleted;
 }
 
+const createAnswerComment = async (parent_id_comment, comment, id_post, id_user) => {
+    let result;
+    const t = await sequelize.transaction();
+    try {
+        let uuid = generateRandomUUID(11);
+        let object = await Comment.create({
+            comment,
+            id_post,
+            id_user,
+            uuid
+        }, { transaction: t })
+
+        let nested = await NestedComment.create({
+            parent_id_comment,
+            child_id_comment: object.id
+        }, { transaction: t });
+
+        await t.commit();
+        result = {
+            commet: object.comment,
+            uuid: object.uuid,
+            created_time: object.created_time
+        }
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return result;
+}
+
 
 module.exports = {
     createCommentInPost, getAllCommentsByIdPost, likeCommentByIds,
     dislikeCommentByIds, getIdCommentByUUID, getCommentByUUID,
     isCommentLikedByUser, getUsersWhoLikeCommentById, getCommentsLikesById,
-    deleteCommentById
+    deleteCommentById, createAnswerComment
 }

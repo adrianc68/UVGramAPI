@@ -1,4 +1,4 @@
-const { createCommentInPost, getAllCommentsByIdPost, getIdCommentByUUID, likeCommentByIds, dislikeCommentByIds, getUsersWhoLikeCommentById, getCommentByUUID, deleteCommentById } = require("../dataaccess/commentDataAccess");
+const { createCommentInPost, getAllCommentsByIdPost, getIdCommentByUUID, likeCommentByIds, dislikeCommentByIds, getUsersWhoLikeCommentById, getCommentByUUID, deleteCommentById, createAnswerComment } = require("../dataaccess/commentDataAccess");
 const { getIdPostByPostUUID } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isUserFollowedByUser } = require("../dataaccess/userDataAccess");
@@ -14,6 +14,24 @@ const createCommentPost = async (request, response) => {
         const userDataId = await verifyToken(token).then(data => { return data.id });
         let postDataId = await getIdPostByPostUUID(uuid);
         commentDetails = await createCommentInPost(comment, postDataId, userDataId);
+        if (commentDetails) {
+            isCreated = true;
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, { isCreated, commentDetails });
+};
+
+const createAnswerToComment = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    const { comment, uuid } = request.body;
+    let commentDetails;
+    let isCreated;
+    try {
+        const userDataId = await verifyToken(token).then(data => { return data.id });
+        let commentParentData = await getCommentByUUID(uuid);
+        let commentDetails = createAnswerComment(commentParentData.id, comment, commentParentData.id_post, userDataId);
         if (commentDetails) {
             isCreated = true;
         }
@@ -101,5 +119,6 @@ const deleteComment = async (request, response) => {
 
 module.exports = {
     createCommentPost, getAllCommentsOfUUIDPost, likeComment,
-    dislikeComment, getUsersWhoLikesComment, deleteComment
+    dislikeComment, getUsersWhoLikesComment, deleteComment,
+    createAnswerToComment
 }

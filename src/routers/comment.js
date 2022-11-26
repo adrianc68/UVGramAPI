@@ -1,4 +1,4 @@
-const { createCommentPost, getAllCommentsOfUUIDPost, likeComment, dislikeComment, getUsersWhoLikesComment, deleteComment } = require('../controllers/commentController');
+const { createCommentPost, getAllCommentsOfUUIDPost, likeComment, dislikeComment, getUsersWhoLikesComment, deleteComment, createAnswerToComment } = require('../controllers/commentController');
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { validationDoesExistCommentUUID, validationIsCommentAlreadyLikedByUser, validationIsCommentAlreadyDislikedByUser, validationDeleteCommentIfOwner } = require('../validators/commentValidation');
@@ -49,6 +49,14 @@ router.delete("/post/comment/delete/",
     validationDoesExistCommentUUID,
     validationDeleteCommentIfOwner,
     deleteComment
+);
+
+router.post("/post/comment/answer",
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    formatValidationUUIDCommentData,
+    formatValidationCommentData,
+    validationDoesExistCommentUUID,
+    createAnswerToComment
 );
 
 module.exports = router;
