@@ -1,4 +1,5 @@
-const { getAllPostFromUserId } = require("../dataaccess/postDataAccess");
+const { deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments } = require("../dataaccess/commentDataAccess");
+const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost } = require("../dataaccess/postDataAccess");
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
     , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, isUserBlockedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
@@ -16,7 +17,7 @@ const followUser = async (request, response) => {
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, `user is now following to ${username}`);
+    return httpResponseOk(response, `you are now following to ${username}`);
 }
 
 const unfollowUser = async (request, response) => {
@@ -30,7 +31,7 @@ const unfollowUser = async (request, response) => {
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, `user has unfollow to ${username}`);
+    return httpResponseOk(response, `you have unfollowed to ${username}`);
 }
 
 const getFollowedByUser = async (request, response) => {
@@ -80,17 +81,16 @@ const blockUser = async (request, response) => {
     let { username } = request.body;
     const idUserToBlock = await getIdByUsername(username).then(id => { return id });
     const idUserBlocker = await verifyToken(token).then(data => { return data.id });
-    let message;
     try {
         let resultBlock = await blockUserUserDataAccess(idUserBlocker, idUserToBlock);
         let resultRemoveFollower = await deleteFollowerAndFollowing(idUserBlocker, idUserToBlock);
-        if (resultBlock == true && resultRemoveFollower == true) {
-            message = "blocked and removed from followers";
-        }
+        let resultRemoveComments = await deleteAllCommentsOfUserFromAllUserPost(idUserToBlock, idUserBlocker);
+        let resultRemovePostLikes = await deleteAllLikesOfUserFromAllPost(idUserToBlock, idUserBlocker);
+        let resultRemoveCommentLikes = await deleteAllUserLikesFromUserComments(idUserToBlock, idUserBlocker);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, `user has blocked to ${username}`);
+    return httpResponseOk(response, `you have blocked to ${username}`);
 }
 
 const unblockUser = async (request, response) => {
@@ -104,7 +104,7 @@ const unblockUser = async (request, response) => {
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, `user has unblocked to ${username}`);
+    return httpResponseOk(response, `you have unblocked to ${username}`);
 }
 
 module.exports = {

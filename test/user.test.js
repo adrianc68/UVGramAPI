@@ -89,7 +89,7 @@ describe('POST /user/follow/', () => {
 
         test('POST /user/follow 200 OK username is following other user', async () => {
             response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
-            expect(response.body.message).toContain("user is now following to");
+            expect(response.body.message).toContain("you are now following to");
             expect(response.statusCode).toBe(200);
         });
     });
@@ -188,7 +188,7 @@ describe('DEL /user/unfollow/', () => {
         test('DEL /user/unfollow 200 OK username is following other user', async () => {
             response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
             response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
-            expect(response.body.message).toContain("user has unfollow to");
+            expect(response.body.message).toContain("you have unfollowed to");
             expect(response.statusCode).toBe(200);
         });
     });
@@ -606,7 +606,7 @@ describe('POST /user/block/', () => {
 
         test('POST /user/block/ 200 OK username is now blocked', async () => {
             response = await request(server).post("/user/block/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
-            expect(response.body.message).toContain("user has blocked to");
+            expect(response.body.message).toContain("you have blocked to");
             expect(response.statusCode).toBe(200);
         });
     });
@@ -689,7 +689,7 @@ describe('POST /user/unblock/', () => {
 
         test('POST /user/unblock/ 200 OK username is now blocked', async () => {
             response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
-            expect(response.body.message).toContain("user has unblocked to");
+            expect(response.body.message).toContain("you have unblocked to");
             expect(response.statusCode).toBe(200);
         });
     });

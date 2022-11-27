@@ -1,5 +1,4 @@
 const { getPostsByUsername, createPost, getPostDataByUUID, likePost, dislikePost, getUsersWhoLikesPost } = require('../controllers/postController');
-const { getAllPostFromUserId } = require('../dataaccess/postDataAccess');
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationPostData, formatValidationUUIDPostData } = require('../validators/formatValidators/postFormatValidator');

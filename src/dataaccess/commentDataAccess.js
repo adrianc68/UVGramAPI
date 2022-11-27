@@ -6,6 +6,7 @@ const { Comment } = require("../models/Comment");
 const { CommentLike } = require("../models/CommentLike");
 const { NestedComment } = require("../models/NestedComment");
 const { User } = require("../models/User");
+const { getAllPostFromUserId, getIdPostByPostUUID } = require("./postDataAccess");
 
 /**
  * Create a new comment in a post
@@ -364,10 +365,112 @@ const createAnswerComment = async (parent_id_comment, comment, id_post, id_user)
     return result;
 }
 
+/**
+ * Delete all user comments of post.
+ * @param {*} id_user the id of user to remove comments
+ * @param {*} id_post the post where to remove the comments
+ * @returns true if deleted otherwise false
+ */
+const deleteAllComentsOfUserByPostId = async (id_user, id_post) => {
+    let isDeleted = false;
+    const t = await sequelize.transaction();
+    try {
+        let data = await Comment.destroy({
+            where: { id_user, id_post },
+            transaction: t
+        });
+        await t.commit();
+        if (data > 0) {
+            isDeleted = true;
+        }
+    } catch (error) {
+        throw error;
+    }
+    return isDeleted;
+}
+
+/**
+ * Delete all comments of user of all user posts.
+ * @param {*} id_user_to_remove the user id to remove all comments
+ * @param {*} id_user_posts_owner the owner of posts.
+ * @returns true if deleted otherwise false.
+ */
+const deleteAllCommentsOfUserFromAllUserPost = async (id_user_to_remove, id_user_posts_owner) => {
+    let isDeleted = false;
+    try {
+        let postsOfUser = await getAllPostFromUserId(id_user_posts_owner);
+        let countCommentsRemoved = 0;
+        await Promise.all(postsOfUser.map(async function (post) {
+            let postId = await getIdPostByPostUUID(post.uuid);
+            if (postId) {
+                let resultDelete = await deleteAllComentsOfUserByPostId(id_user_to_remove, postId);
+                if (resultDelete) {
+                    countCommentsRemoved = countCommentsRemoved + 1;
+                }
+            }
+        }));
+        if (countCommentsRemoved > 0) {
+            isDeleted = true;
+        }
+    } catch (error) {
+        throw error;
+    }
+    return isDeleted;
+}
+
+/**
+ * Get all comments of user
+ * @param {*} id_user the user to get commments
+ * @returns [comments] or empty array []
+ */
+const getAllCommentsOfUserId = async (id_user) => {
+    let comments = [];
+    try {
+        comments = await Comment.findAll({
+            where: {
+                id_user,
+            },
+            raw: true,
+        });
+    } catch (error) {
+        throw error;
+    }
+    return comments;
+}
+
+/**
+ * Delete all likes of user from all user comments
+ * @param {*} id_user_to_remove the user to remove likes
+ * @param {*} id_user_comments_owner the user owner of comments
+ * @returns true if deleted otherwise false
+ */
+const deleteAllUserLikesFromUserComments = async (id_user_to_remove, id_user_comments_owner) => {
+    let isDeleted = false;
+    try {
+        let commentsOfUser = await getAllCommentsOfUserId(id_user_comments_owner);
+        let countCommentsRemoved = 0;
+        await Promise.all(commentsOfUser.map(async function (comment) {
+            let commentId = await getIdCommentByUUID(comment.uuid);
+            if (commentId) {
+                let resultDelete = await dislikeCommentByIds(id_user_to_remove, commentId);
+                if (resultDelete) {
+                    countCommentsRemoved = countCommentsRemoved + 1;
+                }
+            }
+        }));
+        if (countCommentsRemoved > 0) {
+            isDeleted = true;
+        }
+    } catch (error) {
+        throw error;
+    }
+    return isDeleted;
+}
 
 module.exports = {
     createCommentInPost, getAllCommentsByIdPost, likeCommentByIds,
     dislikeCommentByIds, getIdCommentByUUID, getCommentByUUID,
     isCommentLikedByUser, getUsersWhoLikeCommentById, getCommentsLikesById,
-    deleteCommentById, createAnswerComment, getCommentParentById
+    deleteCommentById, createAnswerComment, getCommentParentById,
+    deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments
 }

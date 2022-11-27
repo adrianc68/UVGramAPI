@@ -238,10 +238,40 @@ const getUsersWhoLikePostById = async (id_post) => {
     return users;
 }
 
+
+/**
+ * Delete all likes of user from all user posts.
+ * @param {*} id_user_to_remove the user to remove like
+ * @param {*} id_user_posts_owner the post where to remove the like.
+ * @returns true if removed otherwise false
+ */
+const deleteAllLikesOfUserFromAllPost = async (id_user_to_remove, id_user_posts_owner) => {
+    let isDeleted = false;
+    try {
+        let postsOfUser = await getAllPostFromUserId(id_user_posts_owner);
+        let countCommentsRemoved = 0;
+        await Promise.all(postsOfUser.map(async function (post) {
+            let postId = await getIdPostByPostUUID(post.uuid);
+            if (postId) {
+                let resultDelete = await dislikePostByIds(id_user_to_remove, postId);
+                if (resultDelete) {
+                    countCommentsRemoved = countCommentsRemoved + 1;
+                }
+            }
+        }));
+        if (countCommentsRemoved > 0) {
+            isDeleted = true;
+        }
+    } catch (error) {
+        throw error;
+    }
+    return isDeleted;
+}
+
 module.exports = {
     getAllPostFromUserId, createPostByUserId, getPostByUUID,
     getIdPostByPostUUID, likePostByIds, isPostLikedByUser,
     dislikePostByIds, getPostLikesById, getUsersWhoLikePostById,
-    getPostById
+    getPostById, deleteAllLikesOfUserFromAllPost
 
 }
