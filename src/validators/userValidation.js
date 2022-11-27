@@ -1,6 +1,8 @@
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
-const { isUserFollowedByUser, getIdByUsername, isUserBlockedByUser, isUsernameRegistered } = require("../dataaccess/userDataAccess");
+const { isUserFollowedByUser, getIdByUsername, isUserBlockedByUser, isUsernameRegistered, getActualPrivacyType } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
+const { PrivacyType } = require("../models/enum/PrivacyType");
 
 const isUserAlreadyFollowedByUser = async (idUserFollower, idUserFollowed) => {
     let isFollowed = false;
@@ -146,7 +148,38 @@ const validationDoesUserBlockedActualUser = async (request, response, next) => {
     return next();
 }
 
+const validationDoesUserIsPrivateAndUnfollowedByActualUser = async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let ownerResourceUserId;
+    let username = request.body.username;
+    if (!username) username = request.params.username;
+    if (!username) username = response.locals.username;
+    if (!username) ownerResourceUserId = response.locals.ownerResourceUserId;
+
+    try {
+        const userData = await verifyToken(token);
+        if (!ownerResourceUserId) {
+            ownerResourceUserId = await getIdByUsername(username);
+        }
+        if (userData.id == ownerResourceUserId) {
+            return next();
+        }
+        let isAlreadyFollowed = await isUserFollowedByUser(userData.id, ownerResourceUserId);
+        if (isAlreadyFollowed) {
+            return next();
+        }
+        let isUserPrivate = await getActualPrivacyType(ownerResourceUserId);
+        if (!isUserPrivate || isUserPrivate === PrivacyType.PRIVATE) {
+            return httpResponseForbidden(response, `user is ${PrivacyType.PRIVATE}`);
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return next();
+}
+
 module.exports = {
     validationFollowingUser, validationUnfollowingUser, validationBlockingUser,
-    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser
+    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser
 }

@@ -12,7 +12,8 @@ const validationDoesExistCommentUUID = async (request, response, next) => {
         if (!commentData) {
             return httpResponseForbidden(response, "no comment found");
         }
-        let ownerResource = commentData.id_user;
+        let ownerResourcePost = await getPostById(commentData.id_post);
+        let ownerResource = ownerResourcePost.id_user;
         response.locals.ownerResourceUserId = ownerResource;
     } catch (error) {
         return httpResponseInternalServerError(response, error);

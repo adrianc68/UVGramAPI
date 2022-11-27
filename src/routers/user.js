@@ -4,7 +4,7 @@ const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authent
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationFollowingUser, validationUnfollowingUser, validationBlockingUser,
-    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser } = require('../validators/userValidation');
+    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../validators/userValidation');
 const router = require('express').Router();
 
 router.post("/user/follow/",
@@ -30,6 +30,7 @@ router.get("/user/followed-by/:username/",
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getFollowedByUser
 );
 
@@ -38,6 +39,7 @@ router.get("/user/followers-of/:username",
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getFollowersOfUser
 );
 
@@ -50,7 +52,7 @@ router.post("/user/block/",
     blockUser
 );
 
-router.post("/user/unblock/",
+router.delete("/user/unblock/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,

@@ -108,7 +108,6 @@ router.post("/accounts/users/change-privacy",
     formatValidationPrivacyData,
     validationUserPrivacy,
     changePrivacyType
-
 );
 
 module.exports = router;

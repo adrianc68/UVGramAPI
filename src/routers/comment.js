@@ -4,7 +4,7 @@ const { UserRoleType } = require('../models/enum/UserRoleType');
 const { validationDoesExistCommentUUID, validationIsCommentAlreadyLikedByUser, validationIsCommentAlreadyDislikedByUser, validationDeleteCommentIfOwner } = require('../validators/commentValidation');
 const { formatValidationUUIDCommentData, formatValidationCommentData } = require('../validators/formatValidators/commentValidator');
 const { validationDoesExistPostUUID } = require('../validators/postValidation');
-const { validationDoesUserBlockedActualUser } = require('../validators/userValidation');
+const { validationDoesUserBlockedActualUser, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../validators/userValidation');
 const router = require('express').Router();
 
 router.post("/post/comment/create/",
@@ -13,6 +13,7 @@ router.post("/post/comment/create/",
     formatValidationCommentData,
     validationDoesExistPostUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     createCommentPost
 );
 
@@ -22,6 +23,7 @@ router.post("/post/comment/reply",
     formatValidationCommentData,
     validationDoesExistCommentUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     createAnswerToComment
 );
 
@@ -30,6 +32,7 @@ router.post("/post/comment/like/",
     formatValidationUUIDCommentData,
     validationDoesExistCommentUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     validationIsCommentAlreadyLikedByUser,
     likeComment
 );
@@ -39,6 +42,7 @@ router.post("/post/comment/dislike/",
     formatValidationUUIDCommentData,
     validationDoesExistCommentUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     validationIsCommentAlreadyDislikedByUser,
     dislikeComment
 );
@@ -48,6 +52,7 @@ router.get("/post/comment/details/likes/:uuid",
     formatValidationUUIDCommentData,
     validationDoesExistCommentUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getUsersWhoLikesComment
 );
 
@@ -56,6 +61,7 @@ router.delete("/post/comment/delete/",
     formatValidationUUIDCommentData,
     validationDoesExistCommentUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     validationDeleteCommentIfOwner,
     deleteComment
 );
@@ -65,6 +71,7 @@ router.get("/post/comment/all/:uuid",
     formatValidationUUIDCommentData,
     validationDoesExistPostUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getAllCommentsOfUUIDPost
 );
 

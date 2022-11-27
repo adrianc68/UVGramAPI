@@ -4,7 +4,7 @@ const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationPostData, formatValidationUUIDPostData } = require('../validators/formatValidators/postFormatValidator');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationDoesExistPostUUID, validationIsPostAlreadyLikedByUser, validationIsPostAlreadyDislikedByUser } = require('../validators/postValidation');
-const { validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser } = require('../validators/userValidation');
+const { validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../validators/userValidation');
 const router = require('express').Router();
 
 router.post("/post/create/",
@@ -18,6 +18,7 @@ router.get("/post/user/:username",
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getPostsByUsername
 );
 
@@ -26,6 +27,7 @@ router.post("/post/like",
     formatValidationUUIDPostData,
     validationDoesExistPostUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     validationIsPostAlreadyLikedByUser,
     likePost
 );
@@ -35,6 +37,7 @@ router.post("/post/dislike",
     formatValidationUUIDPostData,
     validationDoesExistPostUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     validationIsPostAlreadyDislikedByUser,
     dislikePost,
 );
@@ -44,6 +47,7 @@ router.get("/post/details/likes/:uuid",
     formatValidationUUIDPostData,
     validationDoesExistPostUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getUsersWhoLikesPost
 );
 
@@ -52,6 +56,7 @@ router.get("/post/details/:uuid",
     formatValidationUUIDPostData,
     validationDoesExistPostUUID,
     validationDoesUserBlockedActualUser,
+    validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getPostDataByUUID
 );
 
