@@ -15,7 +15,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Personal\",\n    \"presentation\": null,\n    \"username\": \"uvgram1\",\n    \"password\": \"hola1234\",\n    \"phoneNumber\": \"2234567890\",\n    \"email\": \"uvgram1@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"verificationCode\": \"0c48859a\"\n}",
+							"raw": "{\n    \"name\": \"Business\",\n    \"presentation\": null,\n    \"username\": \"uvgram2\",\n    \"password\": \"hola1234\",\n    \"phoneNumber\": \"2234567890\",\n    \"email\": \"uvgram2@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"verificationCode\": \"93af106e\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -45,7 +45,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram1\",\n    \"email\": \"uvgram1@uvgram.com\"                                                   \n}",
+							"raw": "{\n    \"username\": \"uvgram2\",\n    \"email\": \"uvgram2@uvgram.com\"                                                   \n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -640,7 +640,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"emailOrUsername\": \"uvgram2\",\n    \"password\": \"hola1234\"\n}",
+							"raw": "{\n    \"emailOrUsername\": \"uvgram1\",\n    \"password\": \"hola1234\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1151,39 +1151,6 @@
 					"response": []
 				},
 				{
-					"name": "/post/details/:uuid",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/post/details/74838b7a2f5",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"post",
-								"details",
-								"74838b7a2f5"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "/post/create",
 					"request": {
 						"method": "POST",
@@ -1204,7 +1171,7 @@
 								},
 								{
 									"key": "description",
-									"value": "hello world",
+									"value": "Post 3",
 									"type": "default"
 								},
 								{
@@ -1253,7 +1220,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\":\"74838b7a2f5\"\n}",
+							"raw": "{\n    \"uuid\":\"4a5c1d116d7\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1289,7 +1256,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\":\"74838b7a2f5\"\n}",
+							"raw": "{\n    \"uuid\":\"4a5c1d116d7\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1336,7 +1303,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/details/likes/74838b7a2f5",
+							"raw": "http://localhost:8080/post/details/likes/4a5c1d116d7",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1346,7 +1313,40 @@
 								"post",
 								"details",
 								"likes",
-								"74838b7a2f5"
+								"4a5c1d116d7"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/post/details/:uuid",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/post/details/4a5c1d116d7",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"post",
+								"details",
+								"4a5c1d116d7"
 							]
 						}
 					},
@@ -1370,7 +1370,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"comment\": \"Este es mi segundo comentario!\",\n    \"uuid\": \"74838b7a2f5\"\n}",
+							"raw": "{\n    \"comment\": \"Tercero comentario padre!\",\n    \"uuid\": \"4a5c1d116d7\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1395,6 +1395,42 @@
 					"response": []
 				},
 				{
+					"name": "/post/comment/reply",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"comment\": \"respondiendo la respuesta\",\n    \"uuid\": \"b8d790fed8d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/post/comment/reply",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"post",
+								"comment",
+								"reply"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "/post/comment/all/:uuid",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -1412,7 +1448,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/comment/all/74838b7a2f5",
+							"raw": "http://localhost:8080/post/comment/all/4a5c1d116d7",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1422,44 +1458,7 @@
 								"post",
 								"comment",
 								"all",
-								"74838b7a2f5"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "/post/comment/dislike/",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{accessToken}}",
-								"type": "default"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"uuid\": \"3e2948a4a84\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/post/comment/dislike/",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"post",
-								"comment",
-								"dislike",
-								""
+								"4a5c1d116d7"
 							]
 						}
 					},
@@ -1478,7 +1477,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\": \"1322ebc9dd7\"\n}",
+							"raw": "{\n    \"uuid\": \"1452d4795d9\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1496,6 +1495,43 @@
 								"post",
 								"comment",
 								"like",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/post/comment/dislike/",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"uuid\": \"843eb9b6219\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/post/comment/dislike/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"post",
+								"comment",
+								"dislike",
 								""
 							]
 						}
@@ -1526,7 +1562,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/comment/details/likes/1322ebc9dd7",
+							"raw": "http://localhost:8080/post/comment/details/likes/1452d4795d9",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1537,7 +1573,44 @@
 								"comment",
 								"details",
 								"likes",
-								"1322ebc9dd7"
+								"1452d4795d9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/post/comment/delete/",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"uuid\": \"b8d790fed8d\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/post/comment/delete/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"post",
+								"comment",
+								"delete",
+								""
 							]
 						}
 					},

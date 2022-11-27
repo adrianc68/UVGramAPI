@@ -45,7 +45,7 @@ const validationFollowingUser = async (request, response, next) => {
         idUserFollower = await verifyToken(token).then(data => { return data.id });
         idUserFollowed = await getIdByUsername(username).then(id => { return id });
         if (idUserFollowed == idUserFollower) {
-            return httpResponseForbidden(response, "user can not follow himself");
+            return httpResponseForbidden(response, "you can not follow yourself");
         }
         isAlreadyFollowed = await isUserAlreadyFollowedByUser(idUserFollower, idUserFollowed);
         if (isAlreadyFollowed) {
@@ -66,7 +66,7 @@ const validationUnfollowingUser = async (request, response, next) => {
         idUserFollower = await verifyToken(token).then(data => { return data.id });
         idUserFollowed = await getIdByUsername(username).then(id => { return id });
         if (idUserFollowed == idUserFollower) {
-            return httpResponseForbidden(response, "user can not unfollow himself");
+            return httpResponseForbidden(response, "you can not unfollow yourself");
         }
         isAlreadyUnfollowed = !(await isUserAlreadyFollowedByUser(idUserFollower, idUserFollowed));
         if (isAlreadyUnfollowed) {
@@ -87,7 +87,7 @@ const validationBlockingUser = async (request, response, next) => {
         idUserBlocker = await verifyToken(token).then(data => { return data.id });
         idUserBlocked = await getIdByUsername(username).then(id => { return id });
         if (idUserBlocked == idUserBlocker) {
-            return httpResponseForbidden(response, "user can not block himself");
+            return httpResponseForbidden(response, "you can not block yourself");
         }
         isAlreadyBlocked = await isUserAlreadyBlockedByUser(idUserBlocker, idUserBlocked);
         if (isAlreadyBlocked) {
@@ -108,7 +108,7 @@ const validationUnblockingUser = async (request, response, next) => {
         idUserBlocker = await verifyToken(token).then(data => { return data.id });
         idUserBlocked = await getIdByUsername(username).then(id => { return id });
         if (idUserBlocked == idUserBlocker) {
-            return httpResponseForbidden(response, "user can not unblock himself");
+            return httpResponseForbidden(response, "you can not unblock yourself");
         }
         isAlreadyBlocked = !(await isUserAlreadyBlockedByUser(idUserBlocker, idUserBlocked));
         if (isAlreadyBlocked) {
@@ -120,7 +120,33 @@ const validationUnblockingUser = async (request, response, next) => {
     return next();
 }
 
+const validationDoesUserBlockedActualUser = async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let ownerResourceUserId;
+    let username = request.body.username;
+    if (!username) username = request.params.username;
+    if (!username) username = response.locals.username;
+    if (!username) ownerResourceUserId = response.locals.ownerResourceUserId;
+    let result;
+    try {
+        const userData = await verifyToken(token);
+        if (!ownerResourceUserId) {
+            ownerResourceUserId = await getIdByUsername(username);
+        }
+        if (userData.id == ownerResourceUserId) {
+            return next();
+        }
+        result = await isUserBlockedByUser(ownerResourceUserId, userData.id);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    if (result) {
+        return httpResponseForbidden(response, "user has blocked you");
+    }
+    return next();
+}
+
 module.exports = {
     validationFollowingUser, validationUnfollowingUser, validationBlockingUser,
-    validationUnblockingUser, validationRejectOnUsernameNotRegistered
+    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser
 }

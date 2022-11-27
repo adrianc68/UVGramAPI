@@ -26,8 +26,8 @@ const getPostDataByUUID = async (request, response) => {
         let countLikes = await getPostLikesById(postID);
         postDetails = {
             post: postData,
-            comments: commentData,
-            likes: countLikes
+            likes: countLikes,
+            comments: commentData
         }
     } catch (error) {
         return httpResponseInternalServerError(response, error);

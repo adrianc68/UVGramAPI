@@ -65,7 +65,7 @@ describe('POST /user/follow/', () => {
 
         test('POST /user/follow 403 Forbidden User can not follow himself', async () => {
             response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
-            expect(response.body.message).toContain("user can not follow himself");
+            expect(response.body.message).toContain("you can not follow yourself");
             expect(response.statusCode).toBe(403);
         });
 
@@ -145,7 +145,7 @@ describe('DEL /user/unfollow/', () => {
 
         test('DEL /user/unfollow 403 Forbidden User can not unfollow himself', async () => {
             response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
-            expect(response.body.message).toContain("user can not unfollow himself");
+            expect(response.body.message).toContain("you can not unfollow yourself");
             expect(response.statusCode).toBe(403);
         });
 
@@ -582,7 +582,7 @@ describe('POST /user/block/', () => {
 
         test('POST /user/block/ 403 Forbidden User can not block himself', async () => {
             response = await request(server).post("/user/block").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
-            expect(response.body.message).toContain("user can not block himself");
+            expect(response.body.message).toContain("you can not block yourself");
             expect(response.statusCode).toBe(403);
         });
 
@@ -665,7 +665,7 @@ describe('POST /user/unblock/', () => {
 
         test('POST /user/unblock/ 403 Forbidden User can not block himself', async () => {
             response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
-            expect(response.body.message).toContain("user can not unblock himself");
+            expect(response.body.message).toContain("you can not unblock yourself");
             expect(response.statusCode).toBe(403);
         });
 

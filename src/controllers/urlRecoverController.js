@@ -20,7 +20,7 @@ const changeEmailDataOnURLConfirmation = async (request, response) => {
     const payload = {
         isUpdated,
     }
-    return response.send(payload);
+    return httpResponseOk(response, payload);
 }
 
 const changePasswordOnUnloggedUserAndLogInOnURLConfirmation = async (request, response) => {

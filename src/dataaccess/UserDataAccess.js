@@ -258,7 +258,7 @@ const getIdByUsername = async (username) => {
         throw new Error(error);
     }
     return id;
-}
+};
 
 /**
  * Check if verification code provided matches with database verification code.
@@ -334,7 +334,7 @@ const isOldPasswordValid = async (oldPassword, email) => {
         throw new Error(error);
     }
     return isRegistered;
-}
+};
 
 /**
  * Get all user registered in database.
@@ -373,7 +373,7 @@ const followUser = async (id_user_follower, id_user_followed) => {
         throw new Error(error);
     }
     return isFollowed;
-}
+};
 
 /**
  * Remove a follower from a followed user.
@@ -398,7 +398,39 @@ const unfollowUser = async (id_user_follower, id_user_followed) => {
         throw new Error(error);
     }
     return isUnfollowed;
-}
+};
+
+/**
+ * Delete a follower and following user
+ * @param {*} id_user_follower the user that is follower
+ * @param {*} id_user_followed the user that is followed
+ * @returns true if removed otherwise false
+ */
+const deleteFollowerAndFollowing = async (id_user_follower, id_user_followed) => {
+    let isRemovedFromFollowingAndFollowers = false;
+    const t = await sequelize.transaction();
+    try {
+        await Follower.destroy({
+            where: {
+                id_user_follower,
+                id_user_followed
+            }
+        }, { transaction: t });
+
+        await Follower.destroy({
+            where: {
+                id_user_follower: id_user_followed,
+                id_user_followed: id_user_follower
+            }
+        }, { transaction: t });
+        await t.commit();
+        isRemovedFromFollowingAndFollowers = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isRemovedFromFollowingAndFollowers;
+};
 
 /**
  * Check if user is already folllowing an user
@@ -420,7 +452,7 @@ const isUserFollowedByUser = async (id_user_follower, id_user_followed) => {
         throw new Error(error);
     }
     return isFollowed;
-}
+};
 
 /**
  * Get all followed users by User
@@ -447,7 +479,8 @@ const getFollowedByUser = async (id) => {
         throw new Error(error);
     }
     return followedByUser;
-}
+};
+
 /**
  * Get all followers of user
  * @param {*} id the user to get the followers
@@ -475,7 +508,7 @@ const getFollowersOfUser = async (id) => {
         throw new Error(error);
     }
     return followers;
-}
+};
 
 /**
  * Get user Profile
@@ -495,7 +528,7 @@ const getUserProfile = async (id) => {
         throw error;
     }
     return user;
-}
+};
 
 /**
  * Block an user
@@ -518,7 +551,7 @@ const blockUser = async (id_user_blocker, id_user_blocked) => {
         throw new Error(error);
     }
     return isBlocked;
-}
+};
 
 /**
  * Unblock user
@@ -543,7 +576,7 @@ const unblockUser = async (id_user_blocker, id_user_blocked) => {
         throw new Error(error);
     }
     return isUnblocked;
-}
+};
 
 /**
  * Check if a user is already blocked by another one
@@ -565,7 +598,7 @@ const isUserBlockedByUser = async (id_user_blocker, id_user_blocked) => {
         throw new Error(error);
     }
     return isBlocked;
-}
+};
 
 /**
  * Update the user's email
@@ -593,7 +626,7 @@ const updateUserEmail = async (newEmail, id_user) => {
         throw new Error(error);
     }
     return isUpdated;
-}
+};
 
 /**
  * Update basic data of User (name, presentation, username, phoneNumber and birthdate)
@@ -619,8 +652,7 @@ const updateUserBasicData = async (newUserData, id_user, transaction) => {
     } catch (error) {
         throw error;
     }
-}
-
+};
 
 /**
  * Update Personal User Role Data and Basic Data
@@ -652,7 +684,7 @@ const updateUserPersonalData = async (basicData, personalData, id_user) => {
         throw new Error(error);
     }
     return isUpdated;
-}
+};
 
 /**
  * Update Business Role Data and Basic Data
@@ -687,7 +719,7 @@ const updateBusinessData = async (basicData, businessData, id_user) => {
         throw new Error(error);
     }
     return isUpdated;
-}
+};
 
 /**
  * Update Moderator Role Data and Basic Data
@@ -714,7 +746,7 @@ const updateModeratorData = async (basicData, moderatorData, id_user) => {
         throw new Error(error);
     }
     return isUpdated;
-}
+};
 
 /**
  * Update Administrator Role Data And Basic Data 
@@ -741,7 +773,7 @@ const updateAdministratorData = async (basicData, adminData, id_user) => {
         throw new Error(error);
     }
     return isUpdated;
-}
+};
 
 /**
  * Change user role type in database.
@@ -792,7 +824,7 @@ const changeUserRoleType = async (id_user, userRoleType) => {
         throw error;
     }
     return isUpdated;
-}
+};
 
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
@@ -802,5 +834,5 @@ module.exports = {
     getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedByUser,
     getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser,
     changePassword, isOldPasswordValid, updateUserPersonalData, updateAdministratorData,
-    updateModeratorData, updateBusinessData, updateUserEmail, changeUserRoleType
+    updateModeratorData, updateBusinessData, updateUserEmail, changeUserRoleType, deleteFollowerAndFollowing
 }

@@ -1,6 +1,7 @@
 const { getPostByUUID, isPostLikedByUser, getIdPostByPostUUID } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 
 const validationDoesExistPostUUID = async (request, response, next) => {
     let uuid = request.params.uuid;
@@ -10,6 +11,8 @@ const validationDoesExistPostUUID = async (request, response, next) => {
         if (!postData) {
             return httpResponseForbidden(response, "no post found");
         }
+        let ownerResource = postData.id_user;
+        response.locals.ownerResourceUserId = ownerResource;
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }

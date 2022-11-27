@@ -2,6 +2,7 @@ const { getCommentByUUID, getIdCommentByUUID, isCommentLikedByUser } = require("
 const { getPostByUUID, getPostById } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { httpResponseForbidden, httpResponseInternalServerError } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 
 const validationDoesExistCommentUUID = async (request, response, next) => {
     let uuid = request.params.uuid;
@@ -11,6 +12,8 @@ const validationDoesExistCommentUUID = async (request, response, next) => {
         if (!commentData) {
             return httpResponseForbidden(response, "no comment found");
         }
+        let ownerResource = commentData.id_user;
+        response.locals.ownerResourceUserId = ownerResource;
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }

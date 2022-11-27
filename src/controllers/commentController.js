@@ -3,7 +3,6 @@ const { getIdPostByPostUUID } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isUserFollowedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 
 const createCommentPost = async (request, response) => {
     const token = (request.headers.authorization).split(" ")[1];

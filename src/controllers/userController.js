@@ -1,6 +1,7 @@
+const { getAllPostFromUserId } = require("../dataaccess/postDataAccess");
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
-    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess } = require("../dataaccess/userDataAccess");
-const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
+    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, isUserBlockedByUser } = require("../dataaccess/userDataAccess");
+const { httpResponseOk, httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const { verifyToken } = require("../helpers/token");
 
@@ -67,6 +68,7 @@ const getProfileOfUser = async (request, response) => {
         user = await getUserProfileUserDataAccess(idUser);
         user.followers = (await getFollowedUsersOfUserUserDataAccess(idUser)).length;
         user.followed = (await getFollowersOfUserUserDataAccess(idUser)).length;
+        user.posts = await getAllPostFromUserId(idUser);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -80,7 +82,11 @@ const blockUser = async (request, response) => {
     const idUserBlocker = await verifyToken(token).then(data => { return data.id });
     let message;
     try {
-        message = await blockUserUserDataAccess(idUserBlocker, idUserToBlock);
+        let resultBlock = await blockUserUserDataAccess(idUserBlocker, idUserToBlock);
+        let resultRemoveFollower = await deleteFollowerAndFollowing(idUserBlocker, idUserToBlock);
+        if (resultBlock == true && resultRemoveFollower == true) {
+            message = "blocked and removed from followers";
+        }
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -101,6 +107,8 @@ const unblockUser = async (request, response) => {
     return httpResponseOk(response, `user has unblocked to ${username}`);
 }
 
-
-
-module.exports = { followUser, unfollowUser, getFollowedByUser, getFollowersOfUser, getProfileOfUser, blockUser, unblockUser }
+module.exports = {
+    followUser, unfollowUser, getFollowedByUser,
+    getFollowersOfUser, getProfileOfUser, blockUser,
+    unblockUser
+}
