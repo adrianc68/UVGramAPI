@@ -1,8 +1,9 @@
-const { getAllCommentsByIdPost } = require("../dataaccess/commentDataAccess");
+const { getAllCommentsByIdPost, getCommentsCountById } = require("../dataaccess/commentDataAccess");
 const { getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { getAccountLoginData, isUserFollowedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 
 const getPostsByUsername = async (request, response) => {
     const username = request.params.username;
@@ -10,6 +11,14 @@ const getPostsByUsername = async (request, response) => {
     try {
         let userData = await getAccountLoginData(username);
         posts = await getAllPostFromUserId(userData.id);
+        await Promise.all(posts.map(async function (post) {
+            let postId = await getIdPostByPostUUID(post.uuid);
+            if (!postId) {
+                post.comments = 0;
+                return;
+            }
+            post.comments = await getCommentsCountById(postId);
+        }));
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }

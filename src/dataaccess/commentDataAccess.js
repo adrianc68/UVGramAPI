@@ -213,6 +213,24 @@ const getCommentByUUID = async (uuid) => {
 }
 
 /**
+ * Count all comments from post
+ * @param {*} id_post the id to count the comments
+ * @returns 0 or more than 0;
+ */
+const getCommentsCountById = async (id_post) => {
+    let count = 0;
+    try {
+        count = await Comment.count({
+            where: { id_post }
+        })
+    } catch (error) {
+        throw error;
+    }
+    return count;
+}
+
+
+/**
  * Get the root comment recursively
  * @param {*} id the actual comment
  * @returns the root comment or undefined
@@ -472,5 +490,6 @@ module.exports = {
     dislikeCommentByIds, getIdCommentByUUID, getCommentByUUID,
     isCommentLikedByUser, getUsersWhoLikeCommentById, getCommentsLikesById,
     deleteCommentById, createAnswerComment, getCommentParentById,
-    deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments
+    deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments,
+    getCommentsCountById
 }

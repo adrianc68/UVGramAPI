@@ -1,5 +1,5 @@
-const { deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments } = require("../dataaccess/commentDataAccess");
-const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost } = require("../dataaccess/postDataAccess");
+const { deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments, getCommentsCountById } = require("../dataaccess/commentDataAccess");
+const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID } = require("../dataaccess/postDataAccess");
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
     , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, isUserBlockedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
@@ -70,6 +70,15 @@ const getProfileOfUser = async (request, response) => {
         user.followers = (await getFollowedUsersOfUserUserDataAccess(idUser)).length;
         user.followed = (await getFollowersOfUserUserDataAccess(idUser)).length;
         user.posts = await getAllPostFromUserId(idUser);
+
+        await Promise.all(user.posts.map(async function (post) {
+            let postId = await getIdPostByPostUUID(post.uuid);
+            if (!postId) {
+                post.comments = 0;
+                return;
+            }
+            post.comments = await getCommentsCountById(postId);
+        }));
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
