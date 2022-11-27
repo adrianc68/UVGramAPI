@@ -391,6 +391,18 @@ CREATE TABLE public."Moderator" (
 ALTER TABLE public."Moderator" OWNER TO dev;
 
 --
+-- Name: NestedComment; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."NestedComment" (
+    parent_id_comment bigint NOT NULL,
+    child_id_comment bigint NOT NULL
+);
+
+
+ALTER TABLE public."NestedComment" OWNER TO dev;
+
+--
 -- Name: Personal; Type: TABLE; Schema: public; Owner: dev
 --
 
@@ -704,6 +716,14 @@ COPY public."Moderator" (update_date, id_user) FROM stdin;
 
 
 --
+-- Data for Name: NestedComment; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."NestedComment" (parent_id_comment, child_id_comment) FROM stdin;
+\.
+
+
+--
 -- Data for Name: Personal; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
@@ -787,42 +807,42 @@ COPY public."VerificationCode" (code, username, created_time) FROM stdin;
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.comment_id_seq', 1, false);
+SELECT pg_catalog.setval('public.comment_id_seq', 14, true);
 
 
 --
 -- Name: educationalprogram_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.educationalprogram_id_seq', 1, false);
+SELECT pg_catalog.setval('public.educationalprogram_id_seq', 1, true);
 
 
 --
 -- Name: faculty_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.faculty_id_seq', 1, false);
+SELECT pg_catalog.setval('public.faculty_id_seq', 1, true);
 
 
 --
 -- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_id_seq', 4, true);
 
 
 --
 -- Name: region_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.region_id_seq', 1, false);
+SELECT pg_catalog.setval('public.region_id_seq', 1, true);
 
 
 --
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_id_seq', 3, true);
 
 
 --
@@ -1019,6 +1039,20 @@ CREATE INDEX "IXFK_Moderator_UserRole" ON public."Moderator" USING btree (id_use
 
 
 --
+-- Name: IXFK_NestedComment_Comment; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_NestedComment_Comment" ON public."NestedComment" USING btree (parent_id_comment);
+
+
+--
+-- Name: IXFK_NestedComment_Comment_02; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_NestedComment_Comment_02" ON public."NestedComment" USING btree (child_id_comment);
+
+
+--
 -- Name: IXFK_Personal_EducationalProgram; Type: INDEX; Schema: public; Owner: dev
 --
 
@@ -1183,6 +1217,22 @@ ALTER TABLE ONLY public."Follower"
 
 ALTER TABLE ONLY public."Moderator"
     ADD CONSTRAINT "FK_Moderator_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: NestedComment FK_NestedComment_Comment; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."NestedComment"
+    ADD CONSTRAINT "FK_NestedComment_Comment" FOREIGN KEY (parent_id_comment) REFERENCES public."Comment"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: NestedComment FK_NestedComment_Comment_02; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."NestedComment"
+    ADD CONSTRAINT "FK_NestedComment_Comment_02" FOREIGN KEY (child_id_comment) REFERENCES public."Comment"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

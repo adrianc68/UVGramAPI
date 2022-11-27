@@ -75,5 +75,4 @@ router.get("/post/comment/all/:uuid",
     getAllCommentsOfUUIDPost
 );
 
-
 module.exports = router;

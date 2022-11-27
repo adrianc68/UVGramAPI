@@ -1,58 +1,3 @@
-\connect postgres
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: DATABASE postgres; Type: COMMENT; Schema: -; Owner: dev
---
-
-COMMENT ON DATABASE postgres IS 'default administrative connection database';
-
-
---
--- PostgreSQL database dump complete
---
-
---
--- Database "uvgram_db" dump
---
-
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 15.1 (Debian 15.1-1.pgdg110+1)
--- Dumped by pg_dump version 15.1 (Debian 15.1-1.pgdg110+1)
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: uvgram_db; Type: DATABASE; Schema: -; Owner: dev
---
-
-CREATE DATABASE uvgram_db WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'en_US.utf8';
-
-
-ALTER DATABASE uvgram_db OWNER TO dev;
-
 \connect uvgram_db
 
 SET statement_timeout = 0;
@@ -446,6 +391,18 @@ CREATE TABLE public."Moderator" (
 ALTER TABLE public."Moderator" OWNER TO dev;
 
 --
+-- Name: NestedComment; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."NestedComment" (
+    parent_id_comment bigint NOT NULL,
+    child_id_comment bigint NOT NULL
+);
+
+
+ALTER TABLE public."NestedComment" OWNER TO dev;
+
+--
 -- Name: Personal; Type: TABLE; Schema: public; Owner: dev
 --
 
@@ -759,6 +716,14 @@ COPY public."Moderator" (update_date, id_user) FROM stdin;
 
 
 --
+-- Data for Name: NestedComment; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."NestedComment" (parent_id_comment, child_id_comment) FROM stdin;
+\.
+
+
+--
 -- Data for Name: Personal; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
@@ -842,42 +807,42 @@ COPY public."VerificationCode" (code, username, created_time) FROM stdin;
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.comment_id_seq', 1, false);
+SELECT pg_catalog.setval('public.comment_id_seq', 14, true);
 
 
 --
 -- Name: educationalprogram_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.educationalprogram_id_seq', 1, false);
+SELECT pg_catalog.setval('public.educationalprogram_id_seq', 1, true);
 
 
 --
 -- Name: faculty_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.faculty_id_seq', 1, false);
+SELECT pg_catalog.setval('public.faculty_id_seq', 1, true);
 
 
 --
 -- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 1, false);
+SELECT pg_catalog.setval('public.post_id_seq', 4, true);
 
 
 --
 -- Name: region_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.region_id_seq', 1, false);
+SELECT pg_catalog.setval('public.region_id_seq', 1, true);
 
 
 --
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_id_seq', 3, true);
 
 
 --
@@ -1074,6 +1039,20 @@ CREATE INDEX "IXFK_Moderator_UserRole" ON public."Moderator" USING btree (id_use
 
 
 --
+-- Name: IXFK_NestedComment_Comment; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_NestedComment_Comment" ON public."NestedComment" USING btree (parent_id_comment);
+
+
+--
+-- Name: IXFK_NestedComment_Comment_02; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_NestedComment_Comment_02" ON public."NestedComment" USING btree (child_id_comment);
+
+
+--
 -- Name: IXFK_Personal_EducationalProgram; Type: INDEX; Schema: public; Owner: dev
 --
 
@@ -1238,6 +1217,22 @@ ALTER TABLE ONLY public."Follower"
 
 ALTER TABLE ONLY public."Moderator"
     ADD CONSTRAINT "FK_Moderator_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: NestedComment FK_NestedComment_Comment; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."NestedComment"
+    ADD CONSTRAINT "FK_NestedComment_Comment" FOREIGN KEY (parent_id_comment) REFERENCES public."Comment"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: NestedComment FK_NestedComment_Comment_02; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."NestedComment"
+    ADD CONSTRAINT "FK_NestedComment_Comment_02" FOREIGN KEY (child_id_comment) REFERENCES public."Comment"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
