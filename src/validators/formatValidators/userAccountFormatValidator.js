@@ -1,6 +1,6 @@
 const { httpResponseValidation } = require('../../helpers/httpResponses');
 const { validateNameData, validatePresentationData, validateUsernameData, validatePasswordData,
-    validatePhoneNumberData, validateEmailData, validateBirthdateData, validateVerificationCodeData, validateOldPasswordData, validateEmailAsOptional, validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode, validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName, validateNewRoleTypeData } = require('./formatValidator');
+    validatePhoneNumberData, validateEmailData, validateBirthdateData, validateVerificationCodeData, validateOldPasswordData, validateEmailAsOptional, validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode, validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName, validateNewRoleTypeData, validateUserPrivacyData } = require('./formatValidator');
 
 const formatValidationUserAccountData = [
     validateNameData,
@@ -102,10 +102,17 @@ const formatValidationNewRoleType = [
     }
 ];
 
+const formatValidationPrivacyData = [
+    validateUserPrivacyData,
+    (request, response, next) => {
+        return httpResponseValidation(request, response, next);
+    }
+];
+
 module.exports = {
     formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername,
     formatValidationVerificationCode, formatValidationOldPassword, formatValidationPassword,
     formatValidationBasicUserAccountData, formatValidationPersonalData, formatValidationBusinessData,
-    formatValidationAdminData, formatValidationModerator, formatValidationNewRoleType
+    formatValidationAdminData, formatValidationModerator, formatValidationNewRoleType, formatValidationPrivacyData
 }
 

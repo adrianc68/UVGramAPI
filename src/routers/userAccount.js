@@ -1,11 +1,11 @@
 const router = require('express').Router();
-const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, updateUser, createURLVerification, changeUserRoleByEmailOrUsername } = require('../controllers/userAccountController');
+const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, updateUser, createURLVerification, changeUserRoleByEmailOrUsername, changePrivacyType } = require('../controllers/userAccountController');
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationEmailOrUsername } = require('../validators/formatValidators/authenticationFormatValidator');
-const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode, formatValidationPassword, formatValidationOldPassword, formatValidationBasicUserAccountData, formatValidationPersonalData, formatValidationBusinessData, formatValidationAdminData, formatValidationModerator, formatValidationNewRoleType } = require('../validators/formatValidators/userAccountFormatValidator');
+const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode, formatValidationPassword, formatValidationOldPassword, formatValidationBasicUserAccountData, formatValidationPersonalData, formatValidationBusinessData, formatValidationAdminData, formatValidationModerator, formatValidationNewRoleType, formatValidationPrivacyData } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationIsURLRecoverAlreadyGeneratedByEmailOrUsername } = require('../validators/urlRecoverValidation');
-const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist, validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationModeratorRoleData, validationAdminRoleData, validationBusinessRoleData, validationSecretKey } = require('../validators/userAccountValidation');
+const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist, validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationModeratorRoleData, validationAdminRoleData, validationBusinessRoleData, validationSecretKey, validationUserPrivacy } = require('../validators/userAccountValidation');
 
 router.post("/accounts/create",
     formatValidationUserAccountData,
@@ -101,6 +101,14 @@ router.post("/accounts/users/roles/change/",
     validationEmailOrUsernameRejectOnNotExist,
     validationSecretKey,
     changeUserRoleByEmailOrUsername
+);
+
+router.post("/accounts/users/change-privacy",
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    formatValidationPrivacyData,
+    validationUserPrivacy,
+    changePrivacyType
+
 );
 
 module.exports = router;

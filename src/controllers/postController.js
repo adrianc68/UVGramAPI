@@ -3,7 +3,6 @@ const { getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPost
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { getAccountLoginData, isUserFollowedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 
 const getPostsByUsername = async (request, response) => {
     const username = request.params.username;

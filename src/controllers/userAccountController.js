@@ -2,7 +2,7 @@ const { sendEmailCodeVerification, sendEmailChangeURLConfirmation, sendEmailPass
 const { verifyToken, deleteAllSessionsByUserId } = require("../dataaccess/tokenDataAccess");
 const { generateURLChangeEmailConfirmation, doesURLVerificationAlreadyGenerated, removeURLVerification, generateURLUpdatePasswordConfirmation } = require("../dataaccess/urlRecoverDataAccess");
 const { deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode,
-    getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType } = require("../dataaccess/userDataAccess");
+    getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType, changePrivacyTypeUser } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const createURL = require("../helpers/urlHelper");
@@ -193,9 +193,21 @@ const changeUserRoleByEmailOrUsername = async (request, response) => {
     return httpResponseOk(response, { isUpdated })
 }
 
+const changePrivacyType = async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    const { privacy } = request.body;
+    let result = false;
+    try {
+        let userDataId = await verifyToken(token).then(data => { return data.id });
+        result = await changePrivacyTypeUser(userDataId, privacy);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, result)
+};
 
 module.exports = {
     addUser, removeUserByUsername, createVerificationCode,
-    getAllUsers, changePasswordOnLoggedUser,
-    updateUser, createURLVerification, changeUserRoleByEmailOrUsername
+    getAllUsers, changePasswordOnLoggedUser, updateUser,
+    createURLVerification, changeUserRoleByEmailOrUsername, changePrivacyType
 }

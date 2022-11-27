@@ -1,7 +1,7 @@
 const { isEducationalProgramRegistered } = require("../dataaccess/EducationalProgramDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isEmailRegistered, isUsernameRegistered, isVerificationCodeGenerated, doesVerificationCodeMatches,
-    isOldPasswordValid, getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/userDataAccess");
+    isOldPasswordValid, getAccountLoginData, getAccountLoginDataById, changePrivacyTypeUser, getActualPrivacyType } = require("../dataaccess/userDataAccess");
 const { decryptAES } = require("../helpers/aes-encryption");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden, httpResponseUnauthorized } = require("../helpers/httpResponses");
 const { CategoryType } = require("../models/enum/CategoryType");
@@ -190,14 +190,29 @@ const validationSecretKey = async (request, response, next) => {
         return httpResponseUnauthorized(response);
     }
     next();
-}
+};
+
+const validationUserPrivacy = async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    const { privacy } = request.body;
+    try {
+        let userDataId = await verifyToken(token).then(data => { return data.id });
+        let result = await getActualPrivacyType(userDataId);
+        if (result == privacy) {
+            return httpResponseForbidden(response, `you account is already: ${privacy}`);
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    next();
+};
 
 module.exports = {
     validationisEmailRegisteredWithNext, validationIsUsernameRegisteredWithNext,
     validationIsUsernameRegistered, validationIsEmailRegistered, validationNotGeneratedVerificationCode,
     validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist,
     validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationAdminRoleData, validationModeratorRoleData,
-    validationBusinessRoleData, validationSecretKey,
+    validationBusinessRoleData, validationSecretKey, validationUserPrivacy
 }
 
 

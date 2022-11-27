@@ -2,6 +2,7 @@ const { check, body, header } = require('express-validator');
 const { CategoryType } = require('../../models/enum/CategoryType');
 const { GenderType } = require('../../models/enum/GenderType');
 const { UserRoleType } = require('../../models/enum/UserRoleType');
+const { PrivacyType } = require('../../models/enum/PrivacyType');
 
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -106,6 +107,19 @@ const validateBirthdateData = [
             return isValidDate(value);
         })
         .withMessage("birthday does not exist")
+];
+
+const validateUserPrivacyData = [
+    check("privacy")
+        .not()
+        .isEmpty()
+        .withMessage("privacy is required")
+        .bail()
+        .toUpperCase()
+        .custom((value, { req }) => {
+            return valueExistInEnumType(value, PrivacyType)
+        })
+        .withMessage(`privacy must be ${Object.values(PrivacyType)}`)
 ];
 
 const validateEmailOrUsernameData = [
@@ -227,6 +241,7 @@ const validateCity = [
         .bail()
         .isLength({ min: 3, max: 30 })
         .withMessage("city must have the allowed length: {min: 3, max: 340}")
+        .bail()
         .matches(/^[a-zA-Z]+(\ ([a-zA-Z]+))*$/)
         .withMessage("city is not valid, must have allowed characters: words, numbers. no allowed spaces and period as last character")
 ];
@@ -239,6 +254,7 @@ const validatePostalCode = [
         .bail()
         .isLength({ min: 4, max: 16 })
         .withMessage("postalCode must have the allowed length: {min: 4, max: 16}")
+        .bail()
         .matches(/^[\w]+([-_]([\w]+))*$/)
         .withMessage("postalCode is not valid, must have allowed characters: no spaces")
 ];
@@ -251,6 +267,7 @@ const validatePostalAddress = [
         .bail()
         .isLength({ min: 4, max: 420 })
         .withMessage("postalAddress must have the allowed length: {min: 4, max: 420}")
+        .bail()
         .matches(/^[\w]+(\ ([\w]+))*$/)
         .withMessage("postalAddress is not valid, mut have allowed characters: words, numbers and no spaces between words")
 ]
@@ -273,6 +290,7 @@ const validatePhoneContact = [
     check("phoneContact")
         .isLength({ min: 8, max: 15 })
         .withMessage("phoneContact must have the allowed length: {min: 8, max: 15}")
+        .bail()
         .matches(/^[\d]*$/)
         .withMessage("phoneContact must have the allowed characters: digits")
 ];
@@ -303,6 +321,7 @@ const validateNewRoleTypeData = [
         .not()
         .isEmpty()
         .withMessage("newRoleType is required")
+        .bail()
         .toUpperCase()
         .custom((value, { req }) => {
             return valueExistInEnumType(value, UserRoleType)
@@ -425,5 +444,5 @@ module.exports = {
     validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName,
     validateUUIDTemporalToken, validateNewRoleTypeData, validatePostFileData,
     validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed,
-    validatePostUUID, validateCommentUUID, validateCommentData
+    validatePostUUID, validateCommentUUID, validateCommentData, validateUserPrivacyData
 }

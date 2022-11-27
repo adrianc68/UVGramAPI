@@ -826,6 +826,43 @@ const changeUserRoleType = async (id_user, userRoleType) => {
     return isUpdated;
 };
 
+/**
+ * Get actual privacy type of user
+ * @param {*} id_user the user to get privacy type
+ * @returns privacyType or undefined.
+ */
+const getActualPrivacyType = async (id_user) => {
+    let privacyType;
+    try {
+        privacyType = await UserConfiguration.findOne({
+            where: { id_user },
+            raw: true
+        }).then(data => {
+            return data.privacy;
+        })
+
+    } catch (error) {
+        throw error;
+    }
+    return privacyType;
+}
+
+const changePrivacyTypeUser = async (id_user, privacyType) => {
+    let isUpdated = false;
+    const t = await sequelize.transaction();
+    try {
+        let result = await UserConfiguration.update({
+            privacy: privacyType
+        }, { where: { id_user } });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isUpdated;
+}
+
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
@@ -834,5 +871,6 @@ module.exports = {
     getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedByUser,
     getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser,
     changePassword, isOldPasswordValid, updateUserPersonalData, updateAdministratorData,
-    updateModeratorData, updateBusinessData, updateUserEmail, changeUserRoleType, deleteFollowerAndFollowing
+    updateModeratorData, updateBusinessData, updateUserEmail, changeUserRoleType,
+    deleteFollowerAndFollowing, changePrivacyTypeUser, getActualPrivacyType
 }
