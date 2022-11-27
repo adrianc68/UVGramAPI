@@ -51,7 +51,7 @@ router.delete("/post/comment/delete/",
     deleteComment
 );
 
-router.post("/post/comment/answer",
+router.post("/post/comment/reply",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationUUIDCommentData,
     formatValidationCommentData,

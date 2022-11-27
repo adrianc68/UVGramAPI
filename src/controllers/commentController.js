@@ -1,4 +1,4 @@
-const { createCommentInPost, getAllCommentsByIdPost, getIdCommentByUUID, likeCommentByIds, dislikeCommentByIds, getUsersWhoLikeCommentById, getCommentByUUID, deleteCommentById, createAnswerComment } = require("../dataaccess/commentDataAccess");
+const { createCommentInPost, getAllCommentsByIdPost, getIdCommentByUUID, likeCommentByIds, dislikeCommentByIds, getUsersWhoLikeCommentById, getCommentByUUID, deleteCommentById, createAnswerComment, getCommentParentById } = require("../dataaccess/commentDataAccess");
 const { getIdPostByPostUUID } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isUserFollowedByUser } = require("../dataaccess/userDataAccess");
@@ -30,8 +30,9 @@ const createAnswerToComment = async (request, response) => {
     let isCreated;
     try {
         const userDataId = await verifyToken(token).then(data => { return data.id });
-        let commentParentData = await getCommentByUUID(uuid);
-        let commentDetails = createAnswerComment(commentParentData.id, comment, commentParentData.id_post, userDataId);
+        const commentReplyId = await getIdCommentByUUID(uuid);
+        let commentRootParentData = await getCommentParentById(commentReplyId);
+        let commentDetails = createAnswerComment(commentRootParentData.id, comment, commentRootParentData.id_post, userDataId);
         if (commentDetails) {
             isCreated = true;
         }

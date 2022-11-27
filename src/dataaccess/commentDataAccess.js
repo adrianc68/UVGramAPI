@@ -48,8 +48,8 @@ const getAllCommentsByIdPost = async (id_post) => {
         let parentComments = await Comment.findAll({
             where: {
                 id_post,
-                '$NestedComments.parent_id_comment$': { [Op.eq]: null },
-                '$NestedComments.child_id_comment$': { [Op.eq]: null }
+                '$NestedCommentParent.parent_id_comment$': { [Op.eq]: null },
+                '$NestedCommentParent.child_id_comment$': { [Op.eq]: null }
             },
             attributes: {
                 include: ["User.username", "comment", "created_time", "uuid", "id",
@@ -59,14 +59,19 @@ const getAllCommentsByIdPost = async (id_post) => {
             },
             include: [{
                 model: NestedComment,
+                as: "NestedCommentParent",
                 attributes: []
-            }, {
+            },
+            {
                 model: CommentLike,
                 attributes: []
             }, {
                 model: User,
                 attributes: []
             }
+            ],
+            order: [
+                ["created_time", "ASC"]
             ],
             group: ["username", "Comment.comment", "Comment.created_time", "Comment.uuid", "Comment.id",],
             raw: true,
@@ -75,7 +80,7 @@ const getAllCommentsByIdPost = async (id_post) => {
             try {
                 let childComments = await Comment.findAll({
                     where: {
-                        '$NestedComments.parent_id_comment$': parentComment.id
+                        '$NestedCommentParent.parent_id_comment$': parentComment.id
                     },
                     attributes: {
                         include: ["User.username", "comment", "created_time", "uuid",
@@ -85,6 +90,7 @@ const getAllCommentsByIdPost = async (id_post) => {
                     },
                     include: [{
                         model: NestedComment,
+                        as: "NestedCommentParent",
                         attributes: []
                     }, {
                         model: User,
@@ -93,11 +99,14 @@ const getAllCommentsByIdPost = async (id_post) => {
                         model: CommentLike,
                         attributes: []
                     }],
+                    order: [
+                        ["created_time", "ASC"]
+                    ],
                     group: ["username", "Comment.comment", "Comment.created_time", "Comment.uuid", "Comment.id",],
                     raw: true,
                 });
                 delete parentComment["id"]
-                parentComment.answers = childComments;
+                parentComment.replies = childComments;
 
             } catch (error) {
                 throw error;
@@ -109,8 +118,6 @@ const getAllCommentsByIdPost = async (id_post) => {
     }
     return comments;
 };
-
-
 
 /**
  * Like a comment by IDS
@@ -205,6 +212,36 @@ const getCommentByUUID = async (uuid) => {
 }
 
 /**
+ * Get the root comment recursively
+ * @param {*} id the actual comment
+ * @returns the root comment or undefined
+ */
+const getCommentParentById = async (id) => {
+    let comment;
+    try {
+        comment = await Comment.findOne({
+            where: { id },
+            attributes: {
+                include: ["comment", "created_time", "uuid", "id", "id_post", "id_user"],
+            },
+            include: [{
+                model: NestedComment,
+                as: "NestedCommentParent",
+                attributes: ["parent_id_comment"]
+            }],
+            raw: true,
+        });
+        if (comment["NestedCommentParent.parent_id_comment"] != null) {
+            comment = await getCommentParentById(comment["NestedCommentParent.parent_id_comment"]);
+        }
+        delete comment["NestedCommentParent.parent_id_comment"];
+    } catch (error) {
+        throw error;
+    }
+    return comment;
+}
+
+/**
  * Check if comment is already liked by user
  * @param {*} id_user the user who liked a comment
  * @param {*} id_comment the comment that is liked
@@ -226,7 +263,11 @@ const isCommentLikedByUser = async (id_user, id_comment) => {
     return isAlreadyLikedByUser;
 }
 
-
+/**
+ * Get likes of comment
+ * @param {*} id_comment the comment to get count likes 
+ * @returns 0 or more than 0
+ */
 const getCommentsLikesById = async (id_comment) => {
     let count = 0;
     try {
@@ -285,6 +326,14 @@ const deleteCommentById = async (id) => {
     return isDeleted;
 }
 
+/**
+ * Create answer to parent comment!
+ * @param {*} parent_id_comment the ID to reply to a comment
+ * @param {*} comment the reply content
+ * @param {*} id_post the id of post where is it replying
+ * @param {*} id_user the user id who is replying.
+ * @returns object with comment result or undefined
+ */
 const createAnswerComment = async (parent_id_comment, comment, id_post, id_user) => {
     let result;
     const t = await sequelize.transaction();
@@ -320,5 +369,5 @@ module.exports = {
     createCommentInPost, getAllCommentsByIdPost, likeCommentByIds,
     dislikeCommentByIds, getIdCommentByUUID, getCommentByUUID,
     isCommentLikedByUser, getUsersWhoLikeCommentById, getCommentsLikesById,
-    deleteCommentById, createAnswerComment
+    deleteCommentById, createAnswerComment, getCommentParentById
 }

@@ -17,11 +17,13 @@ const NestedComment = sequelize.define("NestedComment", {
 NestedComment.removeAttribute("id");
 
 Comment.hasMany(NestedComment, {
+    as: "NestedCommentParent",
     foreignKey: "child_id_comment",
     sourceKey: "id",
 });
 
 NestedComment.belongsTo(Comment, {
+    as: "NestedCommentParent",
     foreignKey: "child_id_comment",
     targetKey: "id",
     onDelete: "CASCADE",
@@ -29,11 +31,13 @@ NestedComment.belongsTo(Comment, {
 });
 
 Comment.hasOne(NestedComment, {
+    as: "NestedCommentChild",
     foreignKey: "parent_id_comment",
     targetKey: "id"
 });
 
 NestedComment.belongsTo(Comment, {
+    as: "NestedCommentChild",
     foreignKey: "parent_id_comment",
     targetKey: "id",
     onDelete: "CASCADE",
