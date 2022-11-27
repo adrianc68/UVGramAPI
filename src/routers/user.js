@@ -1,10 +1,11 @@
+const { acceptFollowerRequest, denyFollowerRequest } = require('../controllers/userAccountController');
 const { followUser, unfollowUser, getFollowersOfUser,
-    getProfileOfUser, blockUser, unblockUser, getFollowedByUser } = require('../controllers/userController');
+    getProfileOfUser, blockUser, unblockUser, getFollowedByUser, getPendingFollowRequest, deleteFollower } = require('../controllers/userController');
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationFollowingUser, validationUnfollowingUser, validationBlockingUser,
-    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../validators/userValidation');
+    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser, validationDoesUserIsPrivateAndUnfollowedByActualUser, validationAcceptOrDenyFollowerRequest, validationDenyFollowerRequest, validationRemoveUserFromFollowers } = require('../validators/userValidation');
 const router = require('express').Router();
 
 router.post("/user/follow/",
@@ -23,6 +24,35 @@ router.delete("/user/unfollow/",
     validationDoesUserBlockedActualUser,
     validationUnfollowingUser,
     unfollowUser
+);
+
+router.get("/user/followers/pending/",
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    getPendingFollowRequest
+);
+
+router.post("/user/followers/accept/",
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    formatValidationAccountUsername,
+    validationRejectOnUsernameNotRegistered,
+    validationAcceptOrDenyFollowerRequest,
+    acceptFollowerRequest
+);
+
+router.delete("/user/followers/deny/",
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    formatValidationAccountUsername,
+    validationRejectOnUsernameNotRegistered,
+    validationAcceptOrDenyFollowerRequest,
+    denyFollowerRequest
+);
+
+router.delete("/user/followers/delete",
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    formatValidationAccountUsername,
+    validationRejectOnUsernameNotRegistered,
+    validationRemoveUserFromFollowers,
+    deleteFollower
 );
 
 router.get("/user/followed-by/:username/",

@@ -1,5 +1,5 @@
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
-const { isUserFollowedByUser, getIdByUsername, isUserBlockedByUser, isUsernameRegistered, getActualPrivacyType } = require("../dataaccess/userDataAccess");
+const { isUserFollowedByUser, getIdByUsername, isUserBlockedByUser, isUsernameRegistered, getActualPrivacyType, isRequestFollowerSent } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const { PrivacyType } = require("../models/enum/PrivacyType");
@@ -49,9 +49,13 @@ const validationFollowingUser = async (request, response, next) => {
         if (idUserFollowed == idUserFollower) {
             return httpResponseForbidden(response, "you can not follow yourself");
         }
-        isAlreadyFollowed = await isUserAlreadyFollowedByUser(idUserFollower, idUserFollowed);
+        let isAlreadyFollowed = await isUserAlreadyFollowedByUser(idUserFollower, idUserFollowed);
         if (isAlreadyFollowed) {
             return httpResponseForbidden(response, "user is already followed");
+        }
+        let isFolloweRequestSent = await isRequestFollowerSent(idUserFollower, idUserFollowed);
+        if (isFolloweRequestSent) {
+            return httpResponseForbidden(response, "follower request is already sent to user")
         }
     } catch (error) {
         return httpResponseInternalServerError(error);
@@ -70,9 +74,29 @@ const validationUnfollowingUser = async (request, response, next) => {
         if (idUserFollowed == idUserFollower) {
             return httpResponseForbidden(response, "you can not unfollow yourself");
         }
-        isAlreadyUnfollowed = !(await isUserAlreadyFollowedByUser(idUserFollower, idUserFollowed));
-        if (isAlreadyUnfollowed) {
+        let isRequestFollowerNotSent = !(await isRequestFollowerSent(idUserFollower, idUserFollowed));
+        let isAlreadyUnfollowed = !(await isUserAlreadyFollowedByUser(idUserFollower, idUserFollowed));
+        if (isAlreadyUnfollowed && isRequestFollowerNotSent) {
             return httpResponseForbidden(response, "user is already unfollowed");
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(error);
+    }
+    return next();
+}
+
+const validationRemoveUserFromFollowers = async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let { username } = request.body;
+    try {
+        let idUserFollowed = await verifyToken(token).then(data => { return data.id });
+        let idUserFollower = await getIdByUsername(username).then(id => { return id });
+        if (idUserFollowed == idUserFollower) {
+            return httpResponseForbidden(response, "you can not delete yourself from your followers");
+        }
+        let isUserAlreadyFollowed = await isUserAlreadyFollowedByUser(idUserFollower, idUserFollowed);
+        if (!isUserAlreadyFollowed) {
+            return httpResponseForbidden(response, `${username} is not following you`);
         }
     } catch (error) {
         return httpResponseInternalServerError(error);
@@ -103,12 +127,10 @@ const validationBlockingUser = async (request, response, next) => {
 
 const validationUnblockingUser = async (request, response, next) => {
     const token = (request.headers.authorization).split(" ")[1];
-    let idUserBlocked;
-    let idUserBlocker;
     let { username } = request.body;
     try {
-        idUserBlocker = await verifyToken(token).then(data => { return data.id });
-        idUserBlocked = await getIdByUsername(username).then(id => { return id });
+        let idUserBlocker = await verifyToken(token).then(data => { return data.id });
+        let idUserBlocked = await getIdByUsername(username).then(id => { return id });
         if (idUserBlocked == idUserBlocker) {
             return httpResponseForbidden(response, "you can not unblock yourself");
         }
@@ -120,7 +142,30 @@ const validationUnblockingUser = async (request, response, next) => {
         return httpResponseInternalServerError(response, error);
     }
     return next();
-}
+};
+
+const validationAcceptOrDenyFollowerRequest = async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let { username } = request.body;
+    try {
+        let idFollower = await getIdByUsername(username).then(id => { return id });
+        let userDataId = await verifyToken(token).then(data => { return data.id });
+        if (userDataId == idFollower) {
+            return httpResponseForbidden(response, "you can not accept or deny follower request from yourself");
+        }
+        let isAlreadyAccepted = await isUserAlreadyFollowedByUser(idFollower, userDataId);
+        if (isAlreadyAccepted) {
+            return httpResponseForbidden(response, "user is already accepted");
+        }
+        let isRequestSent = await isRequestFollowerSent(idFollower, userDataId);
+        if (!isRequestSent) {
+            return httpResponseForbidden(response, `there is no follower request from ${username}`);
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return next();
+};
 
 const validationDoesUserBlockedActualUser = async (request, response, next) => {
     const token = (request.headers.authorization).split(" ")[1];
@@ -181,5 +226,6 @@ const validationDoesUserIsPrivateAndUnfollowedByActualUser = async (request, res
 module.exports = {
     validationFollowingUser, validationUnfollowingUser, validationBlockingUser,
     validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser,
-    validationDoesUserIsPrivateAndUnfollowedByActualUser
+    validationDoesUserIsPrivateAndUnfollowedByActualUser, validationAcceptOrDenyFollowerRequest,
+    validationRemoveUserFromFollowers
 }

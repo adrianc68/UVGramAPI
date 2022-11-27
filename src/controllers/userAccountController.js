@@ -2,10 +2,11 @@ const { sendEmailCodeVerification, sendEmailChangeURLConfirmation, sendEmailPass
 const { verifyToken, deleteAllSessionsByUserId } = require("../dataaccess/tokenDataAccess");
 const { generateURLChangeEmailConfirmation, doesURLVerificationAlreadyGenerated, removeURLVerification, generateURLUpdatePasswordConfirmation } = require("../dataaccess/urlRecoverDataAccess");
 const { deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode,
-    getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType, changePrivacyTypeUser } = require("../dataaccess/userDataAccess");
+    getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType, changePrivacyTypeUser, acceptAllFollowerRequestById, acceptFollowerRequestByUserId, getIdByUsername, denyFollowerRequestByUserId } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const createURL = require("../helpers/urlHelper");
+const { PrivacyType } = require("../models/enum/PrivacyType");
 const { UserRoleType } = require("../models/enum/UserRoleType");
 
 const addUser = async (request, response) => {
@@ -200,14 +201,47 @@ const changePrivacyType = async (request, response, next) => {
     try {
         let userDataId = await verifyToken(token).then(data => { return data.id });
         result = await changePrivacyTypeUser(userDataId, privacy);
+        if (privacy == PrivacyType.PUBLIC) {
+            let resultAcceptAllRequest = await acceptAllFollowerRequestById(userDataId);
+        }
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, result)
 };
 
+const acceptFollowerRequest = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    const { username } = request.body;
+    let result = false;
+    try {
+        let userDataId = await verifyToken(token).then(data => { return data.id });
+        let userFollowerId = await getIdByUsername(username);
+        result = await acceptFollowerRequestByUserId(userFollowerId, userDataId);
+    } catch (error) {
+        return httpResponseInternalServerError(error);
+    }
+    return httpResponseOk(response, result);
+};
+
+const denyFollowerRequest = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    const { username } = request.body;
+    let result = false;
+    try {
+        let userDataId = await verifyToken(token).then(data => { return data.id });
+        let userFollowerId = await getIdByUsername(username);
+        result = await denyFollowerRequestByUserId(userFollowerId, userDataId);
+    } catch (error) {
+        return httpResponseInternalServerError(error);
+    }
+    return httpResponseOk(response, result);
+};
+
+
 module.exports = {
     addUser, removeUserByUsername, createVerificationCode,
     getAllUsers, changePasswordOnLoggedUser, updateUser,
-    createURLVerification, changeUserRoleByEmailOrUsername, changePrivacyType
+    createURLVerification, changeUserRoleByEmailOrUsername,
+    changePrivacyType, acceptFollowerRequest, denyFollowerRequest
 }

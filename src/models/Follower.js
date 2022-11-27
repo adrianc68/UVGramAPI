@@ -1,6 +1,7 @@
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { DataTypes } = require("sequelize");
 const { User } = require("./User");
+const { FollowRequestStatusType } = require("./enum/FollowRequestStatusType");
 
 const Follower = sequelize.define("Follower", {
     id_user_follower: {
@@ -11,6 +12,9 @@ const Follower = sequelize.define("Follower", {
         type: DataTypes.BIGINT,
         allowNull: false,
     },
+    status: {
+        type: DataTypes.ENUM(FollowRequestStatusType.ACCEPTED, FollowRequestStatusType.PENDING)
+    }
 }, {
     timestamps: false,
     freezeTableName: true

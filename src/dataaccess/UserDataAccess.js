@@ -7,6 +7,7 @@ const { AccountVerification } = require("../models/AccountVerification");
 const { AdministratorUserRole } = require("../models/AdministratorUserRole");
 const { Block } = require("../models/Block");
 const { BusinessUserRole } = require("../models/BusinessUserRole");
+const { FollowRequestStatusType } = require("../models/enum/FollowRequestStatusType");
 const { UserRoleType } = require("../models/enum/UserRoleType");
 const { Follower } = require("../models/Follower");
 const { ModeratorUserRole } = require("../models/ModeratorUserRole");
@@ -364,7 +365,8 @@ const followUser = async (id_user_follower, id_user_followed) => {
     try {
         await Follower.create({
             id_user_follower,
-            id_user_followed
+            id_user_followed,
+            status: FollowRequestStatusType.ACCEPTED
         }, { transaction: t });
         await t.commit();
         isFollowed = true;
@@ -401,7 +403,31 @@ const unfollowUser = async (id_user_follower, id_user_followed) => {
 };
 
 /**
- * Delete a follower and following user
+ * Send a follow request to user (status will be pending).
+ * @param {*} id_user_follower the user who is following
+ * @param {*} id_user_followed the user that is followed.
+ * @returns true if request sent otherwise false.
+ */
+const sendRequestFollowToUser = async (id_user_follower, id_user_followed) => {
+    let isRequestSent = false;
+    const t = await sequelize.transaction();
+    try {
+        await Follower.create({
+            id_user_follower,
+            id_user_followed,
+            status: FollowRequestStatusType.PENDING
+        }, { transaction: t });
+        await t.commit();
+        isRequestSent = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isRequestSent;
+}
+
+/**
+ * Delete a follower and following user including follower request
  * @param {*} id_user_follower the user that is follower
  * @param {*} id_user_followed the user that is followed
  * @returns true if removed otherwise false
@@ -413,14 +439,15 @@ const deleteFollowerAndFollowing = async (id_user_follower, id_user_followed) =>
         await Follower.destroy({
             where: {
                 id_user_follower,
-                id_user_followed
+                id_user_followed,
+                [Op.or]: [{ status: FollowRequestStatusType.ACCEPTED }, { status: FollowRequestStatusType.PENDING }]
             }
         }, { transaction: t });
-
         await Follower.destroy({
             where: {
                 id_user_follower: id_user_followed,
-                id_user_followed: id_user_follower
+                id_user_followed: id_user_follower,
+                [Op.or]: [{ status: FollowRequestStatusType.ACCEPTED }, { status: FollowRequestStatusType.PENDING }]
             }
         }, { transaction: t });
         await t.commit();
@@ -431,6 +458,8 @@ const deleteFollowerAndFollowing = async (id_user_follower, id_user_followed) =>
     }
     return isRemovedFromFollowingAndFollowers;
 };
+
+
 
 /**
  * Check if user is already folllowing an user
@@ -444,7 +473,8 @@ const isUserFollowedByUser = async (id_user_follower, id_user_followed) => {
         let data = await Follower.findAll({
             where: {
                 id_user_follower,
-                id_user_followed
+                id_user_followed,
+                status: FollowRequestStatusType.ACCEPTED
             }
         });
         isFollowed = data.length != 0;
@@ -452,6 +482,29 @@ const isUserFollowedByUser = async (id_user_follower, id_user_followed) => {
         throw new Error(error);
     }
     return isFollowed;
+};
+
+/**
+ * Check if a follower request has been sent to user.
+ * @param {*} id_user_follower the user who sent the request
+ * @param {*} id_user_followed the user who received the request
+ * @returns true if request is sent otherwise false
+ */
+const isRequestFollowerSent = async (id_user_follower, id_user_followed) => {
+    let isRequestSent = false;
+    try {
+        let data = await Follower.findAll({
+            where: {
+                id_user_follower,
+                id_user_followed,
+                status: FollowRequestStatusType.PENDING
+            }
+        });
+        isRequestSent = data.length != 0;
+    } catch (error) {
+        throw new Error(error);
+    }
+    return isRequestSent;
 };
 
 /**
@@ -464,7 +517,8 @@ const getFollowedByUser = async (id) => {
     try {
         followedByUser = await Follower.findAll({
             where: {
-                id_user_follower: id
+                id_user_follower: id,
+                status: FollowRequestStatusType.ACCEPTED
             },
             attributes: ["followed.*"],
             include: [{
@@ -491,7 +545,8 @@ const getFollowersOfUser = async (id) => {
     try {
         followers = await Follower.findAll({
             where: {
-                id_user_followed: id
+                id_user_followed: id,
+                status: FollowRequestStatusType.ACCEPTED
             },
             attributes: ["follower.*"],
             include: [{
@@ -509,6 +564,105 @@ const getFollowersOfUser = async (id) => {
     }
     return followers;
 };
+
+/**
+ * Accept all follower request (pending) by user
+ * @param {*} id_user_followed the user who is accepting all request
+ * @returns true is all updated otherwise false.
+ */
+const acceptAllFollowerRequestById = async (id_user_followed) => {
+    let isUpdated = false;
+    const t = await sequelize.transaction();
+    try {
+        let result = await Follower.update({
+            status: FollowRequestStatusType.ACCEPTED
+        }, {
+            where: { id_user_followed, status: FollowRequestStatusType.PENDING },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isUpdated;
+};
+
+/**
+ * Get all pending follower request of user
+ * @param {*} id_user_followed the user who has many request.
+ * @returns [followerRequest] or empty array [];
+ */
+const getAllFollowerRequestByUserId = async (id_user_followed) => {
+    let followerRequest = [];
+    try {
+        followerRequest = await Follower.findAll({
+            where: { id_user_followed, status: FollowRequestStatusType.PENDING },
+            attributes: {
+                include: ["status", "follower.name", "follower.presentation", "follower.username"],
+                exclude: ["follower.id", "id_user_followed", "id_user_follower"]
+            },
+            include: [{
+                model: User,
+                as: "follower",
+                attributes: []
+            }],
+            raw: true,
+        });
+    } catch (error) {
+        throw error;
+    }
+    return followerRequest;
+}
+
+/**
+ * Accept follower request from user.
+ * @param {*} id_user_follower the user who is following to user.
+ * @param {*} id_user_followed the user who is being followed by user;
+ * @returns true is update otherwise false
+ */
+const acceptFollowerRequestByUserId = async (id_user_follower, id_user_followed) => {
+    let isUpdated = false;
+    const t = await sequelize.transaction();
+    try {
+        let result = await Follower.update({
+            status: FollowRequestStatusType.ACCEPTED
+        }, {
+            where: { id_user_follower, id_user_followed, status: FollowRequestStatusType.PENDING },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isUpdated;
+}
+
+/**
+ * Deny a follower request.
+ * @param {*} id_user_follower the user who is following to user
+ * @param {*} id_user_followed the user who is being follwoed by user.
+ * @returns true if removed otherwise false
+ */
+const denyFollowerRequestByUserId = async (id_user_follower, id_user_followed) => {
+    let isRemoved = false;
+    const t = await sequelize.transaction();
+    try {
+        let result = await Follower.destroy({
+            where: { id_user_follower, id_user_followed, status: FollowRequestStatusType.PENDING },
+            transaction: t
+        });
+        await t.commit();
+        isRemoved = result > 0;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isRemoved;
+}
 
 /**
  * Get user Profile
@@ -567,8 +721,9 @@ const unblockUser = async (id_user_blocker, id_user_blocked) => {
             where: {
                 id_user_blocker,
                 id_user_blocked
-            }
-        }, { transaction: t });
+            },
+            transaction: t
+        });
         await t.commit();
         isUnblocked = true;
     } catch (error) {
@@ -847,6 +1002,12 @@ const getActualPrivacyType = async (id_user) => {
     return privacyType;
 }
 
+/**
+ * Change privacy type of user
+ * @param {*} id_user the user to change privacy
+ * @param {*} privacyType the new privacy type
+ * @returns true if updated otherwise false
+ */
 const changePrivacyTypeUser = async (id_user, privacyType) => {
     let isUpdated = false;
     const t = await sequelize.transaction();
@@ -863,6 +1024,8 @@ const changePrivacyTypeUser = async (id_user, privacyType) => {
     return isUpdated;
 }
 
+
+
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
@@ -872,5 +1035,7 @@ module.exports = {
     getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser,
     changePassword, isOldPasswordValid, updateUserPersonalData, updateAdministratorData,
     updateModeratorData, updateBusinessData, updateUserEmail, changeUserRoleType,
-    deleteFollowerAndFollowing, changePrivacyTypeUser, getActualPrivacyType
+    deleteFollowerAndFollowing, changePrivacyTypeUser, getActualPrivacyType,
+    sendRequestFollowToUser, isRequestFollowerSent, acceptAllFollowerRequestById,
+    getAllFollowerRequestByUserId, acceptFollowerRequestByUserId, denyFollowerRequestByUserId
 }

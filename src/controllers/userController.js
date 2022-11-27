@@ -1,10 +1,10 @@
 const { deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments, getCommentsCountById } = require("../dataaccess/commentDataAccess");
 const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID } = require("../dataaccess/postDataAccess");
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
-    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, isUserBlockedByUser } = require("../dataaccess/userDataAccess");
+    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 const { verifyToken } = require("../helpers/token");
+const { PrivacyType } = require("../models/enum/PrivacyType");
 
 const followUser = async (request, response) => {
     const token = (request.headers.authorization).split(" ")[1];
@@ -13,12 +13,27 @@ const followUser = async (request, response) => {
     const idUserFollower = await verifyToken(token).then(data => { return data.id });
     let message;
     try {
-        message = await followUserUserDataAccess(idUserFollower, idUserFollowed);
+        userStateType = await getActualPrivacyType(idUserFollowed);
+        if (userStateType == PrivacyType.PRIVATE) {
+            let resultData = await sendRequestFollowToUser(idUserFollower, idUserFollowed);
+            if (resultData) {
+                message = `follower request sent to ${username}`
+            } else {
+                message = `can not send follower request to ${username}`
+            }
+        } else {
+            let resultData = await followUserUserDataAccess(idUserFollower, idUserFollowed);
+            if (resultData) {
+                message = `you are now following to ${username}`
+            } else {
+                message = `can not follow to ${username}`
+            }
+        }
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, `you are now following to ${username}`);
-}
+    return httpResponseOk(response, message);
+};
 
 const unfollowUser = async (request, response) => {
     const token = (request.headers.authorization).split(" ")[1];
@@ -32,7 +47,21 @@ const unfollowUser = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, `you have unfollowed to ${username}`);
-}
+};
+
+const deleteFollower = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let { username } = request.body;
+    const idUserFollower = await getIdByUsername(username).then(id => { return id });
+    const userDataId = await verifyToken(token).then(data => { return data.id });
+    let message;
+    try {
+        message = await unfollowUserUserDataAccess(idUserFollower, userDataId);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, `you have removed ${username} from your followers`);
+};
 
 const getFollowedByUser = async (request, response) => {
     let username = request.params.username;
@@ -44,7 +73,7 @@ const getFollowedByUser = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, message);
-}
+};
 
 const getFollowersOfUser = async (request, response) => {
     let username = request.params.username;
@@ -56,7 +85,7 @@ const getFollowersOfUser = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, message);
-}
+};
 
 const getProfileOfUser = async (request, response) => {
     let username = request.params.username;
@@ -83,7 +112,7 @@ const getProfileOfUser = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, user);
-}
+};
 
 const blockUser = async (request, response) => {
     const token = (request.headers.authorization).split(" ")[1];
@@ -100,7 +129,7 @@ const blockUser = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, `you have blocked to ${username}`);
-}
+};
 
 const unblockUser = async (request, response) => {
     const token = (request.headers.authorization).split(" ")[1];
@@ -114,10 +143,22 @@ const unblockUser = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, `you have unblocked to ${username}`);
-}
+};
+
+const getPendingFollowRequest = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let followersRequest = []
+    try {
+        const userDataId = await verifyToken(token).then(data => { return data.id });
+        followersRequest = await getAllFollowerRequestByUserId(userDataId);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, followersRequest);
+};
 
 module.exports = {
     followUser, unfollowUser, getFollowedByUser,
     getFollowersOfUser, getProfileOfUser, blockUser,
-    unblockUser
+    unblockUser, getPendingFollowRequest, deleteFollower
 }
