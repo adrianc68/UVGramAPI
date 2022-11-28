@@ -41,6 +41,18 @@ CREATE TYPE public."CategoryType" AS ENUM (
 ALTER TYPE public."CategoryType" OWNER TO dev;
 
 --
+-- Name: FollowRequestStatusType; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."FollowRequestStatusType" AS ENUM (
+    'ACEPTADO',
+    'PENDIENTE'
+);
+
+
+ALTER TYPE public."FollowRequestStatusType" OWNER TO dev;
+
+--
 -- Name: GenderType; Type: TYPE; Schema: public; Owner: dev
 --
 
@@ -119,6 +131,18 @@ CREATE TYPE public."enum_Business_category" AS ENUM (
 
 
 ALTER TYPE public."enum_Business_category" OWNER TO dev;
+
+--
+-- Name: enum_Follower_status; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_Follower_status" AS ENUM (
+    'ACEPTADO',
+    'PENDIENTE'
+);
+
+
+ALTER TYPE public."enum_Follower_status" OWNER TO dev;
 
 --
 -- Name: enum_Personal_gender; Type: TYPE; Schema: public; Owner: dev
@@ -359,7 +383,8 @@ ALTER TABLE public."Faculty" OWNER TO dev;
 
 CREATE TABLE public."Follower" (
     id_user_follower bigint NOT NULL,
-    id_user_followed bigint NOT NULL
+    id_user_followed bigint NOT NULL,
+    status public."FollowRequestStatusType" NOT NULL
 );
 
 
@@ -695,7 +720,7 @@ COPY public."Faculty" (faculty, id_region, id) FROM stdin;
 -- Data for Name: Follower; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Follower" (id_user_follower, id_user_followed) FROM stdin;
+COPY public."Follower" (id_user_follower, id_user_followed, status) FROM stdin;
 \.
 
 
@@ -807,42 +832,42 @@ COPY public."VerificationCode" (code, username, created_time) FROM stdin;
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.comment_id_seq', 14, true);
+SELECT pg_catalog.setval('public.comment_id_seq', 1, false);
 
 
 --
 -- Name: educationalprogram_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.educationalprogram_id_seq', 1, true);
+SELECT pg_catalog.setval('public.educationalprogram_id_seq', 1, false);
 
 
 --
 -- Name: faculty_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.faculty_id_seq', 1, true);
+SELECT pg_catalog.setval('public.faculty_id_seq', 1, false);
 
 
 --
 -- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 4, true);
+SELECT pg_catalog.setval('public.post_id_seq', 1, false);
 
 
 --
 -- Name: region_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.region_id_seq', 1, true);
+SELECT pg_catalog.setval('public.region_id_seq', 1, false);
 
 
 --
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 3, true);
+SELECT pg_catalog.setval('public.user_id_seq', 1, false);
 
 
 --

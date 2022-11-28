@@ -1,7 +1,7 @@
 const { deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments, getCommentsCountById } = require("../dataaccess/commentDataAccess");
 const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID } = require("../dataaccess/postDataAccess");
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
-    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId } = require("../dataaccess/userDataAccess");
+    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
 const { verifyToken } = require("../helpers/token");
 const { PrivacyType } = require("../models/enum/PrivacyType");
@@ -157,8 +157,21 @@ const getPendingFollowRequest = async (request, response) => {
     return httpResponseOk(response, followersRequest);
 };
 
+const getBlockedUsers = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let blocked = [];
+    try {
+        const userDataId = await verifyToken(token).then(data => { return data.id });
+        blocked = await getAllBlockedUsers(userDataId);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, blocked);
+}
+
 module.exports = {
     followUser, unfollowUser, getFollowedByUser,
     getFollowersOfUser, getProfileOfUser, blockUser,
-    unblockUser, getPendingFollowRequest, deleteFollower
+    unblockUser, getPendingFollowRequest, deleteFollower,
+    getBlockedUsers
 }

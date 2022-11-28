@@ -459,8 +459,6 @@ const deleteFollowerAndFollowing = async (id_user_follower, id_user_followed) =>
     return isRemovedFromFollowingAndFollowers;
 };
 
-
-
 /**
  * Check if user is already folllowing an user
  * @param {*} id_user_follower the user that is following an specified user
@@ -755,6 +753,29 @@ const isUserBlockedByUser = async (id_user_blocker, id_user_blocked) => {
     return isBlocked;
 };
 
+
+const getAllBlockedUsers = async (id_user_blocker) => {
+    let blocked = [];
+    try {
+        blocked = await Block.findAll({
+            where: { id_user_blocker },
+            attributes: {
+                include: ["blocked.name", "blocked.presentation", "blocked.username"],
+                exclude: ["id_user_blocker", "id_user_blocked"]
+            },
+            include: [{
+                model: User,
+                as: "blocked",
+                attributes: []
+            }],
+            raw: true
+        });
+    } catch (error) {
+        throw error;
+    }
+    return blocked;
+}
+
 /**
  * Update the user's email
  * @param {*} newEmail the new Email to update
@@ -1037,5 +1058,6 @@ module.exports = {
     updateModeratorData, updateBusinessData, updateUserEmail, changeUserRoleType,
     deleteFollowerAndFollowing, changePrivacyTypeUser, getActualPrivacyType,
     sendRequestFollowToUser, isRequestFollowerSent, acceptAllFollowerRequestById,
-    getAllFollowerRequestByUserId, acceptFollowerRequestByUserId, denyFollowerRequestByUserId
+    getAllFollowerRequestByUserId, acceptFollowerRequestByUserId, denyFollowerRequestByUserId,
+    getAllBlockedUsers
 }

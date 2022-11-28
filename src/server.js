@@ -16,6 +16,7 @@ const server = app.listen({
         await connetionToServers();
         logger.info(`NodeJS Express Server initialized on port ${app.get("port")}`);
         logger.info("*******************************************************");
+        await clearDatabase();
     }
 });
 
@@ -39,6 +40,5 @@ const clearDatabase = async () => {
 const clearMessagesMailHog = async () => {
     await axios.delete(`http://${process.env.TEST_NODEMAILER_HOST}:${process.env.TEST_NODEMAILER_PORT_APIV2}/api/v1/messages`);
 }
-
 
 module.exports = { server, delayServerConnections, clearMessagesMailHog, clearDatabase }
