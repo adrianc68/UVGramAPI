@@ -450,12 +450,23 @@ CREATE TABLE public."Post" (
     likes_allowed boolean DEFAULT true NOT NULL,
     id_user bigint NOT NULL,
     id bigint DEFAULT nextval(('"post_id_seq"'::text)::regclass) NOT NULL,
-    uuid character varying(11) NOT NULL,
-    filepath text NOT NULL
+    uuid character varying(320) NOT NULL
 );
 
 
 ALTER TABLE public."Post" OWNER TO dev;
+
+--
+-- Name: PostFile; Type: TABLE; Schema: public; Owner: dev
+--
+
+CREATE TABLE public."PostFile" (
+    filename character varying(128) NOT NULL,
+    id_post bigint NOT NULL
+);
+
+
+ALTER TABLE public."PostFile" OWNER TO dev;
 
 --
 -- Name: PostLike; Type: TABLE; Schema: public; Owner: dev
@@ -760,7 +771,15 @@ COPY public."Personal" (gender, id_user, id_career) FROM stdin;
 -- Data for Name: Post; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Post" (description, comments_allowed, likes_allowed, id_user, id, uuid, filepath) FROM stdin;
+COPY public."Post" (description, comments_allowed, likes_allowed, id_user, id, uuid) FROM stdin;
+\.
+
+
+--
+-- Data for Name: PostFile; Type: TABLE DATA; Schema: public; Owner: dev
+--
+
+COPY public."PostFile" (filename, id_post) FROM stdin;
 \.
 
 
@@ -1092,6 +1111,13 @@ CREATE INDEX "IXFK_Personal_UserRole" ON public."Personal" USING btree (id_user)
 
 
 --
+-- Name: IXFK_PostFile_Post; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_PostFile_Post" ON public."PostFile" USING btree (id_post);
+
+
+--
 -- Name: IXFK_PostLike_Post; Type: INDEX; Schema: public; Owner: dev
 --
 
@@ -1274,6 +1300,14 @@ ALTER TABLE ONLY public."Personal"
 
 ALTER TABLE ONLY public."Personal"
     ADD CONSTRAINT "FK_Personal_UserRole" FOREIGN KEY (id_user) REFERENCES public."UserRole"(id_user) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: PostFile FK_PostFile_Post; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."PostFile"
+    ADD CONSTRAINT "FK_PostFile_Post" FOREIGN KEY (id_post) REFERENCES public."Post"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
