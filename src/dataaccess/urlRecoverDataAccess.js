@@ -3,6 +3,7 @@ const { URLRecover } = require("../models/URLRecover");
 const { v4: uuidv4 } = require("uuid");
 const { ActionURLRecoverType } = require("../models/enum/ActionURLRecoverType");
 const { encryptAES, decryptAES } = require("../helpers/aes-encryption");
+const { logger } = require("../helpers/logger");
 
 const decryptURI = async (uri) => {
     let parameters;
@@ -194,8 +195,45 @@ const doesURLVerificationAlreadyGenerated = async (id_user) => {
     return isAlreadyGenerated;
 }
 
+const createResourceGetURL = async (id_user, id_post, filename, address) => {
+    let url;
+    try {
+        let fileExtension = filename.split(".")[1];
+        let contentType;
+        if (fileExtension === "mp4" || fileExtension === "quicktime") {
+            contentType = `video/${fileExtension}`;
+        } else {
+            contentType = `image/${fileExtension}`;
+        }
+        let payload = {
+            idUser: id_user,
+            filename: filename,
+            idPost: id_post,
+            contentType: contentType
+        }
+        url = `${address}/resources/post-files?data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+    } catch (error) {
+        throw error;
+    }
+    return url;
+}
+
+const getResourceGetURL = async (url) => {
+    let result;
+    try {
+        data = (url.data) ? JSON.parse(decryptAES(decodeURIComponent(url.data))) : null;
+        result = {
+            ...data
+        }
+    } catch (error) {
+        throw new Error(error);
+    }
+
+    return result;
+}
+
 module.exports = {
     generateURLChangeEmailConfirmation, getDataURLRecover, doesURLVerificationAlreadyGenerated,
     removeURLVerification, generateURLUpdatePasswordConfirmation, getDataURLByIdUser, getDataURLRecoverByUUID,
-    createRedirectionURLChangePassword
+    createRedirectionURLChangePassword, createResourceGetURL, getResourceGetURL
 }

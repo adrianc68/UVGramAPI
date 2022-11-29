@@ -664,31 +664,31 @@ describe('POST /user/unblock/', () => {
         });
 
         test('POST /user/unblock/ 403 Forbidden User can not block himself', async () => {
-            response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
+            response = await request(server).delete("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
             expect(response.body.message).toContain("you can not unblock yourself");
             expect(response.statusCode).toBe(403);
         });
 
         test('POST /user/unblock/ 403 Forbidden username is required', async () => {
-            response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "" });
+            response = await request(server).delete("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "" });
             expect(response.body.errors[0].msg).toContain("username is required")
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /user/unblock/ 403 Forbidden username is required', async () => {
-            response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": null });
+            response = await request(server).delete("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": null });
             expect(response.body.errors[0].msg).toContain("username is required")
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /user/unblock/ 403 Forbidden username does not exist', async () => {
-            response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram99" });
+            response = await request(server).delete("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram99" });
             expect(response.body.message).toContain("username does not exist")
             expect(response.statusCode).toBe(403);
         });
 
         test('POST /user/unblock/ 200 OK username is now blocked', async () => {
-            response = await request(server).post("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
+            response = await request(server).delete("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
             expect(response.body.message).toContain("you have unblocked to");
             expect(response.statusCode).toBe(200);
         });

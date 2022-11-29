@@ -3,9 +3,6 @@ const { DataTypes } = require("sequelize");
 const { User } = require("./User");
 
 const Post = sequelize.define("Post", {
-    filepath: {
-        type: DataTypes.STRING,
-    },
     description: {
         type: DataTypes.STRING
     },

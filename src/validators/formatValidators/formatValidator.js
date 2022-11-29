@@ -4,18 +4,41 @@ const { GenderType } = require('../../models/enum/GenderType');
 const { UserRoleType } = require('../../models/enum/UserRoleType');
 const { PrivacyType } = require('../../models/enum/PrivacyType');
 
-const multer = require('multer');
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
-
 const filesWhiteList = {
     'image/png': "10490000",
     'image/jpeg': "10490000",
     'image/jpg': "10490000",
     'image/webp': "10490000",
-    'video/mp4': "3600000000",
-    'video/quicktime': "3600000000"
+    'video/mp4': "1600000000",
+    'video/quicktime': "1600000000"
 }
+
+const validateFileData = [
+    check("file")
+        .custom((value, { req }) => {
+            let files = [].concat(req.files["file[]"]);
+            files.forEach(file => {
+                if (filesWhiteList[file.mimetype] == null) {
+                    throw new Error(`${file.name} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+                }
+                return true;
+            });
+            return true
+        })
+        .withMessage(`file must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+        .bail()
+        .custom((value, { req }) => {
+            let files = [].concat(req.files["file[]"]);
+            files.forEach(file => {
+                if (file.size > filesWhiteList[file.mimetype]) {
+                    throw new Error(`size of file ${file.name} can not be more than ${filesWhiteList[file.mimetype]} bytes`);
+                }
+                return true;
+            })
+            return true;
+        })
+        .bail()
+];
 
 const validateEmailData = [
     check("email")
@@ -329,25 +352,6 @@ const validateNewRoleTypeData = [
         .withMessage(`newRoleType must be one this: ${Object.values(UserRoleType)}`)
 ];
 
-const validatePostFileData = [
-    upload.single("file"),
-    check("file")
-        .custom((value, { req }) => {
-            if (filesWhiteList[req.file.mimetype] == null) {
-                return false;
-            }
-            return req.file.mimetype
-        })
-        .withMessage(`file must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
-        .bail()
-        .custom((value, { req }) => {
-            if (req.file.size > filesWhiteList[req.file.mimetype]) {
-                throw new Error(`file size can not be more than ${filesWhiteList[req.file.mimetype]} bytes`);
-            }
-            return req.file.size
-        })
-];
-
 const validatePostDescriptionData = [
     check("description")
         .optional({ nullable: true })
@@ -442,7 +446,7 @@ module.exports = {
     validateOptionalAccessTokenParameterData, validateOldPasswordData, validateEmailAsOptional,
     validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode,
     validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName,
-    validateUUIDTemporalToken, validateNewRoleTypeData, validatePostFileData,
+    validateUUIDTemporalToken, validateNewRoleTypeData, validateFileData,
     validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed,
     validatePostUUID, validateCommentUUID, validateCommentData, validateUserPrivacyData
 }

@@ -1,13 +1,17 @@
 const { getAllCommentsByIdPost, getCommentsCountById } = require("../dataaccess/commentDataAccess");
-const { getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById } = require("../dataaccess/postDataAccess");
+const { saveFiles } = require("../dataaccess/fileServerDataAccess");
+const { getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById, getPostFilenamesById } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { getAccountLoginData, isUserFollowedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
+const createURL = require("../helpers/urlHelper");
 
 const getPostsByUsername = async (request, response) => {
     const username = request.params.username;
     let posts = [];
     try {
+        let addressServer = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
         let userData = await getAccountLoginData(username);
         posts = await getAllPostFromUserId(userData.id);
         await Promise.all(posts.map(async function (post) {
@@ -17,6 +21,9 @@ const getPostsByUsername = async (request, response) => {
                 return;
             }
             post.comments = await getCommentsCountById(postId);
+            post.files = await getPostFilenamesById(post.id_user, post.id, addressServer);
+            delete post["id_user"];
+            delete post["id"];
         }));
     } catch (error) {
         return httpResponseInternalServerError(response, error);
@@ -32,10 +39,13 @@ const getPostDataByUUID = async (request, response) => {
         let postID = await getIdPostByPostUUID(uuid);
         let commentData = await getAllCommentsByIdPost(postID);
         let countLikes = await getPostLikesById(postID);
+        let addressServer = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
+        let files = await getPostFilenamesById(postData.id_user, postID, addressServer);
         postDetails = {
             post: postData,
             likes: countLikes,
-            comments: commentData
+            comments: commentData,
+            files: files
         }
     } catch (error) {
         return httpResponseInternalServerError(response, error);
@@ -45,16 +55,17 @@ const getPostDataByUUID = async (request, response) => {
 
 const createPost = async (request, response) => {
     const { description, commentsAllowed, likesAllowed } = request.body;
-    const file = request.file;
+    const files = [].concat(request.files["file[]"]);
     const token = (request.headers.authorization).split(" ")[1];
     let isCreated = false;
     let postInfo;
     try {
         const userDataId = await verifyToken(token).then(data => { return data.id });
-        let postDataCreated = await createPostByUserId(userDataId, description, commentsAllowed, likesAllowed, file);
+        let postDataCreated = await createPostByUserId(userDataId, description, commentsAllowed, likesAllowed, files);
         if (postDataCreated != null) {
             postInfo = postDataCreated;
-            isCreated = true;
+            resultFiles = postDataCreated.files;
+            await saveFiles(resultFiles, userDataId, postDataCreated.id);
         }
     } catch (error) {
         return httpResponseInternalServerError(response, error);

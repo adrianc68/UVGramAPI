@@ -1,10 +1,12 @@
 const { Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { generateRandomUUID } = require("../helpers/generateCode");
+const { generateRandomUUID, generateRandomCode } = require("../helpers/generateCode");
 const { logger } = require("../helpers/logger");
 const { Post } = require("../models/Post");
+const { PostFile } = require("../models/PostFile");
 const { PostLike } = require("../models/PostLike");
 const { User } = require("../models/User");
+const { createResourceGetURL } = require("./urlRecoverDataAccess");
 
 /**
  * Get all posts created by user id
@@ -17,14 +19,17 @@ const getAllPostFromUserId = async (id_user) => {
         posts = await Post.findAll({
             where: { id_user },
             attributes: {
-                include: [[Sequelize.fn('COUNT', Sequelize.col("id_post")), 'likes']],
-                exclude: ["id", "id_user"]
+                include: [[Sequelize.fn('COUNT', Sequelize.col("PostLikes.id_post")), 'likes'], "postfile.filename"],
             },
             include: [{
                 model: PostLike,
                 attributes: []
+            }, {
+                model: PostFile,
+                as: "postfile",
+                attributes: []
             }],
-            group: ["filepath", "description", "comments_allowed", "likes_allowed", "uuid", "Post.id"],
+            group: ["description", "comments_allowed", "likes_allowed", "uuid", "Post.id", "filename"],
             raw: true,
         });
     } catch (error) {
@@ -34,7 +39,7 @@ const getAllPostFromUserId = async (id_user) => {
 };
 
 /**
- * Get only Post data model filepath, description, comments_allowed, likes_allowed, uuid and id
+ * Get only Post data model description, comments_allowed, likes_allowed, uuid and id
  * @param {*} uuid the post identifier
  * @returns post or undefined.
  */
@@ -43,7 +48,7 @@ const getPostByUUID = async (uuid) => {
     try {
         post = await Post.findOne({
             where: { uuid },
-            attributes: ["filepath", "description", "comments_allowed", "likes_allowed", "uuid", "id_user"],
+            attributes: ["description", "comments_allowed", "likes_allowed", "uuid", "id_user"],
             raw: true
         });
     } catch (error) {
@@ -51,6 +56,33 @@ const getPostByUUID = async (uuid) => {
     }
     return post;
 };
+
+/**
+ * Get all filenames (files) from post 
+ * @param {*} id_post the post id
+ * @returns [filenames] or empty array []
+ */
+const getPostFilenamesById = async (id_user, id_post, address) => {
+    let filename;
+    try {
+        filename = await PostFile.findAll({
+            where: { id_post },
+            attributes: ["filename"],
+            raw: true,
+        });
+
+        filename.forEach(name => {
+            createResourceGetURL(id_user, id_post, name.filename, address).then(result => {
+                name.url = result;
+                delete name.filename;
+            })
+        });
+
+    } catch (error) {
+        throw error;
+    }
+    return filename;
+}
 
 /**
  * Get all post data by id
@@ -101,27 +133,38 @@ const getIdPostByPostUUID = async (uuid) => {
  * @param {*} file the file which is saving
  * @returns postData or null
  */
-const createPostByUserId = async (id_user, description, comments_allowed, likes_allowed, file) => {
-    let postData = null;
-    const uuid = generateRandomUUID(11);
-    let fileType = file.mimetype.replace(/(image\/|video\/)/g, '');
-    let filepath = `/media/users/${id_user}/${uuid}.${fileType}`;
+const createPostByUserId = async (id_user, description, comments_allowed, likes_allowed, files) => {
+    let result = null;
+    const uuid = generateRandomCode(11);
     const t = await sequelize.transaction();
     try {
-        postData = await Post.create({
-            filepath,
+        let postData = await Post.create({
             description,
             comments_allowed,
             likes_allowed,
             id_user,
             uuid
-        }, { transaction: t })
+        }, { transaction: t });
+
+        await Promise.all(files.map(async function (file) {
+            let fileType = file.mimetype.replace(/(image\/|video\/)/g, '');
+            let filename = `${generateRandomCode(12)}.${fileType}`;
+            let postFile = await PostFile.create({
+                filename,
+                id_post: postData.id
+            }, { transaction: t });
+            file.filename = filename;
+        }));
+        result = {
+            ...postData.dataValues,
+            files
+        }
         await t.commit();
     } catch (error) {
         await t.rollback();
         throw error;
     }
-    return postData;
+    return result;
 };
 
 /**
@@ -272,6 +315,6 @@ module.exports = {
     getAllPostFromUserId, createPostByUserId, getPostByUUID,
     getIdPostByPostUUID, likePostByIds, isPostLikedByUser,
     dislikePostByIds, getPostLikesById, getUsersWhoLikePostById,
-    getPostById, deleteAllLikesOfUserFromAllPost
+    getPostById, deleteAllLikesOfUserFromAllPost, getPostFilenamesById
 
 }

@@ -91,21 +91,18 @@ describe('On URL and code generation Test', () => {
                 presentation: "Welcome to UVGram.",
                 username: "uvgram",
                 phoneNumber: "2212345678",
-                email: "uvgram99@uvgram.com",
+                email: "uvgram999@uvgram.com",
                 birthdate: "2000-01-01",
                 idCareer: 1,
                 gender: GenderType.FEMININE
             });
-            let url = await getURLConfirmationFromEmail("uvgram99@uvgram.com");
+            let url = await getURLConfirmationFromEmail("uvgram999@uvgram.com");
             url = url.substring(url.search("/accounts"));
             response = await request(server).get(url);
-            expect(response.body.isUpdated).toBe(true);
+            expect(response.body.message.isUpdated).toBe(true);
             expect(response.statusCode).toBe(200);
         });
     });
-
-
-
 });
 
 describe('POST /accounts/create/verification', () => {
