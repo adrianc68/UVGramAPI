@@ -1,6 +1,7 @@
 const { connectToFtpServer } = require("../database/connetionFtpServer");
 const { logger } = require("../helpers/logger");
 const fs = require('fs');
+const { resolve } = require("path");
 
 const saveFiles = async (files, idUser, idPost) => {
     const fileServerClient = await connectToFtpServer();
@@ -23,11 +24,12 @@ const saveFiles = async (files, idUser, idPost) => {
     });
 }
 
-const getFiles = async (idUser, idPost, filename, writeStream) => {
+const getFiles = async (idUser, idPost, filename, writeStream, contentType) => {
     const fileServerClient = await connectToFtpServer();
     try {
         await fileServerClient.ensureDir(`/media/users/${idUser}/${idPost}`);
-        await fileServerClient.downloadTo(writeStream, `/media/users/${idUser}/${idPost}/${filename}`);
+        writeStream.header({ 'Content-Type': contentType });
+        await fileServerClient.downloadTo(writeStream, `/media/users/${idUser}/${idPost}/${filename}`)
     } catch (error) {
         throw error;
     }

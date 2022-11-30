@@ -15,7 +15,6 @@ const server = app.listen({
     } else {
         logger.info("************** starting PROD environment **************");
         await connetionToServers();
-        await clearDatabase();
         logger.info(`NodeJS Express Server initialized on port ${app.get("port")}`);
         logger.info("*******************************************************");
     }

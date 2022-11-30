@@ -11,8 +11,7 @@ router.get("/resources/post-files?:data",
         try {
             await getResourceGetURL(url).then(result => {
                 if(result) {
-                    response.header({ 'Content-Type': result.contentType });
-                    getFiles(result.idUser, result.idPost, result.filename, response);
+                    getFiles(result.idUser, result.idPost, result.filename, response, result.contentType);
                 }
             })
         } catch (error) {
