@@ -2,7 +2,7 @@ version: '3.8'
 services:
   uvgram:
     container_name: "uvgram"
-    image: "uvgram_api"
+    image: "uvgram"
     restart: always
     build:
       context: .
@@ -67,9 +67,8 @@ services:
     container_name: "uvgram_mailhog"
     image: mailhog:latest
     restart: always
+
     networks: 
-    ports:
-      - 8025:8025
       prod_network:
         aliases:
           - mail_prod_host
