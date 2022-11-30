@@ -2,6 +2,7 @@ const { mailer } = require("../database/connetionEmail");
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const { logger } = require("../helpers/logger");
 const { TEST_NODEMAILER_HOST, TEST_NODEMAILER_PORT_APIV2 } = process.env;
 
 /**
@@ -13,7 +14,7 @@ const { TEST_NODEMAILER_HOST, TEST_NODEMAILER_PORT_APIV2 } = process.env;
 const sendEmailCodeVerification = async (codeVerification, to) => {
     let isSend = false;
     try {
-        let html = (fs.readFileSync(path.join(__dirname, "../resources/html/codeRecuperation.html"), 'utf8'));
+        let html = (fs.readFileSync(path.join(__dirname, "../../resources/html/codeRecuperation.html"), 'utf8'));
         html = html.replace("{code}", codeVerification);
         html = html.replace("{email}", to);
         let result = await mailer.sendMail({
@@ -38,7 +39,7 @@ const sendEmailCodeVerification = async (codeVerification, to) => {
 const sendEmailChangeURLConfirmation = async (url, to) => {
     let isSend = false;
     try {
-        let html = (fs.readFileSync(path.join(__dirname, "../resources/html/changeConfirmationURL.html"), 'utf8'));
+        let html = (fs.readFileSync(path.join(__dirname, "../../resources/html/changeConfirmationURL.html"), 'utf8'));
         html = html.replace("{url}", url);
         html = html.replace("{email}", to);
         let result = await mailer.sendMail({
@@ -63,7 +64,7 @@ const sendEmailChangeURLConfirmation = async (url, to) => {
 const sendEmailPasswordURLConfirmation = async (url, to) => {
     let isSend = false;
     try {
-        let html = (fs.readFileSync(path.join(__dirname, "../resources/html/updatePasswordURL.html"), 'utf8'));
+        let html = (fs.readFileSync(path.join(__dirname, "../../resources/html/updatePasswordURL.html"), 'utf8'));
         html = html.replace("{url}", url);
         html = html.replace("{email}", to);
         let result = await mailer.sendMail({

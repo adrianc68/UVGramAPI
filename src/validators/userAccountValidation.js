@@ -1,4 +1,4 @@
-const { isEducationalProgramRegistered } = require("../dataaccess/EducationalProgramDataAccess");
+const { isEducationalProgramRegistered } = require("../dataaccess/educationalProgramDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isEmailRegistered, isUsernameRegistered, isVerificationCodeGenerated, doesVerificationCodeMatches,
     isOldPasswordValid, getAccountLoginData, getAccountLoginDataById, changePrivacyTypeUser, getActualPrivacyType } = require("../dataaccess/userDataAccess");

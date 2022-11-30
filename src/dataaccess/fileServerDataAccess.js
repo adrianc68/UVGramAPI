@@ -1,7 +1,5 @@
 const { connectToFtpServer } = require("../database/connetionFtpServer");
-const { logger } = require("../helpers/logger");
 const fs = require('fs');
-const { resolve } = require("path");
 
 const saveFiles = async (files, idUser, idPost) => {
     const fileServerClient = await connectToFtpServer();
