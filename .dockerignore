@@ -11,3 +11,7 @@ docker-compose.yml
 services.tar
 .git
 .gitignore
+/prod/node/.env
+/prod/database/data
+/prod/authentication/data
+/prod/storage/files
