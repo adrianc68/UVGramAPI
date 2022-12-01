@@ -18,7 +18,7 @@ const createSequelizeClient = () => {
         dialect: 'postgres',
         logging: false
     });
-}
+};
 
 const sequelize = createSequelizeClient();
 

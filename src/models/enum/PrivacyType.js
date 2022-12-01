@@ -1,6 +1,6 @@
 const PrivacyType = {
     PUBLIC: "PUBLICO",
-    PRIVATE: "PRIVATE"
+    PRIVATE: "PRIVADO"
 };
 
 module.exports = { PrivacyType }

@@ -1,9 +1,9 @@
 const router = require('express').Router();
-const { createTokens, refreshTokens, logOutToken, sayHello, checkAuthRole } = require('../controllers/authenticationController');
-const { checkAuthRoleMiddleware } = require('../middleware/authentication');
+const { createTokens, refreshTokens, logoutSession, sayHello, checkRolesAuth } = require('../controllers/authenticationController');
+const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
-const { validationLoginData, validationRefreshTokenData, validationLogoutTokensData } = require('../validators/authenticationValidation');
-const { formatValidationLogin, formatValidationAuthorizationToken, formatValidationRefreshTokenAsParameter, formatValidationOptionalAccessToken } = require('../validators/formatValidators/authenticationFormatValidator');
+const { validationLoginData, validationRefreshTokenDataAsAuthorization } = require('../validators/authenticationValidation');
+const { formatValidationLogin, formatValidationAuthorizationToken, formatValidationOptionalAccessToken } = require('../validators/formatValidators/authenticationFormatValidator');
 
 router.post("/authentication/login",
     formatValidationLogin,
@@ -14,19 +14,17 @@ router.post("/authentication/login",
 router.post("/authentication/refresh",
     formatValidationAuthorizationToken,
     formatValidationOptionalAccessToken,
-    validationRefreshTokenData,
+    validationRefreshTokenDataAsAuthorization,
     refreshTokens
 );
 
 router.post("/authentication/logout",
-    formatValidationAuthorizationToken,
-    formatValidationRefreshTokenAsParameter,
-    validationLogoutTokensData,
-    logOutToken
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.PERSONAL]),
+    logoutSession
 );
 
 router.post("/authentication/testing",
-    checkAuthRoleMiddleware([UserRoleType.ADMINISTRATOR]),
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.PERSONAL]),
     sayHello,
 );
 

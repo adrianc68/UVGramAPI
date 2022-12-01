@@ -29,4 +29,5 @@ function encodeStringSHA256(lines) {
     return encondeSHA256(lines);
 };
 
+
 module.exports = { encondePassword, encodeStringSHA256, encondeSHA512 }

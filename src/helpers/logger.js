@@ -1,5 +1,5 @@
 const winston = require('winston');
-const { combine, timestamp, colorize, align, printf, errors, prettyPrint } = winston.format;
+const { combine, timestamp, colorize, printf, errors, prettyPrint } = winston.format;
 
 const consoleFormat = printf((info) => `[${info.timestamp}] ${info.level}: ${info.message}` + (info.stack === undefined ? "" : `\n${info.stack}`));
 const logLevels = {

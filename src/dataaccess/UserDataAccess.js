@@ -1,15 +1,22 @@
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { encondePassword, encodeStringSHA256, encondeSHA512 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
+const { AdministratorUserRole } = require("../models/AdministratorUserRole");
+const { Block } = require("../models/Block");
+const { BusinessUserRole } = require("../models/BusinessUserRole");
+const { FollowRequestStatusType } = require("../models/enum/FollowRequestStatusType");
+const { UserRoleType } = require("../models/enum/UserRoleType");
+const { Follower } = require("../models/Follower");
+const { ModeratorUserRole } = require("../models/ModeratorUserRole");
 const { PersonalUserRole } = require("../models/PersonalUserRole");
-const { Session } = require("../models/Session");
 const { User } = require("../models/User");
 const { UserConfiguration } = require("../models/UserConfiguration");
 const { UserRole } = require("../models/UserRole");
 const { VerificationCode } = require("../models/VerificationCode");
+
 /**
  * Get user,account data from database using email or username
  * @param {*} emailOrUsername email or username.
@@ -20,17 +27,19 @@ const getAccountLoginData = async (emailOrUsername) => {
         where: {
             [Op.or]: [{ username: emailOrUsername }, { '$Account.email$': emailOrUsername }]
         },
-        attributes: ["id", "username"],
+        attributes: ["id", "username", "Account.password", "Account.email", "UserRole.role", "Account.AccountVerification.account_status"],
         include: [{
             model: Account,
-            attributes: ["password"],
+            attributes: [],
             include: [{
                 model: AccountVerification,
-                attributes: ["account_status"]
+                as: "AccountVerification",
+                attributes: []
             }]
         }, {
             model: UserRole,
-            attributes: ["role"]
+            as: "UserRole",
+            attributes: []
         }],
         plain: true,
         raw: true
@@ -41,20 +50,22 @@ const getAccountLoginData = async (emailOrUsername) => {
 /**
  * Get user, account data from database using id
  * @param {*} id the user's id.
- * @returns undefined or the user data retrieved from database.
+ * @returns User including Account and UserRole
  */
 const getAccountLoginDataById = async (id) => {
     const user = await User.findAll({
         where: {
             id
         },
-        attributes: ["id", "username"],
+        attributes: ["id", "username", "Account.password", "Account.email", "UserRole.role"],
         include: [{
             model: Account,
-            attributes: ["password"]
+            as: "Account",
+            attributes: []
         }, {
             model: UserRole,
-            attributes: ["role"]
+            as: "UserRole",
+            attributes: []
         }],
         plain: true,
         raw: true
@@ -103,7 +114,7 @@ const deleteUserByUsername = async (username) => {
             where: {
                 username
             }
-        }).then((rowDeleted) => {
+        }, { transaction: t }).then((rowDeleted) => {
             message = rowDeleted + " entity(s) was removed";
         });
         await t.commit();
@@ -229,18 +240,26 @@ const removeVerificationCode = async (username) => {
  * @returns id of user
  */
 const getIdByUsername = async (username) => {
-    let id = await User.findAll({
-        where: {
-            username
-        },
-        attributes: ["id"],
-        raw: true,
-        plain: true
-    }).then(data => {
-        return data.id;
-    });
+    let id;
+    try {
+        id = await User.findAll({
+            where: {
+                username
+            },
+            attributes: ["id"],
+            raw: true,
+            plain: true
+        }).then(data => {
+            if (data) {
+                return data.id;
+            }
+            return null;
+        });
+    } catch (error) {
+        throw new Error(error);
+    }
     return id;
-}
+};
 
 /**
  * Check if verification code provided matches with database verification code.
@@ -261,47 +280,61 @@ const doesVerificationCodeMatches = async (username, verificationCode) => {
 };
 
 /**
- * Save session including a token in database
- * @param {*} session session that must include id_user, token and device
- * @returns true if it was saved otherwise false
+ * Change user password.
+ * @param {*} emailOrUsername the email of user.
+ * @param {*} password the new password to be changed.
+ * @issue #6977 Model update not return affectedRows
+ * @returns true if it was update otherwise false.
  */
-const saveSessionToken = async (session) => {
-    let isSaved = false;
+const changePassword = async (emailOrUsername, password) => {
+    let isChanged = false;
     const t = await sequelize.transaction();
     try {
-        await Session.create({
-            ...session
-        }, { transaction: t });
+        let result = await Account.findOne({
+            where: {
+                [Op.or]: [{ email: emailOrUsername }, { '$User.username$': emailOrUsername }]
+            },
+            include: [{
+                model: User,
+                as: "User",
+            }],
+        }).then(async user => {
+            if (user) {
+                let data = await user.update({
+                    password: encondePassword(password)
+                }, { transaction: t });
+                isChanged = true;
+            }
+        });
         await t.commit();
-        isSaved = true;
     } catch (error) {
         await t.rollback();
         throw new Error(error);
     }
-    return isSaved;
-};
+    return isChanged;
+}
 
 /**
- * Remove session by token in database.
- * @param {*} token the session to be removed.
- * @returns true if it was removed otherwise false.
+ * Check if passworld (as oldpassword) is set into Account's user
+ * @param {*} oldPassword the actual password of user
+ * @param {*} email the email of user to check password
+ * @returns true if it's equal to, otherwise false
  */
-const removeSessionToken = async (token) => {
-    let isRemoved = false;
-    const t = await sequelize.transaction();
+const isOldPasswordValid = async (oldPassword, email) => {
+    let isRegistered = false;
     try {
-        await Session.destroy({
+        let result = await Account.findOne({
             where: {
-                token
-            }
-        }, { transaction: t });
-        await t.commit();
-        isRemoved = true;
+                password: encondePassword(oldPassword),
+                email
+            },
+            raw: true,
+        });
+        isRegistered = (result != null);
     } catch (error) {
-        await t.rollback();
         throw new Error(error);
     }
-    return isRemoved;
+    return isRegistered;
 };
 
 /**
@@ -320,10 +353,711 @@ const getAllUsers = async () => {
     return usersRegistered;
 };
 
+/**
+ * Add a follower to a followed user.
+ * @param {*} id_user_follower user that is following to an specific user
+ * @param {*} id_user_followed the user that is followed.
+ * @returns true if user can follow otherwise false.
+ */
+const followUser = async (id_user_follower, id_user_followed) => {
+    let isFollowed = false;
+    const t = await sequelize.transaction();
+    try {
+        await Follower.create({
+            id_user_follower,
+            id_user_followed,
+            status: FollowRequestStatusType.ACCEPTED
+        }, { transaction: t });
+        await t.commit();
+        isFollowed = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isFollowed;
+};
+
+/**
+ * Remove a follower from a followed user.
+ * @param {*} id_user_follower the user that is following a specified user.
+ * @param {*} id_user_followed the followed user.
+ * @returns 
+ */
+const unfollowUser = async (id_user_follower, id_user_followed) => {
+    let isUnfollowed = false;
+    const t = await sequelize.transaction();
+    try {
+        await Follower.destroy({
+            where: {
+                id_user_follower,
+                id_user_followed
+            }
+        }, { transaction: t });
+        await t.commit();
+        isUnfollowed = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUnfollowed;
+};
+
+/**
+ * Send a follow request to user (status will be pending).
+ * @param {*} id_user_follower the user who is following
+ * @param {*} id_user_followed the user that is followed.
+ * @returns true if request sent otherwise false.
+ */
+const sendRequestFollowToUser = async (id_user_follower, id_user_followed) => {
+    let isRequestSent = false;
+    const t = await sequelize.transaction();
+    try {
+        await Follower.create({
+            id_user_follower,
+            id_user_followed,
+            status: FollowRequestStatusType.PENDING
+        }, { transaction: t });
+        await t.commit();
+        isRequestSent = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isRequestSent;
+}
+
+/**
+ * Delete a follower and following user including follower request
+ * @param {*} id_user_follower the user that is follower
+ * @param {*} id_user_followed the user that is followed
+ * @returns true if removed otherwise false
+ */
+const deleteFollowerAndFollowing = async (id_user_follower, id_user_followed) => {
+    let isRemovedFromFollowingAndFollowers = false;
+    const t = await sequelize.transaction();
+    try {
+        await Follower.destroy({
+            where: {
+                id_user_follower,
+                id_user_followed,
+                [Op.or]: [{ status: FollowRequestStatusType.ACCEPTED }, { status: FollowRequestStatusType.PENDING }]
+            }
+        }, { transaction: t });
+        await Follower.destroy({
+            where: {
+                id_user_follower: id_user_followed,
+                id_user_followed: id_user_follower,
+                [Op.or]: [{ status: FollowRequestStatusType.ACCEPTED }, { status: FollowRequestStatusType.PENDING }]
+            }
+        }, { transaction: t });
+        await t.commit();
+        isRemovedFromFollowingAndFollowers = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isRemovedFromFollowingAndFollowers;
+};
+
+/**
+ * Check if user is already folllowing an user
+ * @param {*} id_user_follower the user that is following an specified user
+ * @param {*} id_user_followed the user that is followed.
+ * @returns true if is already following otherwise false.
+ */
+const isUserFollowedByUser = async (id_user_follower, id_user_followed) => {
+    let isFollowed = false;
+    try {
+        let data = await Follower.findAll({
+            where: {
+                id_user_follower,
+                id_user_followed,
+                status: FollowRequestStatusType.ACCEPTED
+            }
+        });
+        isFollowed = data.length != 0;
+    } catch (error) {
+        throw new Error(error);
+    }
+    return isFollowed;
+};
+
+/**
+ * Check if a follower request has been sent to user.
+ * @param {*} id_user_follower the user who sent the request
+ * @param {*} id_user_followed the user who received the request
+ * @returns true if request is sent otherwise false
+ */
+const isRequestFollowerSent = async (id_user_follower, id_user_followed) => {
+    let isRequestSent = false;
+    try {
+        let data = await Follower.findAll({
+            where: {
+                id_user_follower,
+                id_user_followed,
+                status: FollowRequestStatusType.PENDING
+            }
+        });
+        isRequestSent = data.length != 0;
+    } catch (error) {
+        throw new Error(error);
+    }
+    return isRequestSent;
+};
+
+/**
+ * Get all followed users by User
+ * @param {*} id the user that is following the those users
+ * @returns array with users that contain username and name
+ */
+const getFollowedByUser = async (id) => {
+    let followedByUser = [];
+    try {
+        followedByUser = await Follower.findAll({
+            where: {
+                id_user_follower: id,
+                status: FollowRequestStatusType.ACCEPTED
+            },
+            attributes: ["followed.*"],
+            include: [{
+                model: User,
+                as: "followed",
+                attributes: []
+            }],
+            nest: true,
+            raw: true
+        })
+    } catch (error) {
+        throw new Error(error);
+    }
+    return followedByUser;
+};
+
+/**
+ * Get all followers of user
+ * @param {*} id the user to get the followers
+ * @returns array with users that contain username and name
+ */
+const getFollowersOfUser = async (id) => {
+    let followers = [];
+    try {
+        followers = await Follower.findAll({
+            where: {
+                id_user_followed: id,
+                status: FollowRequestStatusType.ACCEPTED
+            },
+            attributes: ["follower.*"],
+            include: [{
+                model: User,
+                as: "follower",
+                attributes: []
+            }],
+            nest: true,
+            raw: true
+        }).then(users => {
+            return users;
+        });
+    } catch (error) {
+        throw new Error(error);
+    }
+    return followers;
+};
+
+/**
+ * Accept all follower request (pending) by user
+ * @param {*} id_user_followed the user who is accepting all request
+ * @returns true is all updated otherwise false.
+ */
+const acceptAllFollowerRequestById = async (id_user_followed) => {
+    let isUpdated = false;
+    const t = await sequelize.transaction();
+    try {
+        let result = await Follower.update({
+            status: FollowRequestStatusType.ACCEPTED
+        }, {
+            where: { id_user_followed, status: FollowRequestStatusType.PENDING },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isUpdated;
+};
+
+/**
+ * Get all pending follower request of user
+ * @param {*} id_user_followed the user who has many request.
+ * @returns [followerRequest] or empty array [];
+ */
+const getAllFollowerRequestByUserId = async (id_user_followed) => {
+    let followerRequest = [];
+    try {
+        followerRequest = await Follower.findAll({
+            where: { id_user_followed, status: FollowRequestStatusType.PENDING },
+            attributes: {
+                include: ["status", "follower.name", "follower.presentation", "follower.username"],
+                exclude: ["follower.id", "id_user_followed", "id_user_follower"]
+            },
+            include: [{
+                model: User,
+                as: "follower",
+                attributes: []
+            }],
+            raw: true,
+        });
+    } catch (error) {
+        throw error;
+    }
+    return followerRequest;
+}
+
+/**
+ * Accept follower request from user.
+ * @param {*} id_user_follower the user who is following to user.
+ * @param {*} id_user_followed the user who is being followed by user;
+ * @returns true is update otherwise false
+ */
+const acceptFollowerRequestByUserId = async (id_user_follower, id_user_followed) => {
+    let isUpdated = false;
+    const t = await sequelize.transaction();
+    try {
+        let result = await Follower.update({
+            status: FollowRequestStatusType.ACCEPTED
+        }, {
+            where: { id_user_follower, id_user_followed, status: FollowRequestStatusType.PENDING },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isUpdated;
+}
+
+/**
+ * Deny a follower request.
+ * @param {*} id_user_follower the user who is following to user
+ * @param {*} id_user_followed the user who is being follwoed by user.
+ * @returns true if removed otherwise false
+ */
+const denyFollowerRequestByUserId = async (id_user_follower, id_user_followed) => {
+    let isRemoved = false;
+    const t = await sequelize.transaction();
+    try {
+        let result = await Follower.destroy({
+            where: { id_user_follower, id_user_followed, status: FollowRequestStatusType.PENDING },
+            transaction: t
+        });
+        await t.commit();
+        isRemoved = result > 0;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isRemoved;
+}
+
+/**
+ * Get user Profile
+ * @param {*} id the user to get the profile
+ * @returns return name, username and presentation
+ */
+const getUserProfile = async (id) => {
+    let user
+    try {
+        user = await User.findAll({
+            where: { id },
+            attributes: ["name", "presentation", "username"],
+            raw: true,
+            plain: true,
+        });
+    } catch (error) {
+        throw error;
+    }
+    return user;
+};
+
+/**
+ * Block an user
+ * @param {*} id_user_blocker user who will block the user
+ * @param {*} id_user_blocked the user who is going to be blocked
+ * @returns true is it was blocked otherwise false
+ */
+const blockUser = async (id_user_blocker, id_user_blocked) => {
+    let isBlocked;
+    const t = await sequelize.transaction();
+    try {
+        await Block.create({
+            id_user_blocker,
+            id_user_blocked
+        }, { transaction: t });
+        await t.commit();
+        isBlocked = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isBlocked;
+};
+
+/**
+ * Unblock user
+ * @param {*} id_user_blocker the user who has blocked the another one
+ * @param {*} id_user_blocked the user who will be unblocked
+ * @returns true if it was unblocked otherwise fae
+ */
+const unblockUser = async (id_user_blocker, id_user_blocked) => {
+    let isUnblocked;
+    const t = await sequelize.transaction();
+    try {
+        await Block.destroy({
+            where: {
+                id_user_blocker,
+                id_user_blocked
+            },
+            transaction: t
+        });
+        await t.commit();
+        isUnblocked = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUnblocked;
+};
+
+/**
+ * Check if a user is already blocked by another one
+ * @param {*} id_user_blocker the user who blocked.
+ * @param {*} id_user_blocked the user who is probably blocked.
+ * @returns true if it's blocked otherwise false.
+ */
+const isUserBlockedByUser = async (id_user_blocker, id_user_blocked) => {
+    let isBlocked = false;
+    try {
+        let data = await Block.findAll({
+            where: {
+                id_user_blocker,
+                id_user_blocked
+            }
+        });
+        isBlocked = data.length != 0;
+    } catch (error) {
+        throw new Error(error);
+    }
+    return isBlocked;
+};
+
+
+const getAllBlockedUsers = async (id_user_blocker) => {
+    let blocked = [];
+    try {
+        blocked = await Block.findAll({
+            where: { id_user_blocker },
+            attributes: {
+                include: ["blocked.name", "blocked.presentation", "blocked.username"],
+                exclude: ["id_user_blocker", "id_user_blocked"]
+            },
+            include: [{
+                model: User,
+                as: "blocked",
+                attributes: []
+            }],
+            raw: true
+        });
+    } catch (error) {
+        throw error;
+    }
+    return blocked;
+}
+
+/**
+ * Update the user's email
+ * @param {*} newEmail the new Email to update
+ * @param {*} id_user the user's id who will get the new email
+ * @issue #6977 Model update not return affectedRows
+ * @returns true if it was updated otherwise false
+ */
+const updateUserEmail = async (newEmail, id_user) => {
+    let isUpdated = false;
+    const t = await sequelize.transaction();
+    try {
+        let user = await Account.update({
+            email: newEmail
+        }, {
+            where: {
+                id_user
+            },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUpdated;
+};
+
+/**
+ * Update basic data of User (name, presentation, username, phoneNumber and birthdate)
+ * @param {*} newUserData the new user's data
+ * @param {*} id_user the user's id who will get updated.
+ * @param {*} transaction as transaction
+ * @issue #6977 Model update not return affectedRows
+ */
+const updateUserBasicData = async (newUserData, id_user, transaction) => {
+    const { name, presentation, username, phoneNumber, birthdate } = newUserData;
+    try {
+        let user = await User.update({ name, presentation, username, }, {
+            where: { id: id_user },
+            transaction
+        });
+        let account = await Account.update({
+            phone_number: phoneNumber,
+            birthday: birthdate
+        }, {
+            where: { id_user },
+            transaction
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * Update Personal User Role Data and Basic Data
+ * @param {*} basicData the basic data of user (name, presentation, username, phoneNumber, birthdate)
+ * @param {*} personalData the personal data of User (gender, idCareer)
+ * @param {*} id_user the user's ID
+ * @issue #6977 Model update not return affectedRow
+ * @returns true if it was updated otherwise false
+ */
+const updateUserPersonalData = async (basicData, personalData, id_user) => {
+    let isUpdated = false;
+    const { gender, idCareer } = personalData;
+    const t = await sequelize.transaction();
+    try {
+        let user = await updateUserBasicData(basicData, id_user, t);
+        let userRoleType = await PersonalUserRole.update({
+            gender,
+            id_career: idCareer
+        }, {
+            where: {
+                id_user
+            },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUpdated;
+};
+
+/**
+ * Update Business Role Data and Basic Data
+ * @param {*} basicData the basic data of user (name, presentation, username, phoneNumber, birthdate)
+ * @param {*} businessData the business data of user ( category, city, postalCode, postalAddress, contactEmail, phoneContact, organizationName) 
+ * @param {*} id_user the user's ID
+ * @issue #6977 Model update not return affectedRow
+ * @returns true if it was updated otherwise false
+ */
+const updateBusinessData = async (basicData, businessData, id_user) => {
+    let isUpdated = false;
+    const { category, city, postalCode, postalAddress, contactEmail, phoneContat, organizationName } = businessData;
+    const t = await sequelize.transaction();
+    try {
+        let user = await updateUserBasicData(basicData, id_user, t);
+        let businessData = await BusinessUserRole.update({
+            category,
+            city,
+            postal_code: postalCode,
+            postal_address: postalAddress,
+            contact_email: contactEmail,
+            phone_contact: phoneContat,
+            organization_name: organizationName
+        }, {
+            where: { id_user },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUpdated;
+};
+
+/**
+ * Update Moderator Role Data and Basic Data
+ * @param {*} basicData the basic data of user (name, presentation, username, phoneNumber, birthdate) 
+ * @param {*} moderatorData the moderator data ( Nothing by now )
+ * @param {*} id_user the user's ID
+ * @issue #6977 Model update not return affectedRows
+ * @returns true if it was update otherwise false
+ */
+const updateModeratorData = async (basicData, moderatorData, id_user) => {
+    let isUpdated = false;
+    const { updateDate } = moderatorData; // Update_date should be not modified, but by now is OK.
+    const t = await sequelize.transaction();
+    try {
+        let user = await updateUserBasicData(basicData, id_user, t);
+        let moderatorData = await ModeratorUserRole.update({ update_date: updateDate }, {
+            where: { id_user },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUpdated;
+};
+
+/**
+ * Update Administrator Role Data And Basic Data 
+ * @param {*} basicData the basic data of user (name, presentation, username, phoneNumber, birthdate)
+ * @param {*} adminData the administrator data ( Nothing by now )
+ * @param {*} id_user the user's ID
+ * @issue #6977 Model update not return affectedRows
+ * @returns true if it was updated otherwise false
+ */
+const updateAdministratorData = async (basicData, adminData, id_user) => {
+    let isUpdated = false;
+    const { createdTime } = adminData;
+    const t = await sequelize.transaction();
+    try {
+        let user = await updateUserBasicData(basicData, id_user, t);
+        let adminRoleType = await AdministratorUserRole.update({ createdTime }, {
+            where: { id_user },
+            transaction: t
+        });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw new Error(error);
+    }
+    return isUpdated;
+};
+
+/**
+ * Change user role type in database.
+ * @param {*} id_user the user id to change role type
+ * @param {*} userRoleType the new UserRoleType
+ * @returns true is updated otherwise false
+ */
+const changeUserRoleType = async (id_user, userRoleType) => {
+    let isUpdated = false;
+    const t = await sequelize.transaction();
+    try {
+        let userRoleData = await UserRole.findOne({
+            where: { id_user }
+        });
+
+        if (userRoleData) {
+            if (userRoleType == UserRoleType.PERSONAL) {
+                let result = await PersonalUserRole.findOne({ where: { id_user } });
+                if (!result) {
+                    await PersonalUserRole.create({ id_user }, { transaction: t });
+                }
+            } else if (userRoleType == UserRoleType.BUSINESS) {
+                let result = await BusinessUserRole.findOne({ where: { id_user } });
+                if (!result) {
+                    await BusinessUserRole.create({ id_user }, { transaction: t });
+                }
+            } else if (userRoleType == UserRoleType.MODERATOR) {
+                let result = await ModeratorUserRole.findOne({ where: { id_user } });
+                if (!result) {
+                    await ModeratorUserRole.create({ id_user }, { transaction: t });
+                }
+            } else if (userRoleType == UserRoleType.ADMINISTRATOR) {
+                let result = await AdministratorUserRole.findOne({ where: { id_user } });
+                if (!result) {
+                    await AdministratorUserRole.create({ id_user }, { transaction: t });
+                }
+            }
+            await userRoleData.update(
+                { role: userRoleType }, {
+                where: { id_user },
+                transaction: t
+            });
+            await t.commit();
+            isUpdated = true;
+        }
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isUpdated;
+};
+
+/**
+ * Get actual privacy type of user
+ * @param {*} id_user the user to get privacy type
+ * @returns privacyType or undefined.
+ */
+const getActualPrivacyType = async (id_user) => {
+    let privacyType;
+    try {
+        privacyType = await UserConfiguration.findOne({
+            where: { id_user },
+            raw: true
+        }).then(data => {
+            return data.privacy;
+        })
+
+    } catch (error) {
+        throw error;
+    }
+    return privacyType;
+}
+
+/**
+ * Change privacy type of user
+ * @param {*} id_user the user to change privacy
+ * @param {*} privacyType the new privacy type
+ * @returns true if updated otherwise false
+ */
+const changePrivacyTypeUser = async (id_user, privacyType) => {
+    let isUpdated = false;
+    const t = await sequelize.transaction();
+    try {
+        let result = await UserConfiguration.update({
+            privacy: privacyType
+        }, { where: { id_user } });
+        await t.commit();
+        isUpdated = true;
+    } catch (error) {
+        await t.rollback();
+        throw error;
+    }
+    return isUpdated;
+}
+
+
+
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
     getAccountLoginDataById, deleteUserByUsername, createUser,
     generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
-    doesVerificationCodeMatches, getIdByUsername, saveSessionToken, removeSessionToken,
-    getAllUsers
+    doesVerificationCodeMatches, getIdByUsername,
+    getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedByUser,
+    getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser,
+    changePassword, isOldPasswordValid, updateUserPersonalData, updateAdministratorData,
+    updateModeratorData, updateBusinessData, updateUserEmail, changeUserRoleType,
+    deleteFollowerAndFollowing, changePrivacyTypeUser, getActualPrivacyType,
+    sendRequestFollowToUser, isRequestFollowerSent, acceptAllFollowerRequestById,
+    getAllFollowerRequestByUserId, acceptFollowerRequestByUserId, denyFollowerRequestByUserId,
+    getAllBlockedUsers
 }
