@@ -2,7 +2,7 @@ const { sendEmailCodeVerification, sendEmailChangeURLConfirmation, sendEmailPass
 const { verifyToken, deleteAllSessionsByUserId } = require("../dataaccess/tokenDataAccess");
 const { generateURLChangeEmailConfirmation, doesURLVerificationAlreadyGenerated, removeURLVerification, generateURLUpdatePasswordConfirmation } = require("../dataaccess/urlRecoverDataAccess");
 const { deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode,
-    getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType, changePrivacyTypeUser, acceptAllFollowerRequestById, acceptFollowerRequestByUserId, getIdByUsername, denyFollowerRequestByUserId } = require("../dataaccess/userDataAccess");
+    getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType, changePrivacyTypeUser, acceptAllFollowerRequestById, acceptFollowerRequestByUserId, getIdByUsername, denyFollowerRequestByUserId, getAllAccountData } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const createURL = require("../helpers/urlHelper");
@@ -238,10 +238,22 @@ const denyFollowerRequest = async (request, response) => {
     return httpResponseOk(response, result);
 };
 
+const getUserAccountData = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let userInfo;
+    try {
+        let userData = await verifyToken(token);
+        userInfo = await getAllAccountData(userData.id);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, userInfo);
+}
 
 module.exports = {
     addUser, removeUserByUsername, createVerificationCode,
     getAllUsers, changePasswordOnLoggedUser, updateUser,
     createURLVerification, changeUserRoleByEmailOrUsername,
-    changePrivacyType, acceptFollowerRequest, denyFollowerRequest
+    changePrivacyType, acceptFollowerRequest, denyFollowerRequest,
+    getUserAccountData
 }

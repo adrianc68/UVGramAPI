@@ -1,11 +1,12 @@
 const router = require('express').Router();
-const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, updateUser, createURLVerification, changeUserRoleByEmailOrUsername, changePrivacyType } = require('../controllers/userAccountController');
+const { addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, updateUser, createURLVerification, changeUserRoleByEmailOrUsername, changePrivacyType, getUserAccountData } = require('../controllers/userAccountController');
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationEmailOrUsername } = require('../validators/formatValidators/authenticationFormatValidator');
 const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode, formatValidationPassword, formatValidationOldPassword, formatValidationBasicUserAccountData, formatValidationPersonalData, formatValidationBusinessData, formatValidationAdminData, formatValidationModerator, formatValidationNewRoleType, formatValidationPrivacyData } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationIsURLRecoverAlreadyGeneratedByEmailOrUsername } = require('../validators/urlRecoverValidation');
 const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist, validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationModeratorRoleData, validationAdminRoleData, validationBusinessRoleData, validationSecretKey, validationUserPrivacy } = require('../validators/userAccountValidation');
+const { validationRejectOnUsernameNotRegistered } = require('../validators/userValidation');
 
 router.post("/accounts/create",
     formatValidationUserAccountData,
@@ -108,6 +109,11 @@ router.post("/accounts/users/change-privacy",
     formatValidationPrivacyData,
     validationUserPrivacy,
     changePrivacyType
+);
+
+router.get("/accounts/data",
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    getUserAccountData
 );
 
 module.exports = router;

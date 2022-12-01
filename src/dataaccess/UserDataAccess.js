@@ -2,11 +2,13 @@ const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { encondePassword, encodeStringSHA256, encondeSHA512 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
+const { logger } = require("../helpers/logger");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
 const { AdministratorUserRole } = require("../models/AdministratorUserRole");
 const { Block } = require("../models/Block");
 const { BusinessUserRole } = require("../models/BusinessUserRole");
+const { EducationalProgram } = require("../models/EducationalProgram");
 const { FollowRequestStatusType } = require("../models/enum/FollowRequestStatusType");
 const { UserRoleType } = require("../models/enum/UserRoleType");
 const { Follower } = require("../models/Follower");
@@ -1045,7 +1047,69 @@ const changePrivacyTypeUser = async (id_user, privacyType) => {
     return isUpdated;
 }
 
-
+/**
+ * Get all account data including user role type data
+ * @param {*} id the user to get data
+ * @returns accountInfo or undefined
+ */
+const getAllAccountData = async (id) => {
+    let accountInfo;
+    try {
+        accountInfo = await User.findOne({
+            where: { id },
+            attributes: ["name", "presentation", "username", "Account.email", "Account.phone_number", "Account.birthday", "UserRole.role"],
+            include: [{
+                model: Account,
+                as: "Account",
+                attributes: []
+            }, {
+                model: UserRole,
+                as: "UserRole",
+                attributes: []
+            }],
+            raw: true
+        }).then(async result => {
+            if (!result) {
+                return;
+            }
+            let data;
+            if (result.role == UserRoleType.PERSONAL) {
+                data = await PersonalUserRole.findOne({
+                    where: { id_user: id },
+                    attributes: ["gender", "EducationalProgram.educational_program"],
+                    include: [{
+                        model: EducationalProgram,
+                        attributes: []
+                    }],
+                    raw: true,
+                });
+            } else if (result.role == UserRoleType.BUSINESS) {
+                data = await BusinessUserRole.findOne({
+                    where: { id_user: id },
+                    raw: true,
+                });
+            } else if (result.role == UserRoleType.MODERATOR) {
+                data = await ModeratorUserRole.findOne({
+                    where: { id_user: id },
+                    raw: true,
+                });
+            } else if (result.role == UserRoleType.ADMINISTRATOR) {
+                data = await AdministratorUserRole.findOne({
+                    where: { id_user: id },
+                    raw: true,
+                });
+            }
+            if (data) {
+                result = { ...result, ...data }
+                delete result["id_user"];
+            }
+            return result;
+        });
+    } catch (error) {
+        throw error;
+    }
+    return accountInfo;
+}
 
 module.exports = {
     getAccountLoginData, isUsernameRegistered, isEmailRegistered,
@@ -1059,5 +1123,5 @@ module.exports = {
     deleteFollowerAndFollowing, changePrivacyTypeUser, getActualPrivacyType,
     sendRequestFollowToUser, isRequestFollowerSent, acceptAllFollowerRequestById,
     getAllFollowerRequestByUserId, acceptFollowerRequestByUserId, denyFollowerRequestByUserId,
-    getAllBlockedUsers
+    getAllBlockedUsers, getAllAccountData
 }
