@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "dad842eb-d7b3-4162-84ad-82590e0fa36c",
+		"_postman_id": "09a24bad-ed6d-4a6e-947d-578a228fa744",
 		"name": "UVGram",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24635867"
 	},
 	"item": [
 		{
@@ -15,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Business\",\n    \"presentation\": null,\n    \"username\": \"uvgram2\",\n    \"password\": \"hola1234\",\n    \"phoneNumber\": \"2234567890\",\n    \"email\": \"uvgram2@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"verificationCode\": \"93af106e\"\n}",
+							"raw": "{\n    \"name\": \"Business\",\n    \"presentation\": null,\n    \"username\": \"uvgram1\",\n    \"password\": \"hola1234\",\n    \"phoneNumber\": \"2234567890\",\n    \"email\": \"uvgram1@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"verificationCode\": \"0dde196b\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -45,7 +46,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram2\",\n    \"email\": \"uvgram2@uvgram.com\"                                                   \n}",
+							"raw": "{\n    \"username\": \"uvgram1\",\n    \"email\": \"uvgram1@uvgram.com\"                                                   \n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -313,7 +314,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"UVGram personal\",\n    \"presentation\": null,\n    \"username\": \"uvgram2\",\n    \"phoneNumber\": \"2283687920\",\n    \"email\": \"uvgram2@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"gender\": \"MASCULINO\",\n    \"idCareer\": \"1\"\n}",
+							"raw": "{\n    \"name\": \"UVGram personal\",\n    \"presentation\": null,\n    \"username\": \"uvgram1\",\n    \"phoneNumber\": \"2283687920\",\n    \"email\": \"uvgram1@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"gender\": \"MASCULINO\",\n    \"idCareer\": \"2\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -546,7 +547,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"key\": \"+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4\",\n    \"emailOrUsername\": \"uvgram1\",\n    \"newRoleType\": \"administrador\"\n}",
+							"raw": "{\n    \"key\": \"+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4\",\n    \"emailOrUsername\": \"uvgram1\",\n    \"newRoleType\": \"personal\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -565,6 +566,69 @@
 								"users",
 								"roles",
 								"change"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/accounts/users/change-privacy/",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"privacy\": \"publico\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/accounts/users/change-privacy/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"accounts",
+								"users",
+								"change-privacy",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/accounts/data",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/accounts/data",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"accounts",
+								"data"
 							]
 						}
 					},
@@ -750,9 +814,9 @@
 			"name": "/user/",
 			"item": [
 				{
-					"name": "/user/block/",
+					"name": "/user/followers/pending/",
 					"request": {
-						"method": "POST",
+						"method": "GET",
 						"header": [
 							{
 								"key": "Authorization",
@@ -760,17 +824,8 @@
 								"type": "default"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram2\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "http://localhost:8080/user/block/",
+							"raw": "http://localhost:8080/user/followers/pending/",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -778,7 +833,8 @@
 							"port": "8080",
 							"path": [
 								"user",
-								"block",
+								"followers",
+								"pending",
 								""
 							]
 						}
@@ -786,7 +842,44 @@
 					"response": []
 				},
 				{
-					"name": "/user/unblock/",
+					"name": "/user/followers/deny/",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"uvgram3\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/user/followers/deny/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"user",
+								"followers",
+								"deny",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user/followers/accept/",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -798,7 +891,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram2\"\n}",
+							"raw": "{\n    \"username\": \"uvgram1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -806,7 +899,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/user/unblock/",
+							"raw": "http://localhost:8080/user/followers/accept/",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -814,7 +907,45 @@
 							"port": "8080",
 							"path": [
 								"user",
-								"unblock",
+								"followers",
+								"accept",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user/followers/delete",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"uvgram6\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/user/followers/delete/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"user",
+								"followers",
+								"delete",
 								""
 							]
 						}
@@ -834,7 +965,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram3\"\n}",
+							"raw": "{\n    \"username\": \"uvgram2\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -870,7 +1001,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram2\"\n}",
+							"raw": "{\n    \"username\": \"uvgram1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -905,7 +1036,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/user/followed-by/uvgram4",
+							"raw": "http://localhost:8080/user/followed-by/uvgram1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -914,7 +1045,7 @@
 							"path": [
 								"user",
 								"followed-by",
-								"uvgram4"
+								"uvgram1"
 							]
 						}
 					},
@@ -932,7 +1063,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/user/followers-of/uvgram2",
+							"raw": "http://localhost:8080/user/followers-of/uvgram1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -941,7 +1072,118 @@
 							"path": [
 								"user",
 								"followers-of",
-								"uvgram2"
+								"uvgram1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user/block/",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"uvgram1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/user/block/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"user",
+								"block",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user/unblock/",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"uvgram1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/user/unblock/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"user",
+								"unblock",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user/blocked/all",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/user/blocked/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"user",
+								"blocked",
+								"all"
 							]
 						}
 					},
@@ -953,14 +1195,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/uvgram",
+							"raw": "http://localhost:8080/uvgram1",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"uvgram"
+								"uvgram1"
 							]
 						}
 					},
@@ -1041,7 +1283,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"region\":\"PUEBLA\"\n}",
+							"raw": "{\n    \"region\":\"XALAPA\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1071,7 +1313,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"idRegion\":\"1\",\n    \"faculty\":\"INGENIERIA_EN_ALIMENTOS\"\n}",
+							"raw": "{\n    \"idRegion\":\"1\",\n    \"faculty\":\"FACULTAD_ESTADISTICA_E_INFORMATICA\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1101,7 +1343,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"educationalProgram\":\"LICENCIATURA_INGENIERIA_ALIMENTOS\",\n    \"idFaculty\":\"1\"\n}",
+							"raw": "{\n    \"educationalProgram\":\"LICENCIATURA_INGENIERIA_DE_SOFTWARE\",\n    \"idFaculty\":\"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1130,27 +1372,6 @@
 			"name": "/post/",
 			"item": [
 				{
-					"name": "/post/user/:username",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8080/post/user/uvgram1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"post",
-								"user",
-								"uvgram1"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "/post/create",
 					"request": {
 						"method": "POST",
@@ -1165,13 +1386,16 @@
 							"mode": "formdata",
 							"formdata": [
 								{
-									"key": "file",
+									"key": "file[]",
 									"type": "file",
-									"src": "/Users/kerberos/Desktop/imagen1 2.png"
+									"src": [
+										"/Users/kerberos/Desktop/imagen2.png",
+										"/Users/kerberos/Desktop/imagen1.png"
+									]
 								},
 								{
 									"key": "description",
-									"value": "Post 3",
+									"value": "Segundo post uvgram1",
 									"type": "default"
 								},
 								{
@@ -1184,12 +1408,7 @@
 									"value": "true",
 									"type": "default"
 								}
-							],
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							]
 						},
 						"url": {
 							"raw": "http://localhost:8080/post/create/",
@@ -1208,6 +1427,33 @@
 					"response": []
 				},
 				{
+					"name": "/post/user/:username",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/post/user/uvgram1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"post",
+								"user",
+								"uvgram1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "/post/like/",
 					"request": {
 						"method": "POST",
@@ -1220,7 +1466,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\":\"4a5c1d116d7\"\n}",
+							"raw": "{\n    \"uuid\":\"e4984b9b799\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1256,7 +1502,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\":\"4a5c1d116d7\"\n}",
+							"raw": "{\n    \"uuid\":\"8337974e4a6\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1303,7 +1549,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/details/likes/4a5c1d116d7",
+							"raw": "http://localhost:8080/post/details/likes/e4984b9b799",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1313,7 +1559,7 @@
 								"post",
 								"details",
 								"likes",
-								"4a5c1d116d7"
+								"e4984b9b799"
 							]
 						}
 					},
@@ -1326,7 +1572,13 @@
 					},
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "",
@@ -1337,7 +1589,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/details/4a5c1d116d7",
+							"raw": "http://localhost:8080/post/details/e4984b9b799",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1346,7 +1598,7 @@
 							"path": [
 								"post",
 								"details",
-								"4a5c1d116d7"
+								"e4984b9b799"
 							]
 						}
 					},
@@ -1370,7 +1622,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"comment\": \"Tercero comentario padre!\",\n    \"uuid\": \"4a5c1d116d7\"\n}",
+							"raw": "{\n    \"comment\": \"Primer comentario en tu post1 uvgram1!\",\n    \"uuid\": \"f6dadc675da\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1407,7 +1659,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"comment\": \"respondiendo la respuesta\",\n    \"uuid\": \"b8d790fed8d\"\n}",
+							"raw": "{\n    \"comment\": \"Muchas gracias uvgram2\",\n    \"uuid\": \"0284e14b138\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1431,40 +1683,6 @@
 					"response": []
 				},
 				{
-					"name": "/post/comment/all/:uuid",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8080/post/comment/all/4a5c1d116d7",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8080",
-							"path": [
-								"post",
-								"comment",
-								"all",
-								"4a5c1d116d7"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "/post/comment/like/",
 					"request": {
 						"method": "POST",
@@ -1477,7 +1695,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\": \"1452d4795d9\"\n}",
+							"raw": "{\n    \"uuid\": \"c1228c24188\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1514,7 +1732,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\": \"843eb9b6219\"\n}",
+							"raw": "{\n    \"uuid\": \"c1228c24188\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1562,7 +1780,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/comment/details/likes/1452d4795d9",
+							"raw": "http://localhost:8080/post/comment/details/likes/a0b6e9f8100",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1573,7 +1791,7 @@
 								"comment",
 								"details",
 								"likes",
-								"1452d4795d9"
+								"a0b6e9f8100"
 							]
 						}
 					},
@@ -1592,7 +1810,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\": \"b8d790fed8d\"\n}",
+							"raw": "{\n    \"uuid\": \"a0b6e9f8100\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1611,6 +1829,92 @@
 								"comment",
 								"delete",
 								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/post/comment/all/:uuid",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/post/comment/all/8337974e4a6",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"post",
+								"comment",
+								"all",
+								"8337974e4a6"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "/resources/",
+			"item": [
+				{
+					"name": "/resources/post-files?:data",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8080/resources/post-files?data=wMVIAaO5fjZ0a7d6KQoHPgxeW3JliQdTCEJTYW4R44IAgbNlh9RQ0HMbaVyODsWbbCl%2FlS8LT2XYv6VcrSlIIw%3D%3D",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8080",
+							"path": [
+								"resources",
+								"post-files"
+							],
+							"query": [
+								{
+									"key": "data",
+									"value": "wMVIAaO5fjZ0a7d6KQoHPgxeW3JliQdTCEJTYW4R44IAgbNlh9RQ0HMbaVyODsWbbCl%2FlS8LT2XYv6VcrSlIIw%3D%3D"
+								}
 							]
 						}
 					},
