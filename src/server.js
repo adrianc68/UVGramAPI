@@ -17,7 +17,6 @@ const server = app.listen({
         await connetionToServers();
         logger.info(`NodeJS Express Server initialized on port ${app.get("port")}`);
         logger.info("*******************************************************");
-        await clearDatabase();
     }
 });
 
