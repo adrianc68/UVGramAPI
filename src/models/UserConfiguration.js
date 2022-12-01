@@ -17,16 +17,16 @@ const UserConfiguration = sequelize.define("UserConfiguration", {
 
 UserConfiguration.removeAttribute("id");
 
-UserConfiguration.hasOne(User, {
-    foreignKey: "id",
-    sourceKey: "id_user",
+User.hasOne(UserConfiguration, {
+    foreignKey: "id_user",
+    targetKey: "id",
     onDelete: "CASCADE",
     onUpdate: "CASCADE"
 });
 
-User.belongsTo(UserConfiguration, {
-    foreignKey: "id",
-    targetKey: "id_user"
+UserConfiguration.belongsTo(User, {
+    foreignKey: "id_user",
+    targetKey: "id"
 });
 
 module.exports = { UserConfiguration };

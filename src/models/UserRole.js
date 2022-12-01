@@ -10,7 +10,7 @@ const UserRole = sequelize.define("UserRole", {
         primaryKey: true
     },
     role: {
-        type: DataTypes.ENUM(UserRoleType.PERSONAL, UserRoleType.BUSINESS, UserRoleType.MODERADOR, UserRoleType.ADMINISTRATOR)
+        type: DataTypes.ENUM(UserRoleType.PERSONAL, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.ADMINISTRATOR)
     }
 }, {
     timestamps: false,

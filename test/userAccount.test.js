@@ -1,24 +1,108 @@
 const request = require('supertest');
-const app = require('../src/app');
-const { sequelize } = require("../src/database/connectionDatabaseSequelize");
-const { server } = require("../src/server")
-
-function delay() {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            resolve();
-        }, 3000);
-    });
-};
+const { connetionToServers } = require('../src/app');
+const { getVerificationCodeFromEmail, getURLConfirmationFromEmail } = require('../src/dataaccess/mailDataAccess');
+const { logger } = require('../src/helpers/logger');
+const { CategoryType } = require('../src/models/enum/CategoryType');
+const { GenderType } = require('../src/models/enum/GenderType');
+const { server, delayServerConnections, clearMessagesMailHog, clearDatabase } = require("../src/server")
 
 beforeAll(async () => {
-    await delay();
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
+    await delayServerConnections();
+    await clearDatabase();
 });
 
 afterAll(async () => {
     server.close();
-    await sequelize.truncate({ cascade: true, restartIdentity: true });
+    await clearDatabase();
+});
+
+describe('On URL and code generation Test', () => {
+    // CAN FAIL BY MAILHOG ENCODING (URL in mailhog add 3D and \n\r )
+    // CAN FAIL BY MAILHOG ENCODING (URL in mailhog add 3D and \n\r )
+    // CAN FAIL BY MAILHOG ENCODING (URL in mailhog add 3D and \n\r )
+    let accessToken;
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        let vCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
+        const newUser = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode: vCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+        response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
+        response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
+    });
+
+    beforeEach(async () => {
+        // Don't change username on this test or will fail.
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+    })
+
+    describe('POST /accounts/password/reset/confirmation/?:data', () => {
+        test('POST /accounts/password/reset/confirmation/?:data 200 OK', async () => {
+            response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram@uvgram.com" });
+            let url = await getURLConfirmationFromEmail("uvgram@uvgram.com");
+            url = url.substring(url.search("/accounts"))
+            response = await request(server).get(url);
+            let urlDecoded = response.body.message.redirect;
+            urlDecoded = urlDecoded.substring(urlDecoded.search("/accounts"))
+            response = await request(server).post(urlDecoded).send({ "password": "hola1234" });
+            expect(response.body.message.refreshToken).not.toBeNull();
+            expect(response.body.message.accessToken).not.toBeNull();
+            expect(response.body.message.isUpdated).toBe(true);
+            expect(response.statusCode).toBe(200);
+        });
+    });
+
+    describe('POST /accounts/verification/url/change_password?:data', () => {
+        test('POST /accounts/verification/url/change_password?:data 200 OK', async () => {
+            response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram" });
+            let url = await getURLConfirmationFromEmail("uvgram@uvgram.com");
+            url = url.substring(url.search("/accounts"));
+            response = await request(server).get(url);
+            let urlDecoded = response.body.message.redirect;
+            urlDecoded = urlDecoded.substring(urlDecoded.search("/accounts"))
+            response = await request(server).post(urlDecoded).send({ "password": "hola1234" });
+            expect(response.body.message.refreshToken).not.toBeNull();
+            expect(response.body.message.accessToken).not.toBeNull();
+            expect(response.statusCode).toBe(200);
+        });
+    });
+
+    describe('POST /accounts/verification/url/confirm_email?:data', () => {
+        test('POST /accounts/verification/url/confirm_email?:data 200 OK', async () => {
+            response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+                name: "uvgram user",
+                presentation: "Welcome to UVGram.",
+                username: "uvgram",
+                phoneNumber: "2212345678",
+                email: "uvgram999@uvgram.com",
+                birthdate: "2000-01-01",
+                idCareer: 1,
+                gender: GenderType.FEMININE
+            });
+            let url = await getURLConfirmationFromEmail("uvgram999@uvgram.com");
+            url = url.substring(url.search("/accounts"));
+            response = await request(server).get(url);
+            expect(response.body.message.isUpdated).toBe(true);
+            expect(response.statusCode).toBe(200);
+        });
+    });
 });
 
 describe('POST /accounts/create/verification', () => {
@@ -83,8 +167,9 @@ describe('POST /accounts/create/verification', () => {
     describe('Test that must pass', () => {
         test('POST /accounts/create/verification 200 OK Response For new user', async () => {
             const response = await request(server).post("/accounts/create/verification").send({ "username": "ricardolopez", "email": "riclopez@uvgram.com" });
+            let verificationCode = await getVerificationCodeFromEmail("riclopez@uvgram.com");
+            expect(verificationCode).toHaveLength(8);
             expect(response.statusCode).toBe(200);
-            expect(response.body.message.verificationCode).toHaveLength(8);
         });
 
         test('POST /accounts/create/verification 403 Forbidden Code already generated should wait 5 minutes', async () => {
@@ -95,7 +180,8 @@ describe('POST /accounts/create/verification', () => {
         test('POST /accounts/create/verification 200 OK Response For another user', async () => {
             const response = await request(server).post("/accounts/create/verification").send({ "username": "robertolopez", "email": "lopezroberto@test.com" });
             expect(response.statusCode).toBe(200);
-            expect(response.body.message.verificationCode).toHaveLength(8);
+            let verificationCode = await getVerificationCodeFromEmail("lopezroberto@test.com");
+            expect(verificationCode).toHaveLength(8);
         });
     });
 });
@@ -130,7 +216,6 @@ describe('POST /accounts/create/', () => {
                 verificationCode: "00000000"
             }
             const response = await request(server).post("/accounts/create").send(newUser);
-            console.log(response.body.errors[0].msg);
             expect(response.body.errors[0].msg).toContain("name must have the allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -810,7 +895,7 @@ describe('POST /accounts/create/', () => {
     describe('Test that must pass', () => {
         test('POST /accounts/create/ 200 OK Response For new user', async () => {
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
-            let { verificationCode } = response.body.message;
+            let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
             const newUser = {
                 name: "UVGram",
                 presentation: "Welcome to UVGram.",
@@ -828,7 +913,7 @@ describe('POST /accounts/create/', () => {
 
         test('POST /accounts/create/ 200 OK Response For another new user', async () => {
             let response = await request(server).post("/accounts/create/verification").send({ "username": "adrianc68", "email": "adrianc68@uvgram.com" });
-            let { verificationCode } = response.body.message;
+            let verificationCode = await getVerificationCodeFromEmail("adrianc68@uvgram.com")
             const newUser = {
                 name: "Adrian Garcia",
                 presentation: "First user in UVGram",
@@ -842,20 +927,6 @@ describe('POST /accounts/create/', () => {
             response = await request(server).post("/accounts/create").send(newUser);
             expect(response.statusCode).toBe(200);
             expect(response.body.message).toContain("New entity was added");
-        });
-
-        test('POST /accounts/create/ 403 Forbidden username already registered', async () => {
-            let response = await request(server).post("/accounts/create/verification").send({ "username": "adrianc68", "email": "adrianc68@uvgram.com" });
-            expect(response.body.message.exist).toBe(true);
-            expect(response.body.message.message).toContain("username is already registered");
-            expect(response.statusCode).toBe(403);
-        });
-
-        test('POST /accounts/create/ 403 Forbidden email already registered', async () => {
-            let response = await request(server).post("/accounts/create/verification").send({ "username": "test", "email": "adrianc68@uvgram.com" });
-            expect(response.body.message.exist).toBe(true);
-            expect(response.body.message.message).toContain("email is already registered");
-            expect(response.statusCode).toBe(403);
         });
 
         test('POST /accounts/create/ 403 Forbidden verification is not valid (generated but is invalid)', async () => {
@@ -895,7 +966,7 @@ describe('GET /accounts/email/check', () => {
 
     test('POST /accounts/email/check 200 OK email exist', async () => {
         let response = await request(server).post("/accounts/create/verification").send({ "username": "test1000", "email": "test1000@uvgram.com" });
-        let { verificationCode } = response.body.message;
+        let verificationCode = await getVerificationCodeFromEmail("test1000@uvgram.com");
         const newUser = {
             name: "Testing",
             presentation: "Welcome to UVGram.",
@@ -937,7 +1008,7 @@ describe('GET /accounts/username/check', () => {
 
     test('POST /accounts/username/check 200 OK username exist', async () => {
         let response = await request(server).post("/accounts/create/verification").send({ "username": "test88888", "email": "test88888@uvgram.com" });
-        let { verificationCode } = response.body.message;
+        let verificationCode = await getVerificationCodeFromEmail("test88888@uvgram.com");
         const newUser = {
             name: "Testing",
             presentation: "Welcome to UVGram.",
@@ -977,9 +1048,9 @@ describe('DEL /accounts/username/delete', () => {
         expect(response.statusCode).toBe(400);
     });
 
-    test('DEL /accounts/username/delete 200 OK username exist', async () => {
+    test('DEL /accounts/username/delete 200 400 Bad Request', async () => {
         let response = await request(server).post("/accounts/create/verification").send({ "username": "deleteme", "email": "deleteme@uvgram.com" });
-        let { verificationCode } = response.body.message;
+        let verificationCode = await getVerificationCodeFromEmail("deleteme@uvgram.com");
         const newUser = {
             name: "Testing",
             presentation: "Welcome to UVGram.",
@@ -992,21 +1063,22 @@ describe('DEL /accounts/username/delete', () => {
         }
         response = await request(server).post("/accounts/create").send(newUser);
         response = await request(server).del("/accounts/username/delete").send({ "username": "deleteme" });
-        expect(response.body.message).toContain("1 entity(s) was removed");
-        expect(response.statusCode).toBe(200);
+        expect(response.body.errors[0].msg).toContain("authorization header is required");
+        expect(response.statusCode).toBe(400);
     });
 
-    test('DEL /accounts/username/delete OK 0 entities was removed', async () => {
+    test('DEL /accounts/username/delete OK 400 Bad Request', async () => {
         response = await request(server).del("/accounts/username/delete").send({ "username": "test23423" });
-        expect(response.body.message).toContain("0 entity(s) was removed");
-        expect(response.statusCode).toBe(200);
+        expect(response.body.errors[0].msg).toContain("authorization header is required");
+
+        expect(response.statusCode).toBe(400);
     });
 });
 
 describe('GET /accounts/users', () => {
     test('GET /accounts/users 400 Authorization header required', async () => {
         let response = await request(server).post("/accounts/create/verification").send({ "username": "userone", "email": "userone@uvgram.com" });
-        let { verificationCode } = response.body.message;
+        let verificationCode = await getVerificationCodeFromEmail("userone@uvgram.com");
         let newUser = {
             name: "Testing",
             presentation: "Welcome to UVGram.",
@@ -1019,7 +1091,7 @@ describe('GET /accounts/users', () => {
         }
         response = await request(server).post("/accounts/create").send(newUser);
         response = await request(server).post("/accounts/create/verification").send({ "username": "usertwo", "email": "usertwo@uvgram.com" });
-        let { verificationCode: verificationCode2 } = response.body.message;
+        let verificationCode2 = await getVerificationCodeFromEmail("usertwo@uvgram.com");
         newUser = {
             name: "Testing",
             presentation: "Welcome to UVGram.",
@@ -1036,4 +1108,1061 @@ describe('GET /accounts/users', () => {
         expect(response.statusCode).toBe(400);
     });
 });
+
+describe('POST /accounts/password/change', () => {
+    let accessToken;
+
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        let vCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
+        const newUser2 = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode: vCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser2);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+    });
+
+    test('POST /accounts/password/change 404 Resource Not Found', async () => {
+        response = await request(server).post("/accounts/password/changes").send({ "password": "hola1234", "oldPassword": "hola1234", "authorization": `Bearer ${accessToken}` });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request password is required', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "oldPassword": "hola1234" });
+        expect(response.body.errors[0].msg).toContain("password is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request password is null', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": null, "oldPassword": "hola1234" });
+        expect(response.body.errors[0].msg).toContain("password is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request password is undefined', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": undefined, "oldPassword": "hola1234" });
+        expect(response.body.errors[0].msg).toContain("password is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request password is empty', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "", "oldPassword": "hola1234" });
+        expect(response.body.errors[0].msg).toContain("password is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request oldPassword is required', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "hola1234" });
+        expect(response.body.errors[0].msg).toContain("oldPassword is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request oldPassword is empty', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "hola1234", "oldPassword": "" });
+        expect(response.body.errors[0].msg).toContain("oldPassword is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request oldPassword is null', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "hola1234", "oldPassword": null });
+        expect(response.body.errors[0].msg).toContain("oldPassword is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 400 Bad Request oldPassword is undefined', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "hola1234", "oldPassword": undefined });
+        expect(response.body.errors[0].msg).toContain("oldPassword is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/change 200 OK password changed', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}` }).send({ "password": "hola1234", "oldPassword": "hola1234" });
+        expect(response.body.message).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/password/change 403 Forbidden Bearer token is not valid', async () => {
+        response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}s` }).send({ "password": "hola1234", "oldPassword": undefined });
+        expect(response.body.message.error).toContain("JsonWebTokenError: invalid signature");
+        expect(response.statusCode).toBe(403);
+    });
+});
+
+describe('POST /accounts/password/reset', () => {
+    let accessToken;
+    let accessToken2;
+
+    afterAll(async () => {
+        await clearDatabase();
+
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        let vCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
+        const newUser = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode: vCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
+        let verificationCode = await getVerificationCodeFromEmail("uvgram2@uvgram.com");
+        const newUser2 = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram2",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser2);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
+        accessToken2 = response.body.message.accessToken;
+
+    });
+
+    test('POST /accounts/password/resets 404 Resource Not Found', async () => {
+        response = await request(server).post("/accounts/password/resets").send({ "emailOrUsername": "test234232" });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request emailOrUsername is required', async () => {
+        response = await request(server).post("/accounts/password/reset").send({});
+        expect(response.body.errors[0].msg).toContain("emailOrUsername is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request emailOrUsername is empty', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "" });
+        expect(response.body.errors[0].msg).toContain("emailOrUsername is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request emailOrUsername is null', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": null });
+        expect(response.body.errors[0].msg).toContain("emailOrUsername is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 400 Bad Request emailOrUsername is undefined', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": undefined });
+        expect(response.body.errors[0].msg).toContain("emailOrUsername is required");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /accounts/password/reset 200 OK generated confirmation address by username', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram" });
+        expect(response.body.message).toContain("a confirmation address has been sent to the new email");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/password/reset 200 OK generated confirmation address by email', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram2@uvgram.com" });
+        expect(response.body.message).toContain("a confirmation address has been sent to the new email");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/password/reset 200 OK can not generate a new confirmation address after 1 generated', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram2@uvgram.com" });
+        expect(response.body.message).toContain("please wait 5 minutes");
+        expect(response.statusCode).toBe(403);
+    });
+
+    test('POST /accounts/password/reset 403 Forbidden username does not exist', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram99" });
+        expect(response.body.message).toContain("username does not exist");
+        expect(response.statusCode).toBe(403);
+    });
+
+    test('POST /accounts/password/reset 403 Forbidden email does not exist', async () => {
+        response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram999@uvgram.com" });
+        expect(response.body.message).toContain("username does not exist");
+        expect(response.statusCode).toBe(403);
+    });
+});
+
+describe('PATCH /accounts/edit/admin', () => {
+    let accessToken;
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        let vCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
+        const newUser = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode: vCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser);
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram", "newRoleType": "administrador" });
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+    });
+
+    test('PATCH /accounts/edit/admins 404 Resource Not Found', async () => {
+        response = await request(server).post("/accounts/edit/admins").send({
+            "name": "Administrator",
+            "presentation": null,
+            "username": "uvgram1",
+            "phoneNumber": "2283687920",
+            "email": "uvgram1@uvgram.com",
+            "birthdate": "2022-01-26"
+        });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('PATCH /accounts/edit/admin 200 OK update name', async () => {
+        response = await request(server).patch("/accounts/edit/admin").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Administrator",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/admin 200 OK update presentation', async () => {
+        response = await request(server).patch("/accounts/edit/admin").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Administrator",
+            presentation: "I am new administrator",
+            username: "uvgram",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/admin 200 OK update username', async () => {
+        response = await request(server).patch("/accounts/edit/admin").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Administrator",
+            presentation: "I am new administrator",
+            username: "administrator",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/admin 200 OK update phoneNumber', async () => {
+        response = await request(server).patch("/accounts/edit/admin").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Administrator",
+            presentation: "I am new administrator",
+            username: "administrator",
+            phoneNumber: "23420394823490",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/admin 200 OK update email', async () => {
+        response = await request(server).patch("/accounts/edit/admin").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Administrator",
+            presentation: "I am new administrator",
+            username: "administrator",
+            phoneNumber: "2212345678",
+            email: "administrator@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.emailMessage).toContain("a confirmation address has been sent to the new email");
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/admin 200 OK update birthdate with differente email', async () => {
+        response = await request(server).patch("/accounts/edit/admin").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Administrator",
+            presentation: "I am new administrator",
+            username: "administrator",
+            phoneNumber: "2212345678",
+            email: "administrator@uvgram.com",
+            birthdate: "2000-01-02",
+        });
+        expect(response.body.message.emailMessage).toContain("please wait 5 minutes to generate another confirmation address");
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/admin 200 OK update birthdate', async () => {
+        response = await request(server).patch("/accounts/edit/admin").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Administrator",
+            presentation: "I am new administrator",
+            username: "administrator",
+            phoneNumber: "2212345678",
+            email: "uvgram@uvgram.com",
+            birthdate: "2000-01-02",
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+});
+
+describe('PATCH /accounts/edit/moderator', () => {
+    let accessToken;
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
+        let verificationCode = await getVerificationCodeFromEmail("uvgram2@uvgram.com");
+        const newUser2 = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram2",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser2);
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "moderador" });
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+    });
+
+    test('PATCH /accounts/edit/moderator 404 Resource Not Found', async () => {
+        response = await request(server).post("/accounts/edit/moderators").send({
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram2",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('PATCH /accounts/edit/moderator 200 OK update name', async () => {
+        response = await request(server).patch("/accounts/edit/moderator").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "moderator",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram2",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/moderator 200 OK update presentation', async () => {
+        response = await request(server).patch("/accounts/edit/moderator").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "moderator",
+            presentation: "Now iam a moderator.",
+            username: "uvgram2",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/moderator 200 OK update username', async () => {
+        response = await request(server).patch("/accounts/edit/moderator").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "moderator",
+            presentation: "Now iam a moderator.",
+            username: "moderator",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/moderator 200 OK update phoneNumber', async () => {
+        response = await request(server).patch("/accounts/edit/moderator").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "moderator",
+            presentation: "Now iam a moderator.",
+            username: "moderator",
+            phoneNumber: "2212345668",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/moderator 200 OK update email', async () => {
+        response = await request(server).patch("/accounts/edit/moderator").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "moderator",
+            presentation: "Now iam a moderator.",
+            username: "moderator",
+            phoneNumber: "2212345668",
+            email: "moderator@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.emailMessage).toContain("a confirmation address has been sent to the new email");
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/moderator 200 OK update birthdate with differente email', async () => {
+        response = await request(server).patch("/accounts/edit/moderator").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "moderator",
+            presentation: "Now iam a moderator.",
+            username: "moderator",
+            phoneNumber: "2212345668",
+            email: "moderator@uvgram.com",
+            birthdate: "2002-10-12",
+        });
+        expect(response.body.message.emailMessage).toContain("please wait 5 minutes to generate another confirmation address");
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/moderator 200 OK update birthdate with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/moderator").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "moderator",
+            presentation: "Now iam a moderator.",
+            username: "moderator",
+            phoneNumber: "2212345668",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+});
+
+describe('PATCH /accounts/edit/business', () => {
+    let accessToken;
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram3", "email": "uvgram3@uvgram.com" });
+        let vCode3 = await getVerificationCodeFromEmail("uvgram3@uvgram.com");
+        const newUser3 = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram3",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode: vCode3
+        }
+        response = await request(server).post("/accounts/create").send(newUser3);
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram3", "newRoleType": "empresarial" });
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram3", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+
+    });
+
+    test('PATCH /accounts/edit/business 404 Resource Not Found', async () => {
+        response = await request(server).post("/accounts/edit/businesss").send({
+            "name": "UVGram testing business",
+            "presentation": null,
+            "username": "uvgram",
+            "phoneNumber": "2283687920",
+            "email": "admin@uvgram.com",
+            "birthdate": "2022-01-26",
+            "category": "PRODUCTO_O_SERVICIO",
+            "city": "Xalapa",
+            "postalCode": "91190",
+            "contactEmail": "negocio@uvgram.com",
+            "phoneContact": "2294506920",
+            "organizationName": "El Mejor Negocio de Pizzas"
+        });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update name and add business data', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "uvgram3",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2000-01-01",
+            category: "PRODUCTO_O_SERVICIO",
+            city: "Xalapa",
+            postalCode: "91190",
+            postalAddress: "Mexico",
+            contactEmail: "uvgram3@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update presentation', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: "Nueva presentacion",
+            username: "uvgram3",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2000-01-01",
+            category: "PRODUCTO_O_SERVICIO",
+            city: "Xalapa",
+            postalCode: "91190",
+            postalAddress: "Mexico",
+            contactEmail: "uvgram3@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update username', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2000-01-01",
+            category: "PRODUCTO_O_SERVICIO",
+            city: "Xalapa",
+            postalCode: "91190",
+            postalAddress: "Mexico",
+            contactEmail: "uvgram3@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update phoneNumber', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2000-01-01",
+            category: "PRODUCTO_O_SERVICIO",
+            city: "Xalapa",
+            postalCode: "91190",
+            postalAddress: "Mexico",
+            contactEmail: "uvgram3@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update email', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "business@uvgram.com",
+            birthdate: "2000-01-01",
+            category: "PRODUCTO_O_SERVICIO",
+            city: "Xalapa",
+            postalCode: "91190",
+            postalAddress: "Mexico",
+            contactEmail: "uvgram3@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.emailMessage).toContain("a confirmation address has been sent to the new email");
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update birthdate with differente email', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "business@uvgram.com",
+            birthdate: "2010-09-09",
+            category: "PRODUCTO_O_SERVICIO",
+            city: "Xalapa",
+            postalCode: "91190",
+            postalAddress: "Mexico",
+            contactEmail: "uvgram3@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.emailMessage).toContain("please wait 5 minutes to generate another confirmation address");
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update birthdate with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2010-09-09",
+            category: "PRODUCTO_O_SERVICIO",
+            city: "Xalapa",
+            postalCode: "91190",
+            postalAddress: "Mexico",
+            contactEmail: "uvgram3@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update category with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2010-09-09",
+            category: CategoryType.GROCERY_STORES,
+            city: "Xalapa",
+            postalCode: "91190",
+            postalAddress: "Mexico",
+            contactEmail: "uvgram3@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update city with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2010-09-09",
+            category: CategoryType.GROCERY_STORES,
+            city: "Veracruz",
+            postalCode: "91190",
+            postalAddress: "Mexico",
+            contactEmail: "uvgram3@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update postalcode with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2010-09-09",
+            category: CategoryType.GROCERY_STORES,
+            city: "Veracruz",
+            postalCode: "91180",
+            postalAddress: "Mexico",
+            contactEmail: "uvgram3@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update contactEmail with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2010-09-09",
+            category: CategoryType.GROCERY_STORES,
+            city: "Veracruz",
+            postalCode: "91180",
+            postalAddress: "Mexico",
+            contactEmail: "contactmetobusiness@uvgram.com",
+            phoneContact: "2294506920",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update phoneContact with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2010-09-09",
+            category: CategoryType.GROCERY_STORES,
+            city: "Veracruz",
+            postalCode: "91180",
+            postalAddress: "Mexico",
+            contactEmail: "contactmetobusiness@uvgram.com",
+            phoneContact: "2256453479",
+            organizationName: "El Mejor Negocio de Pizzas"
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/business 200 OK update organizationName with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/business").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Business",
+            presentation: null,
+            username: "business",
+            phoneNumber: "2212345678",
+            email: "uvgram3@uvgram.com",
+            birthdate: "2010-09-09",
+            category: CategoryType.GROCERY_STORES,
+            city: "Veracruz",
+            postalCode: "91180",
+            postalAddress: "Mexico",
+            contactEmail: "contactmetobusiness@uvgram.com",
+            phoneContact: "2256453479",
+            organizationName: "Las hamburguesas de Tlahuac"
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+});
+
+describe('PATCH /accounts/edit/personal', () => {
+    let accessToken;
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
+        let verificationCode = await getVerificationCodeFromEmail("uvgram2@uvgram.com");
+        const newUser2 = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram2",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser2);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+        response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
+        response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "DERECHO", "idFaculty": "1" });
+    });
+
+    test('PATCH /accounts/edit/personal 404 Resource Not Found', async () => {
+        response = await request(server).post("/accounts/edit/personals").send({
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram2",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+        });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK update name', async () => {
+        response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Personal User",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram2",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            gender: GenderType.MALE,
+            idCareer: "1"
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK update presentation', async () => {
+        response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Personal User",
+            presentation: "Welcome to my personal uvgram",
+            username: "uvgram2",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            gender: GenderType.MALE,
+            idCareer: "1"
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK update username', async () => {
+        response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Personal User",
+            presentation: "Welcome to my personal uvgram",
+            username: "personal",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            gender: GenderType.MALE,
+            idCareer: "1"
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK update phoneNumber', async () => {
+        response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Personal User",
+            presentation: "Welcome to my personal uvgram",
+            username: "personal",
+            phoneNumber: "224930493",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            gender: GenderType.MALE,
+            idCareer: "1"
+        });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK update email', async () => {
+        response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Personal User",
+            presentation: "Welcome to my personal uvgram",
+            username: "personal",
+            phoneNumber: "2212345678",
+            email: "personal@uvgram.com",
+            birthdate: "2000-01-01",
+            gender: GenderType.MALE,
+            idCareer: "1"
+        });
+        expect(response.body.message.emailMessage).toContain("a confirmation address has been sent to the new email");
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK update birthdate with differente email', async () => {
+        response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Personal User",
+            presentation: "Welcome to my personal uvgram",
+            username: "personal",
+            phoneNumber: "2212345678",
+            email: "personal@uvgram.com",
+            birthdate: "2020-01-01",
+            gender: GenderType.MALE,
+            idCareer: "1"
+        });
+        expect(response.body.message.emailMessage).toContain("please wait 5 minutes to generate another confirmation address");
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK update birthdate with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Personal User",
+            presentation: "Welcome to my personal uvgram",
+            username: "personal",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            gender: GenderType.MALE,
+            idCareer: "1"
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK update gender with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Personal User",
+            presentation: "Welcome to my personal uvgram",
+            username: "personal",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            gender: GenderType.FEMININE,
+            idCareer: "1"
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK update career with actual email', async () => {
+        response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+            name: "Personal User",
+            presentation: "Welcome to my personal uvgram",
+            username: "personal",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            gender: GenderType.FEMININE,
+            idCareer: "2"
+        });
+        expect(response.body.message.emailMessage).toBeUndefined();
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+});
+
+describe('POST /accounts/users/roles/change', () => {
+    let accessToken;
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
+        let verificationCode = await getVerificationCodeFromEmail("uvgram2@uvgram.com");
+        const newUser2 = {
+            name: "uvgram user",
+            presentation: "Welcome to UVGram.",
+            username: "uvgram2",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "uvgram2@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(newUser2);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+        response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
+        response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "DERECHO", "idFaculty": "1" });
+    });
+
+    beforeEach(async () => {
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
+        accessToken = response.body.message.accessToken;
+    })
+
+    test('PATCH /accounts/edit/personal 200 OK Change to administrator', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "administrador" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to moderator', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "moderador" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to business', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "empresarial" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to personal', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "personal" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to administrator again', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "administrador" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to moderator again', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "moderador" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to business again', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "empresarial" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 200 OK Change to personal again', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "personal" });
+        expect(response.body.message.isUpdated).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('PATCH /accounts/edit/personal 404 Not Found Resource not found', async () => {
+        response = await request(server).post("/accounts/users/roles/changes").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "personal" });
+        expect(response.statusCode).toBe(404);
+    });
+
+    test('PATCH /accounts/edit/personal 400 Bad Request invalid user role type', async () => {
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "coco" });
+        expect(response.body.errors[0].msg).toContain("newRoleType must be one this:")
+        expect(response.statusCode).toBe(400);
+    });
+});
+
 

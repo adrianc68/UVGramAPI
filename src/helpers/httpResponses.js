@@ -134,8 +134,25 @@ const httpResponseInternalServerError = (response, error) => {
 
 };
 
+/**
+ * 307 Moved temporarily 
+ * the resource requested has been temporarily moved to 
+ * the URL given by the Location headers.
+ * @param {*} request 
+ * @param {*} response 
+ * @param {*} route 
+ */
+const httpResponseRedirect = (request, response, route, message) => {
+    response.writeHead(StatusCodes.MOVED_TEMPORARILY, {
+        Location: "http" + (request.socket.encrypted ? "s" : "") + "://" +
+            request.headers.host + route
+    });
+    return response.end();
+}
+
 module.exports = {
     httpResponseInternalServerError, httpResponseValidation, httpResponseUnauthorized,
     httpResponseNotFound, httpResponseOk, httpResponseBadRequest,
-    httpResponseErrorToken, httpResponseForbidden
+    httpResponseErrorToken, httpResponseForbidden, httpResponseNotImplement,
+    httpResponseRedirect
 }

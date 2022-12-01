@@ -4,14 +4,11 @@ const { UserRole } = require("./UserRole");
 const { GenderType } = require("./enum/GenderType");
 
 const PersonalUserRole = sequelize.define("Personal", {
-    faculty: {
-        type: DataTypes.STRING
-    },
-    career: {
-        type: DataTypes.STRING
-    },
     gender: {
         type: DataTypes.ENUM(GenderType.MALE, GenderType.FEMININE, GenderType.INDIFFERENT)
+    },
+    id_career: {
+        type: DataTypes.BIGINT
     },
     id_user: {
         type: DataTypes.BIGINT,

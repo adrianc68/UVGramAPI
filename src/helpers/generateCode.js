@@ -15,4 +15,9 @@ const generateRandomCode = (maxCharacters) => {
     return hash.slice(0, maxCharacters);
 };
 
-module.exports = { generateRandomCode }
+const generateRandomUUID = (maxCharacters) => {
+    Buffer.from(Math.random().toString()).toString('base64').slice(0, maxCharacters);
+    return generateRandomCode(maxCharacters);
+}
+
+module.exports = { generateRandomCode, generateRandomUUID }
