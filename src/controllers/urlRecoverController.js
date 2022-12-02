@@ -2,7 +2,6 @@ const { generateTokens, deleteAllSessionsByUserId } = require("../dataaccess/tok
 const { removeURLVerification, createRedirectionURLChangePassword } = require("../dataaccess/urlRecoverDataAccess");
 const { updateUserEmail, getAccountLoginDataById, changePassword } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
-const createURL = require("../helpers/urlHelper");
 
 const changeEmailDataOnURLConfirmation = async (request, response) => {
     let isUpdated = false;
@@ -46,8 +45,7 @@ const changePasswordOnUnloggedUserAndLogInOnURLConfirmation = async (request, re
 
 const getRedirectionURLOnConfirmation = async (request, response) => {
     let resultData = response.locals.data;
-    let address = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
-    let URL = createRedirectionURLChangePassword(address, resultData.uuid, resultData.idUser);
+    let URL = createRedirectionURLChangePassword(resultData.uuid, resultData.idUser);
     return httpResponseOk(response, { redirect: URL });
 }
 

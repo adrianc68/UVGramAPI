@@ -29,10 +29,9 @@ const decryptURI = async (uri) => {
  * id_user, newEmail and UUID encrypted with AES.
  * @param {*} id_user the userID who need change email
  * @param {*} newEmail the newEmail which will replace the old one.
- * @param {*} address address that contain node server ip and port e.g. http://127.0.0.1:8080
  * @returns URL or null
  */
-const generateURLChangeEmailConfirmation = async (id_user, newEmail, address) => {
+const generateURLChangeEmailConfirmation = async (id_user, newEmail) => {
     let url;
     const t = await sequelize.transaction();
     let data;
@@ -43,7 +42,7 @@ const generateURLChangeEmailConfirmation = async (id_user, newEmail, address) =>
             id_user,
         }, { transaction: t });
         let payload = { newEmail: newEmail }
-        url = `${address}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CONFIRM_EMAIL.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+        url = `${getServerURLAddress()}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CONFIRM_EMAIL.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
         await t.commit();
     } catch (error) {
         await t.rollback();
@@ -56,10 +55,9 @@ const generateURLChangeEmailConfirmation = async (id_user, newEmail, address) =>
  * Generate a URL as verification to update forgotten password
  * @param {*} id_user id_user that forgot the password
  * @param {*} emailOrUsername emailorUsername 
- * @param {*} address address that contain node server ip and port e.g. http://127.0.0.1:8080 
  * @returns URL or null
  */
-const generateURLUpdatePasswordConfirmation = async (id_user, emailOrUsername, address) => {
+const generateURLUpdatePasswordConfirmation = async (id_user, emailOrUsername) => {
     let url;
     const t = await sequelize.transaction();
     let data;
@@ -70,7 +68,7 @@ const generateURLUpdatePasswordConfirmation = async (id_user, emailOrUsername, a
             id_user,
         }, { transaction: t });
         let payload = { emailOrUsername: emailOrUsername }
-        url = `${address}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CHANGE_PASSWORD.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+        url = `${getServerURLAddress()}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CHANGE_PASSWORD.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
         await t.commit();
     } catch (error) {
         await t.rollback();
@@ -81,15 +79,14 @@ const generateURLUpdatePasswordConfirmation = async (id_user, emailOrUsername, a
 
 /**
  * It only returns a URL to redirect to change password route
- * @param {*} address server nodejs address
  * @param {*} uuid uuid of URLRecover table of specific user
  * @param {*} uuid the user id
  * @returns url or null
  */
-const createRedirectionURLChangePassword = (address, uuid, id_user) => {
+const createRedirectionURLChangePassword = (uuid, id_user) => {
     let url;
     try {
-        url = `${address}/accounts/password/reset/confirmation?uuid=${encodeURIComponent(encryptAES(uuid))}&id=${encodeURIComponent(id_user)}`;
+        url = `${getServerURLAddress()}/accounts/password/reset/confirmation?uuid=${encodeURIComponent(encryptAES(uuid))}&id=${encodeURIComponent(id_user)}`;
     } catch (error) {
         throw new Error(error);
     }
@@ -195,7 +192,7 @@ const doesURLVerificationAlreadyGenerated = async (id_user) => {
     return isAlreadyGenerated;
 }
 
-const createResourceGetURL = async (id_user, id_post, filename, address) => {
+const createResourceGetURL = async (id_user, id_post, filename) => {
     let url;
     try {
         let fileExtension = filename.split(".")[1];
@@ -211,7 +208,7 @@ const createResourceGetURL = async (id_user, id_post, filename, address) => {
             idPost: id_post,
             contentType: contentType
         }
-        url = `${address}/resources/post-files?data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+        url = `${getServerURLAddress()}/resources/post-files?data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
     } catch (error) {
         throw error;
     }
@@ -232,8 +229,21 @@ const getResourceGetURL = async (url) => {
     return result;
 }
 
+const getServerURLAddress = () => {
+    let address = `${process.env.SV_ADDRESS}`;
+    logger.debug(address);
+    if (address) {
+        if (address.charAt(address.length - 1) == "/") {
+            address = address.slice(0, address.length - 1);
+        }
+    }
+    return address;
+}
+
+
+
 module.exports = {
     generateURLChangeEmailConfirmation, getDataURLRecover, doesURLVerificationAlreadyGenerated,
     removeURLVerification, generateURLUpdatePasswordConfirmation, getDataURLByIdUser, getDataURLRecoverByUUID,
-    createRedirectionURLChangePassword, createResourceGetURL, getResourceGetURL
+    createRedirectionURLChangePassword, createResourceGetURL, getResourceGetURL, getServerURLAddress
 }
