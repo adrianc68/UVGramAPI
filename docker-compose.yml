@@ -10,7 +10,7 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./prod/node/.env:/app/.env
+      - .env:/app/.env
       - ./prod/node/resources:/app/resources
     networks:
       prod_network:
