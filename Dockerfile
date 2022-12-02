@@ -5,5 +5,9 @@ COPY package*.json /app/
 RUN npm ci --only=production
 COPY . /app/
 EXPOSE 8080
+
+RUN adduser node node
+RUN chown node:node .
+
 USER node
 CMD ["npm", "start"]
