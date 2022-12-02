@@ -520,7 +520,7 @@ const getFollowedByUser = async (id) => {
                 id_user_follower: id,
                 status: FollowRequestStatusType.ACCEPTED
             },
-            attributes: ["followed.*"],
+            attributes: ["followed.name", "followed.username", "followed.presentation"],
             include: [{
                 model: User,
                 as: "followed",
@@ -528,7 +528,7 @@ const getFollowedByUser = async (id) => {
             }],
             nest: true,
             raw: true
-        })
+        });
     } catch (error) {
         throw new Error(error);
     }
@@ -548,7 +548,7 @@ const getFollowersOfUser = async (id) => {
                 id_user_followed: id,
                 status: FollowRequestStatusType.ACCEPTED
             },
-            attributes: ["follower.*"],
+            attributes: ["follower.name", "follower.username", "follower.presentation"],
             include: [{
                 model: User,
                 as: "follower",
@@ -556,8 +556,6 @@ const getFollowersOfUser = async (id) => {
             }],
             nest: true,
             raw: true
-        }).then(users => {
-            return users;
         });
     } catch (error) {
         throw new Error(error);
