@@ -5,7 +5,6 @@ const { deleteUserByUsername, createUser, generateCodeVerification, removeVerifi
     getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType, changePrivacyTypeUser, acceptAllFollowerRequestById, acceptFollowerRequestByUserId, getIdByUsername, denyFollowerRequestByUserId, getAllAccountData } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
-const createURL = require("../helpers/urlHelper");
 const { PrivacyType } = require("../models/enum/PrivacyType");
 const { UserRoleType } = require("../models/enum/UserRoleType");
 
@@ -67,8 +66,7 @@ const updateUser = async (request, response) => {
         if (isUpdated && email != oldUserData.email) {
             let isAlreadyURLGenerated = await doesURLVerificationAlreadyGenerated(oldUserData.id);
             if (!isAlreadyURLGenerated) {
-                let address = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
-                let url = await generateURLChangeEmailConfirmation(oldUserData.id, email, address);
+                let url = await generateURLChangeEmailConfirmation(oldUserData.id, email);
                 if (url) {
                     let result = await sendEmailChangeURLConfirmation(url, email);
                     if (!result) {
@@ -117,8 +115,7 @@ const createURLVerification = async (request, response) => {
     let message;
     try {
         let userData = await getAccountLoginData(emailOrUsername);
-        let address = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
-        let urlResult = await generateURLUpdatePasswordConfirmation(userData.id, emailOrUsername, address);
+        let urlResult = await generateURLUpdatePasswordConfirmation(userData.id, emailOrUsername);
         if (urlResult) {
             let emailResult = await sendEmailPasswordURLConfirmation(urlResult, userData.email);
             if (!emailResult) {

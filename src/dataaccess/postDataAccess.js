@@ -6,7 +6,7 @@ const { Post } = require("../models/Post");
 const { PostFile } = require("../models/PostFile");
 const { PostLike } = require("../models/PostLike");
 const { User } = require("../models/User");
-const { createResourceGetURL } = require("./urlRecoverDataAccess");
+const { createResourceGetURL, getServerURLAddress } = require("./urlRecoverDataAccess");
 
 /**
  * Get all posts created by user id
@@ -62,7 +62,7 @@ const getPostByUUID = async (uuid) => {
  * @param {*} id_post the post id
  * @returns [filenames] or empty array []
  */
-const getPostFilenamesById = async (id_user, id_post, address) => {
+const getPostFilenamesById = async (id_user, id_post) => {
     let filename;
     try {
         filename = await PostFile.findAll({
@@ -70,9 +70,8 @@ const getPostFilenamesById = async (id_user, id_post, address) => {
             attributes: ["filename"],
             raw: true,
         });
-
         filename.forEach(name => {
-            createResourceGetURL(id_user, id_post, name.filename, address).then(result => {
+            createResourceGetURL(id_user, id_post, name.filename, getServerURLAddress()).then(result => {
                 name.url = result;
                 delete name.filename;
             })

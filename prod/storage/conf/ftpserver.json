@@ -6,7 +6,7 @@
       "pass": "admin",
       "fs": "os",
       "params": {
-        "basePath": "./tmp"
+        "basePath": "/tmp"
       }
     }
   ],
