@@ -4,7 +4,6 @@ const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unf
     , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
 const { verifyToken } = require("../helpers/token");
-const createURL = require("../helpers/urlHelper");
 const { PrivacyType } = require("../models/enum/PrivacyType");
 
 const followUser = async (request, response) => {
@@ -100,7 +99,6 @@ const getProfileOfUser = async (request, response) => {
         user.followers = (await getFollowedUsersOfUserUserDataAccess(idUser)).length;
         user.followed = (await getFollowersOfUserUserDataAccess(idUser)).length;
         user.posts = await getAllPostFromUserId(idUser);
-        let addressServer = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
         await Promise.all(user.posts.map(async function (post) {
             let postId = await getIdPostByPostUUID(post.uuid);
             if (!postId) {
@@ -108,7 +106,7 @@ const getProfileOfUser = async (request, response) => {
                 return;
             }
             post.comments = await getCommentsCountById(postId);
-            post.files = await getPostFilenamesById(post.id_user, post.id, addressServer);
+            post.files = await getPostFilenamesById(post.id_user, post.id);
             delete post["id_user"];
             delete post["id"];
         }));
