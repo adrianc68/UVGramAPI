@@ -7,7 +7,7 @@ COPY . /app/
 EXPOSE 8080
 
 RUN adduser node node
-RUN chown node:node .
+RUN chown node:node ./tmp/
 
 USER node
 CMD ["npm", "start"]
