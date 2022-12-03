@@ -201,7 +201,7 @@ const dislikePostByIds = async (id_user, id_post) => {
     let isDisliked = false;
     const t = await sequelize.transaction();
     try {
-        let result = await PostLike.destroy({
+        await PostLike.destroy({
             where: {
                 id_user,
                 id_post

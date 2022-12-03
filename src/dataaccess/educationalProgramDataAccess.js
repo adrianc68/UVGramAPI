@@ -108,7 +108,7 @@ const addFacultyToRegion = async (faculty, id_region) => {
     let isRegistered = true;
     const t = await sequelize.transaction();
     try {
-        let data = await Faculty.create({
+        await Faculty.create({
             faculty,
             id_region
         }, { transaction: t });

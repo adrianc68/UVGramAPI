@@ -194,20 +194,21 @@ const doesURLVerificationAlreadyGenerated = async (id_user) => {
 
 const createResourceGetURL = async (id_user, id_post, filename) => {
     let url;
+
+    let fileExtension = filename.split(".")[1];
+    let contentType;
+    if (fileExtension === "mp4" || fileExtension === "quicktime") {
+        contentType = `video/${fileExtension}`;
+    } else {
+        contentType = `image/${fileExtension}`;
+    }
+    let payload = {
+        idUser: id_user,
+        filename: filename,
+        idPost: id_post,
+        contentType: contentType
+    }
     try {
-        let fileExtension = filename.split(".")[1];
-        let contentType;
-        if (fileExtension === "mp4" || fileExtension === "quicktime") {
-            contentType = `video/${fileExtension}`;
-        } else {
-            contentType = `image/${fileExtension}`;
-        }
-        let payload = {
-            idUser: id_user,
-            filename: filename,
-            idPost: id_post,
-            contentType: contentType
-        }
         url = `${getServerURLAddress()}/resources/post-files?data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
     } catch (error) {
         throw error;
@@ -218,7 +219,7 @@ const createResourceGetURL = async (id_user, id_post, filename) => {
 const getResourceGetURL = async (url) => {
     let result;
     try {
-        data = (url.data) ? JSON.parse(decryptAES(decodeURIComponent(url.data))) : null;
+        let data = (url.data) ? JSON.parse(decryptAES(decodeURIComponent(url.data))) : null;
         result = {
             ...data
         }

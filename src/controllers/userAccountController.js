@@ -19,6 +19,7 @@ const addUser = async (request, response) => {
         phoneNumber,
         birthdate
     }
+    let message;
     try {
         message = await createUser(user);
         await removeVerificationCode(username);
@@ -136,8 +137,9 @@ const createURLVerification = async (request, response) => {
 const createVerificationCode = async (request, response) => {
     let { username, email } = request.body;
     let isGenerated = false;
+    let verificationCode;
     try {
-        let verificationCode = await generateCodeVerification(username);
+        verificationCode = await generateCodeVerification(username);
         if (verificationCode) {
             let isSentToEmail = await sendEmailCodeVerification(verificationCode, email);
             isGenerated = isSentToEmail;
@@ -183,7 +185,7 @@ const changeUserRoleByEmailOrUsername = async (request, response) => {
         let userData = await getAccountLoginData(emailOrUsername);
         isUpdated = await changeUserRoleType(userData.id, newRoleType.toUpperCase());
         if (isUpdated) {
-            let resultSession = await deleteAllSessionsByUserId(userData.id);
+            await deleteAllSessionsByUserId(userData.id);
         }
     } catch (error) {
         return httpResponseInternalServerError(response, error);
