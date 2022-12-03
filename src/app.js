@@ -43,15 +43,15 @@ const connetionToServers = async () => {
         await sequelize.sync({ force: false });
         logger.info(`PostgreSQL Client initialized on port ${sequelize.config.port}`)
     }).then(async () => {
-        await redisClient.connect().then(x => {
+        await redisClient.connect().then(() => {
             logger.info(`Redis Client initialized on port ${REDIS_PORT_CONNECTED_TO}`);
         });
     }).then(async () => {
-        await mailer.verify().then(x => {
+        await mailer.verify().then(() => {
             logger.info(`Nodemailer initialized on port ${mailer.options.port}`);
         });
     }).then(async () => {
-        await connectToFtpServer().then(x => {
+        await connectToFtpServer().then(() => {
             logger.info(`FTPClient initialized on port ${FTP_PORT_CONNECTION}`);
         });
     }).catch(error => {

@@ -2,7 +2,7 @@ const { deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserCommen
 const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID, getPostFilenamesById } = require("../dataaccess/postDataAccess");
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
     , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers } = require("../dataaccess/userDataAccess");
-const { httpResponseOk, httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
+const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { verifyToken } = require("../helpers/token");
 const { PrivacyType } = require("../models/enum/PrivacyType");
 
@@ -43,10 +43,13 @@ const unfollowUser = async (request, response) => {
     let message;
     try {
         message = await unfollowUserUserDataAccess(idUserFollower, idUserFollowed);
+        if(message) {
+            message = `you have unfollowed to ${username}`;
+        }
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, `you have unfollowed to ${username}`);
+    return httpResponseOk(response, message);
 };
 
 const deleteFollower = async (request, response) => {
@@ -57,10 +60,13 @@ const deleteFollower = async (request, response) => {
     let message;
     try {
         message = await unfollowUserUserDataAccess(idUserFollower, userDataId);
+        if(message) {
+            message = `you have removed ${username} from your followers`;
+        }
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, `you have removed ${username} from your followers`);
+    return httpResponseOk(response, message);
 };
 
 const getFollowedByUser = async (request, response) => {
@@ -122,11 +128,11 @@ const blockUser = async (request, response) => {
     const idUserToBlock = await getIdByUsername(username).then(id => { return id });
     const idUserBlocker = await verifyToken(token).then(data => { return data.id });
     try {
-        let resultBlock = await blockUserUserDataAccess(idUserBlocker, idUserToBlock);
-        let resultRemoveFollower = await deleteFollowerAndFollowing(idUserBlocker, idUserToBlock);
-        let resultRemoveComments = await deleteAllCommentsOfUserFromAllUserPost(idUserToBlock, idUserBlocker);
-        let resultRemovePostLikes = await deleteAllLikesOfUserFromAllPost(idUserToBlock, idUserBlocker);
-        let resultRemoveCommentLikes = await deleteAllUserLikesFromUserComments(idUserToBlock, idUserBlocker);
+        await blockUserUserDataAccess(idUserBlocker, idUserToBlock);
+        await deleteFollowerAndFollowing(idUserBlocker, idUserToBlock);
+        await deleteAllCommentsOfUserFromAllUserPost(idUserToBlock, idUserBlocker);
+        await deleteAllLikesOfUserFromAllPost(idUserToBlock, idUserBlocker);
+        await deleteAllUserLikesFromUserComments(idUserToBlock, idUserBlocker);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -141,10 +147,13 @@ const unblockUser = async (request, response) => {
     let message;
     try {
         message = await unblockUserUserDataAccess(idUserBlocker, idUserToUnblock);
+        if(message) {
+            message = `you have unblocked to ${username}`;
+        }
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, `you have unblocked to ${username}`);
+    return httpResponseOk(response, message);
 };
 
 const getPendingFollowRequest = async (request, response) => {

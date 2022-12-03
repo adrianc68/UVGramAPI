@@ -1,4 +1,3 @@
-const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { EducationalProgram } = require("../models/EducationalProgram");
 const { Faculty } = require("../models/Faculty");

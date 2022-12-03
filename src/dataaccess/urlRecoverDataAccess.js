@@ -106,7 +106,7 @@ const removeURLVerification = async (id_user) => {
             where: { id_user }
         }, { transaction: t });
         await t.commit();
-        if (data == 1) {
+        if (data === 1) {
             isRemoved = true;
         }
     } catch (error) {

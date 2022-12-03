@@ -112,7 +112,7 @@ const deleteUserByUsername = async (username) => {
     const t = await sequelize.transaction();
     let message;
     try {
-        const user = await User.destroy({
+        await User.destroy({
             where: {
                 username
             }
@@ -133,7 +133,7 @@ const deleteUserByUsername = async (username) => {
  * @returns a message indicating that user was added.
  */
 const createUser = async (user) => {
-    const { password, email, name, presentation, username, phoneNumber, birthdate, confirmationCode } = user;
+    const { password, email, name, presentation, username, phoneNumber, birthdate } = user;
     let userID;
     const t = await sequelize.transaction();
     try {
@@ -143,26 +143,26 @@ const createUser = async (user) => {
             username,
         }, { transaction: t });
         userID = user.id;
-        const userConfiguration = await UserConfiguration.create({
+        await UserConfiguration.create({
             privacy: "PUBLICO",
             id_user: userID
         }, { transaction: t });
-        const account = await Account.create({
+        await Account.create({
             email,
             password: encondePassword(password),
             id_user: userID,
             phone_number: phoneNumber,
             birthday: birthdate,
         }, { transaction: t });
-        const accountVerification = await AccountVerification.create({
+        await AccountVerification.create({
             account_status: "NO_BLOQUEADO",
             id_user: userID
         }, { transaction: t });
-        const userRole = await UserRole.create({
+        await UserRole.create({
             id_user: userID,
             role: "PERSONAL"
         }, { transaction: t });
-        const personalUserRole = await PersonalUserRole.create({
+        await PersonalUserRole.create({
             faculty: null,
             career: null,
             gender: "INDIFERENTE",
@@ -222,7 +222,7 @@ const removeVerificationCode = async (username) => {
     let isRemoved = false;
     const t = await sequelize.transaction();
     try {
-        let verificationData = await VerificationCode.destroy({
+        await VerificationCode.destroy({
             where: {
                 username: encodeStringSHA256(username)
             }
@@ -292,7 +292,7 @@ const changePassword = async (emailOrUsername, password) => {
     let isChanged = false;
     const t = await sequelize.transaction();
     try {
-        let result = await Account.findOne({
+        await Account.findOne({
             where: {
                 [Op.or]: [{ email: emailOrUsername }, { '$User.username$': emailOrUsername }]
             },
@@ -302,7 +302,7 @@ const changePassword = async (emailOrUsername, password) => {
             }],
         }).then(async user => {
             if (user) {
-                let data = await user.update({
+                await user.update({
                     password: encondePassword(password)
                 }, { transaction: t });
                 isChanged = true;
@@ -572,7 +572,7 @@ const acceptAllFollowerRequestById = async (id_user_followed) => {
     let isUpdated = false;
     const t = await sequelize.transaction();
     try {
-        let result = await Follower.update({
+        await Follower.update({
             status: FollowRequestStatusType.ACCEPTED
         }, {
             where: { id_user_followed, status: FollowRequestStatusType.PENDING },
@@ -624,7 +624,7 @@ const acceptFollowerRequestByUserId = async (id_user_follower, id_user_followed)
     let isUpdated = false;
     const t = await sequelize.transaction();
     try {
-        let result = await Follower.update({
+        await Follower.update({
             status: FollowRequestStatusType.ACCEPTED
         }, {
             where: { id_user_follower, id_user_followed, status: FollowRequestStatusType.PENDING },
@@ -787,7 +787,7 @@ const updateUserEmail = async (newEmail, id_user) => {
     let isUpdated = false;
     const t = await sequelize.transaction();
     try {
-        let user = await Account.update({
+        await Account.update({
             email: newEmail
         }, {
             where: {
@@ -814,11 +814,11 @@ const updateUserEmail = async (newEmail, id_user) => {
 const updateUserBasicData = async (newUserData, id_user, transaction) => {
     const { name, presentation, username, phoneNumber, birthdate } = newUserData;
     try {
-        let user = await User.update({ name, presentation, username, }, {
+        await User.update({ name, presentation, username, }, {
             where: { id: id_user },
             transaction
         });
-        let account = await Account.update({
+        await Account.update({
             phone_number: phoneNumber,
             birthday: birthdate
         }, {
@@ -843,8 +843,8 @@ const updateUserPersonalData = async (basicData, personalData, id_user) => {
     const { gender, idCareer } = personalData;
     const t = await sequelize.transaction();
     try {
-        let user = await updateUserBasicData(basicData, id_user, t);
-        let userRoleType = await PersonalUserRole.update({
+        await updateUserBasicData(basicData, id_user, t);
+        await PersonalUserRole.update({
             gender,
             id_career: idCareer
         }, {
@@ -875,8 +875,8 @@ const updateBusinessData = async (basicData, businessData, id_user) => {
     const { category, city, postalCode, postalAddress, contactEmail, phoneContat, organizationName } = businessData;
     const t = await sequelize.transaction();
     try {
-        let user = await updateUserBasicData(basicData, id_user, t);
-        let businessData = await BusinessUserRole.update({
+        await updateUserBasicData(basicData, id_user, t);
+        await BusinessUserRole.update({
             category,
             city,
             postal_code: postalCode,
@@ -910,8 +910,8 @@ const updateModeratorData = async (basicData, moderatorData, id_user) => {
     const { updateDate } = moderatorData; // Update_date should be not modified, but by now is OK.
     const t = await sequelize.transaction();
     try {
-        let user = await updateUserBasicData(basicData, id_user, t);
-        let moderatorData = await ModeratorUserRole.update({ update_date: updateDate }, {
+        await updateUserBasicData(basicData, id_user, t);
+        await ModeratorUserRole.update({ update_date: updateDate }, {
             where: { id_user },
             transaction: t
         });
@@ -937,8 +937,8 @@ const updateAdministratorData = async (basicData, adminData, id_user) => {
     const { createdTime } = adminData;
     const t = await sequelize.transaction();
     try {
-        let user = await updateUserBasicData(basicData, id_user, t);
-        let adminRoleType = await AdministratorUserRole.update({ createdTime }, {
+        await updateUserBasicData(basicData, id_user, t);
+        await AdministratorUserRole.update({ createdTime }, {
             where: { id_user },
             transaction: t
         });
@@ -1033,7 +1033,7 @@ const changePrivacyTypeUser = async (id_user, privacyType) => {
     let isUpdated = false;
     const t = await sequelize.transaction();
     try {
-        let result = await UserConfiguration.update({
+        await UserConfiguration.update({
             privacy: privacyType
         }, { where: { id_user } });
         await t.commit();

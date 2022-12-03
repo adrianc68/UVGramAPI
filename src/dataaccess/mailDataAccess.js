@@ -48,7 +48,7 @@ const sendEmailChangeURLConfirmation = async (url, to) => {
             subject: `UVGram URL Verification`,
             html,
         });
-        isSend = (result.accepted.length != 0);
+        isSend = (result.accepted.length !== 0);
     } catch (error) {
         throw new Error(error.message);
     }

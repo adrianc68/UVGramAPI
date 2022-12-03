@@ -9,7 +9,7 @@ const { PrivacyType } = require("../models/enum/PrivacyType");
 const { UserRoleType } = require("../models/enum/UserRoleType");
 
 const addUser = async (request, response) => {
-    const { password, email, name, presentation, username, phoneNumber, birthdate, verificationCode } = request.body;
+    const { password, email, name, presentation, username, phoneNumber, birthdate } = request.body;
     let user = {
         password,
         email,

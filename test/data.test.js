@@ -1,6 +1,5 @@
 const request = require('supertest');
 const { connetionToServers } = require('../src/app');
-const { getVerificationCodeFromEmail } = require('../src/dataaccess/mailDataAccess');
 const { server, delayServerConnections, clearDatabase } = require("../src/server");
 
 beforeAll(async () => {

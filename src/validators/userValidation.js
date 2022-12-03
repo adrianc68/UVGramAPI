@@ -1,7 +1,6 @@
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isUserFollowedByUser, getIdByUsername, isUserBlockedByUser, isUsernameRegistered, getActualPrivacyType, isRequestFollowerSent } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 const { PrivacyType } = require("../models/enum/PrivacyType");
 
 const isUserAlreadyFollowedByUser = async (idUserFollower, idUserFollowed) => {
