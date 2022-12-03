@@ -89,3 +89,6 @@ lerna-debug.log
 # System Files
 .DS_Store
 Thumbs.db
+prod/storage/files
+prod/database/data
+prod/authentication/data
