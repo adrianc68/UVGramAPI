@@ -4,14 +4,11 @@ const { getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPost
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { getAccountLoginData, isUserFollowedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
-const createURL = require("../helpers/urlHelper");
 
 const getPostsByUsername = async (request, response) => {
     const username = request.params.username;
     let posts = [];
     try {
-        let addressServer = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
         let userData = await getAccountLoginData(username);
         posts = await getAllPostFromUserId(userData.id);
         await Promise.all(posts.map(async function (post) {
@@ -21,7 +18,7 @@ const getPostsByUsername = async (request, response) => {
                 return;
             }
             post.comments = await getCommentsCountById(postId);
-            post.files = await getPostFilenamesById(post.id_user, post.id, addressServer);
+            post.files = await getPostFilenamesById(post.id_user, post.id);
             delete post["id_user"];
             delete post["id"];
         }));
@@ -39,8 +36,7 @@ const getPostDataByUUID = async (request, response) => {
         let postID = await getIdPostByPostUUID(uuid);
         let commentData = await getAllCommentsByIdPost(postID);
         let countLikes = await getPostLikesById(postID);
-        let addressServer = createURL(request.socket.encrypted, request.socket.remoteAddress, request.socket.localPort);
-        let files = await getPostFilenamesById(postData.id_user, postID, addressServer);
+        let files = await getPostFilenamesById(postData.id_user, postID);
         postDetails = {
             post: postData,
             likes: countLikes,
