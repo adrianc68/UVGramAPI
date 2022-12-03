@@ -37,6 +37,7 @@ services:
       - POSTGRES_PASSWORD=soydesarrollador
       - POSTGRES_DB=uvgram_db
     volumes:
+      # - ./prod/database/data:/var/lib/postgresql/data
       - ./prod/database/dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
     networks:
       prod_network:
@@ -50,6 +51,9 @@ services:
     container_name: "uvgram_redis"
     restart: always
     command: redis-server --requirepass development
+    # volumes:
+    #   - ./prod/authentication/data/redis-data:/var/lib/redis
+    #   - ./prod/authentication/data/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:
