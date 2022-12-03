@@ -15,7 +15,7 @@ afterAll(async () => {
 
 describe('POST /user/follow/', () => {
     test('POST /user/follow 404 Resource Not Found ', async () => {
-        response = await request(server).post("/user/followsr/").set({ "authorization": "Bearer sadfasdfas" }).send();
+        let response = await request(server).post("/user/followsr/").set({ "authorization": "Bearer sadfasdfas" }).send();
         expect(response.statusCode).toBe(404);
     });
 

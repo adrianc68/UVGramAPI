@@ -15,7 +15,7 @@ const saveFiles = async (files, idUser, idPost) => {
             throw error;
         });
     })).then(() => {
-        isCreated = true;
+        return true;
     }).catch((error) => {
         removeTempFile(files);
         throw error;
@@ -32,10 +32,6 @@ const getFiles = async (idUser, idPost, filename, writeStream, contentType) => {
         throw error;
     }
     fileServerClient.close();
-};
-
-const removeFile = async () => {
-
 };
 
 const removeTempFile = async (files) => {

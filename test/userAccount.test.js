@@ -949,17 +949,17 @@ describe('POST /accounts/create/', () => {
 
 describe('GET /accounts/email/check', () => {
     test('POST /accounts/email/checks 404 Resource Not Found ', async () => {
-        response = await request(server).get("/accounts/email/checks").send({ "email": "test234232@uvgram.com" });
+        let response = await request(server).get("/accounts/email/checks").send({ "email": "test234232@uvgram.com" });
         expect(response.statusCode).toBe(404);
     });
 
     test('POST /accounts/email/check 400 Bad Request Invalid JSON ', async () => {
-        response = await request(server).get("/accounts/email/check").send({ "emai\"l": "test234232@uvgram.com" });
+        let response = await request(server).get("/accounts/email/check").send({ "emai\"l": "test234232@uvgram.com" });
         expect(response.statusCode).toBe(400);
     });
 
     test('POST /accounts/email/check 400 Bad Request email is required ', async () => {
-        response = await request(server).get("/accounts/email/check").send({ "s": "test234232@uvgram.com" });
+        let response = await request(server).get("/accounts/email/check").send({ "s": "test234232@uvgram.com" });
         expect(response.statusCode).toBe(400);
     });
 

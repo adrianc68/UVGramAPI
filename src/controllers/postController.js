@@ -60,7 +60,7 @@ const createPost = async (request, response) => {
         let postDataCreated = await createPostByUserId(userDataId, description, commentsAllowed, likesAllowed, files);
         if (postDataCreated != null) {
             postInfo = postDataCreated;
-            resultFiles = postDataCreated.files;
+            let resultFiles = postDataCreated.files;
             await saveFiles(resultFiles, userDataId, postDataCreated.id);
         }
     } catch (error) {

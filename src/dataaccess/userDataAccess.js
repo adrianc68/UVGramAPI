@@ -1,8 +1,7 @@
-const { Op, Sequelize } = require("sequelize");
+const { Op } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { encondePassword, encodeStringSHA256, encondeSHA512 } = require("../helpers/cipher");
+const { encondePassword, encodeStringSHA256 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
-const { logger } = require("../helpers/logger");
 const { Account } = require("../models/Account");
 const { AccountVerification } = require("../models/AccountVerification");
 const { AdministratorUserRole } = require("../models/AdministratorUserRole");

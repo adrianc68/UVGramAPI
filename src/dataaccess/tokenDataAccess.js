@@ -1,4 +1,3 @@
-const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { generateRefreshToken: generateRefreshTokenHelper, generateAccessToken: generateAcessTokenHelper,
     addToken: addTokenHelper, removeTokenByJTI, verifyToken: verifyTokenHelper,
@@ -149,7 +148,7 @@ const removeToken = async (token) => {
     let isRemoved;
     try {
         let tokenData = await verifyToken(token);
-        let result = await removeTokenByJTI(tokenData.jti);
+        await removeTokenByJTI(tokenData.jti);
         isRemoved = true;
     } catch (error) {
         throw new Error(error);
@@ -166,9 +165,9 @@ const deleteAllSessionByAccessToken = async (accessToken) => {
     let isRemoved;
     try {
         let refreshTokenJTI = (await verifyToken(accessToken)).refreshTokenJti;;
-        let resultRemoveSession = await deleteSessionInDbByRefreshJTI(refreshTokenJTI);
-        let resultRemoveRefreshToken = await removeTokenByJTI(refreshTokenJTI);
-        let resultRemoveAccesToken = await removeToken(accessToken);
+        await deleteSessionInDbByRefreshJTI(refreshTokenJTI);
+        await removeTokenByJTI(refreshTokenJTI);
+        await removeToken(accessToken);
         isRemoved = true;
     } catch (error) {
         throw new Error(error);
@@ -202,7 +201,7 @@ const refreshLoginAndRemoveOldAccessToken = async (accessToken, id_user, userRol
     let newAccessToken;
     try {
         let refresTokenJTI = (await verifyToken(accessToken)).refreshTokenJti;
-        newAccessToken = await refreshAccessToken(username, id_user, userRole, email, refresTokenJTI);
+        newAccessToken = await refreshAccessToken(id_user, userRole, refresTokenJTI);
         await removeTokenByJTI(accessToken);
     } catch (error) {
         throw error;

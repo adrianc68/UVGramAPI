@@ -1,7 +1,6 @@
 const { Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { generateRandomUUID, generateRandomCode } = require("../helpers/generateCode");
-const { logger } = require("../helpers/logger");
+const { generateRandomCode } = require("../helpers/generateCode");
 const { Post } = require("../models/Post");
 const { PostFile } = require("../models/PostFile");
 const { PostLike } = require("../models/PostLike");
@@ -148,7 +147,7 @@ const createPostByUserId = async (id_user, description, comments_allowed, likes_
         await Promise.all(files.map(async function (file) {
             let fileType = file.mimetype.replace(/(image\/|video\/)/g, '');
             let filename = `${generateRandomCode(12)}.${fileType}`;
-            let postFile = await PostFile.create({
+            await PostFile.create({
                 filename,
                 id_post: postData.id
             }, { transaction: t });
@@ -176,7 +175,7 @@ const likePostByIds = async (id_user, id_post) => {
     let isLiked = false;
     const t = await sequelize.transaction();
     try {
-        let result = await PostLike.create({
+        await PostLike.create({
             id_user,
             id_post
         }, {

@@ -84,7 +84,7 @@ const addEducationalProgramToFaculty = async (educational_program, id_faculty) =
     let isRegistered = true;
     const t = await sequelize.transaction();
     try {
-        let data = await EducationalProgram.create({
+        await EducationalProgram.create({
             educational_program,
             id_faculty
         }, { transaction: t });
@@ -129,7 +129,7 @@ const addRegion = async (region) => {
     let isRegistered = true;
     const t = await sequelize.transaction();
     try {
-        let data = await Region.create({
+        await Region.create({
             region,
         }, { transaction: t });
         await t.commit();

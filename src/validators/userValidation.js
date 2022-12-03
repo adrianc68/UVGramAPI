@@ -133,7 +133,7 @@ const validationUnblockingUser = async (request, response, next) => {
         if (idUserBlocked == idUserBlocker) {
             return httpResponseForbidden(response, "you can not unblock yourself");
         }
-        isAlreadyBlocked = !(await isUserAlreadyBlockedByUser(idUserBlocker, idUserBlocked));
+        let isAlreadyBlocked = !(await isUserAlreadyBlockedByUser(idUserBlocker, idUserBlocked));
         if (isAlreadyBlocked) {
             return httpResponseForbidden(response, "user is already unblocked");
         }

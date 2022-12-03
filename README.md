@@ -91,17 +91,17 @@ La siguiente tabla describe los pares clave/valor que son necesarios para el fun
 | `TEST_NODEMAILER_PASS`| Corresponde a la contraseña del usuario del host que provee el servicio de correo electrónico en el ambiente de **PRUEBAS**. El utilizado para este sistema es Mailhog. |
 | `TEST_NODEMAILER_APIV2`| Corresponde al puerto del host que provee una API. Usado únicamente para el servicio Mailhog en el ambiente de **PRUEBAS** |
 | `NODEMAILER_HOST`| Corresponde a la dirección del host que provee el servicio de correo electrónico en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
-| `NODEMAILER_PORT`| Corresponde al puerto del host que provee el servicio de correo electrónico en el ambiente de **PRODUCCION**.. El utilizado para este sistema es Mailhog. |
-| `NODEMAILER_USER`| Corresponde al usuario del host que provee el servicio de correo electrónico en el ambiente de **PRODUCCION**.. El utilizado para este sistema es Mailhog. |
-| `NODEMAILER_PASS`| Corresponde a la contraseña del usuario del host que provee el servicio de correo electrónico en el ambiente de **PRODUCCION**.. El utilizado para este sistema es Mailhog. |
+| `NODEMAILER_PORT`| Corresponde al puerto del host que provee el servicio de correo electrónico en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
+| `NODEMAILER_USER`| Corresponde al usuario del host que provee el servicio de correo electrónico en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
+| `NODEMAILER_PASS`| Corresponde a la contraseña del usuario del host que provee el servicio de correo electrónico en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
 | `FTP_CLIENT_HOST`| Corresponde a la dirección del host que provee el servicio FTP en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
-| `FTP_CLIENT_USER`| Corresponde al puerto del host que provee el servicio FTP en el ambiente de **PRODUCCION**.. El utilizado para este sistema es Mailhog. |
-| `FTP_CLIENT_PASSWORD`| Corresponde al usuario del host que provee el servicio FTP en el ambiente de **PRODUCCION**.. El utilizado para este sistema es Mailhog. |
-| `FTP_CLIENT_PORT`| Corresponde a la contraseña del usuario del host que provee el servicio FTP en el ambiente de **PRODUCCION**.. El utilizado para este sistema es Mailhog. |
+| `FTP_CLIENT_USER`| Corresponde al puerto del host que provee el servicio FTP en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
+| `FTP_CLIENT_PASSWORD`| Corresponde al usuario del host que provee el servicio FTP en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
+| `FTP_CLIENT_PORT`| Corresponde a la contraseña del usuario del host que provee el servicio FTP en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
 | `TEST_FTP_CLIENT_HOST`| Corresponde a la dirección del host que provee el servicio FTP en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
-| `TEST_FTP_CLIENT_USER`| Corresponde al puerto del host que provee el servicio FTP en el ambiente de **PRODUCCION**.. El utilizado para este sistema es Mailhog. |
-| `TEST_FTP_CLIENT_PASSWORD`| Corresponde al usuario del host que provee el servicio FTP en el ambiente de **PRODUCCION**.. El utilizado para este sistema es Mailhog. |
-| `TEST_FTP_CLIENT_PORT`| Corresponde a la contraseña del usuario del host que provee el servicio FTP en el ambiente de **PRODUCCION**.. El utilizado para este sistema es Mailhog. |
+| `TEST_FTP_CLIENT_USER`| Corresponde al puerto del host que provee el servicio FTP en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
+| `TEST_FTP_CLIENT_PASSWORD`| Corresponde al usuario del host que provee el servicio FTP en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
+| `TEST_FTP_CLIENT_PORT`| Corresponde a la contraseña del usuario del host que provee el servicio FTP en el ambiente de **PRODUCCION**. El utilizado para este sistema es Mailhog. |
 
 
 

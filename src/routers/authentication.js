@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { createTokens, refreshTokens, logoutSession, sayHello, checkRolesAuth } = require('../controllers/authenticationController');
+const { createTokens, refreshTokens, logoutSession, sayHello } = require('../controllers/authenticationController');
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { validationLoginData, validationRefreshTokenDataAsAuthorization } = require('../validators/authenticationValidation');

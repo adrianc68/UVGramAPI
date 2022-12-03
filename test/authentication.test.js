@@ -69,7 +69,7 @@ describe('POST /authentication/login', () => {
 
     describe('POST /authentication/login and user creation', () => {
         beforeAll(async () => {
-            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
+            await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
             const newUser = {
                 name: "uvgram",
@@ -81,7 +81,7 @@ describe('POST /authentication/login', () => {
                 birthdate: "2000-01-01",
                 verificationCode
             }
-            response = await request(server).post("/accounts/create").send(newUser);
+            await request(server).post("/accounts/create").send(newUser);
         });
 
         afterAll(async () => {
