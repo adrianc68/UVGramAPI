@@ -13,181 +13,440 @@ afterAll(async () => {
     await clearDatabase();
 });
 
-describe('POST /user/follow/', () => {
+describe('4 users creation', () => {
+    let adminToken;
+    let moderatorToken;
+    let businessToken;
+    let personalToken;
+
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+
+        let response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
+        response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "DERECHO", "idFaculty": "1" });
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "admin", "email": "admin@uvgram.com" });
+        let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
+        const admin = {
+            name: "Administrator",
+            presentation: "Welcome to UVGram.",
+            username: "admin",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "admin@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(admin);
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "admin", "newRoleType": "administrador" });
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "admin", "password": "hola1234" });
+        adminToken = response.body.message.accessToken;
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "moderator", "email": "moderator@uvgram.com" });
+        verificationCode = await getVerificationCodeFromEmail("moderator@uvgram.com");
+        const moderator = {
+            name: "Moderator",
+            presentation: "Welcome to UVGram.",
+            username: "moderator",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "moderator@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(moderator);
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "moderator", "newRoleType": "moderador" });
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "moderator", "password": "hola1234" });
+        moderatorToken = response.body.message.accessToken;
+
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "business", "email": "business@uvgram.com" });
+        verificationCode = await getVerificationCodeFromEmail("business@uvgram.com");
+        const business = {
+            name: "business",
+            presentation: "Welcome to UVGram.",
+            username: "business",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "business@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(business);
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "business", "newRoleType": "empresarial" });
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "business", "password": "hola1234" });
+        businessToken = response.body.message.accessToken;
+
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "personal", "email": "personal@uvgram.com" });
+        verificationCode = await getVerificationCodeFromEmail("personal@uvgram.com");
+        const personal = {
+            name: "personal",
+            presentation: "Welcome to UVGram.",
+            username: "personal",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "personal@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(personal);
+        response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "personal", "newRoleType": "personal" });
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "personal", "password": "hola1234" });
+        personalToken = response.body.message.accessToken;
+    });
+
     test('POST /user/follow 404 Resource Not Found ', async () => {
         let response = await request(server).post("/user/followsr/").set({ "authorization": "Bearer sadfasdfas" }).send();
         expect(response.statusCode).toBe(404);
     });
 
-    describe('POST /user/follow After 2 new users', () => {
-        let accessToken;
-
-        afterAll(async () => {
-            await clearDatabase();
-        });
-
-        beforeAll(async () => {
-            await clearDatabase();
-
-            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
-            let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
-            const newUser = {
-                name: "uvgram",
-                presentation: "Welcome to UVGram.",
-                username: "uvgram",
-                password: "hola1234",
-                phoneNumber: "2212345678",
-                email: "admin@uvgram.com",
-                birthdate: "2000-01-01",
-                verificationCode
-            }
-            response = await request(server).post("/accounts/create").send(newUser);
-
-            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
-            let vCode = await getVerificationCodeFromEmail("uvgram2@uvgram.com");
-            const newUser2 = {
-                name: "uvgram second user",
-                presentation: "Welcome to UVGram.",
-                username: "uvgram2",
-                password: "hola1234",
-                phoneNumber: "2212345678",
-                email: "uvgram2@uvgram.com",
-                birthdate: "2000-01-01",
-                verificationCode: vCode
-            }
-            response = await request(server).post("/accounts/create").send(newUser2);
-            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
-            accessToken = response.body.message.accessToken;
-        });
-
-        test('POST /user/follow 403 Forbidden User can not follow himself', async () => {
-            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
-            expect(response.body.message).toContain("you can not follow yourself");
-            expect(response.statusCode).toBe(403);
-        });
-
-        test('POST /user/follow 403 Forbidden username is required', async () => {
-            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "" });
-            expect(response.body.errors[0].msg).toContain("username is required")
-            expect(response.statusCode).toBe(400);
-        });
-
-        test('POST /user/follow 403 Forbidden username is required', async () => {
-            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": null });
-            expect(response.body.errors[0].msg).toContain("username is required")
-            expect(response.statusCode).toBe(400);
-        });
-
-        test('POST /user/follow 403 Forbidden username does not exist', async () => {
-            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram99" });
-            expect(response.body.message).toContain("username does not exist")
-            expect(response.statusCode).toBe(403);
-        });
-
-        test('POST /user/follow 200 OK username is following other user', async () => {
-            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
-            expect(response.body.message).toContain("you are now following to");
-            expect(response.statusCode).toBe(200);
-        });
+    test('POST /user/follow 403 Forbidden User can not follow himself', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "personal" });
+        expect(response.body.message).toContain("you can not follow yourself");
+        expect(response.statusCode).toBe(403);
     });
-});
 
-describe('DEL /user/unfollow/', () => {
+    test('POST /user/follow 403 Forbidden username is required on empty string', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "" });
+        expect(response.body.errors[0].msg).toContain("username is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /user/follow 403 Forbidden username is required on null', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": null });
+        expect(response.body.errors[0].msg).toContain("username is required")
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('POST /user/follow 403 Forbidden username does not exist', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "uvgram99" });
+        expect(response.body.message).toContain("username does not exist")
+        expect(response.statusCode).toBe(403);
+    });
+
+    test('POST /user/follow 200 OK personal is following to admin', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "admin" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK personal is following to business', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "business" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK personal is following to moderator', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "moderator" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK business is following to personal', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${businessToken}` }).send({ "username": "personal" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK business is following to moderator', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${businessToken}` }).send({ "username": "moderator" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK business is following to admin', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${businessToken}` }).send({ "username": "admin" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK moderator is following to personal', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${moderatorToken}` }).send({ "username": "personal" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK moderator is following to business', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${moderatorToken}` }).send({ "username": "business" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK moderator is following to admin', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${moderatorToken}` }).send({ "username": "admin" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK admin is following to moderator', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${adminToken}` }).send({ "username": "moderator" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK admin is following to business', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${adminToken}` }).send({ "username": "business" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /user/follow 200 OK admin is following to personal', async () => {
+        let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${adminToken}` }).send({ "username": "personal" });
+        expect(response.body.message).toContain("you are now following to");
+        expect(response.statusCode).toBe(200);
+    });
+
     test('DEL /user/unfollow 404 Resource Not Found ', async () => {
-        let response = await request(server).post("/user/unfollowsd/").set({ "authorization": "Bearer sadfasdfas" }).send();
+        let response = await request(server).del("/user/unfollowsd/").set({ "authorization": "Bearer sadfasdfas" }).send();
         expect(response.statusCode).toBe(404);
     });
 
-    describe('DEL /user/unfollow After 2 new users', () => {
-        let accessToken;
+    test('DEL /user/unfollow 403 Forbidden User can not unfollow himself', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "personal" });
+        expect(response.body.message).toContain("you can not unfollow yourself");
+        expect(response.statusCode).toBe(403);
+    });
 
-        afterAll(async () => {
-            await clearDatabase();
+    test('DEL /user/unfollow 403 Forbidden username is empty (username is required)', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "" });
+        expect(response.body.errors[0].msg).toContain("username is required")
+        expect(response.statusCode).toBe(400);
+    });
 
-        });
+    test('DEL /user/unfollow 403 Forbidden username is null (username is required)', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": null });
+        expect(response.body.errors[0].msg).toContain("username is required")
+        expect(response.statusCode).toBe(400);
+    });
 
+    test('DEL /user/unfollow 403 Forbidden username is undefined (username is required)', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": undefined });
+        expect(response.body.errors[0].msg).toContain("username is require");
+        expect(response.statusCode).toBe(400);
+    });
+
+    test('DEL /user/unfollow 403 Forbidden username does not exist', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "uvgram99" });
+        expect(response.body.message).toContain("username does not exist")
+        expect(response.statusCode).toBe(403);
+    });
+
+    test('DEL /user/unfollow 200 OK personal unfollowed to admin', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "admin" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK personal unfollowed to business', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "business" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK personal unfollowed to moderator', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "moderator" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK business unfollowed to admin', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${businessToken}` }).send({ "username": "admin" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK business unfollowed to moderator', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${businessToken}` }).send({ "username": "moderator" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK business unfollowed to personal', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${businessToken}` }).send({ "username": "personal" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK moderator unfollowed to personal', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${moderatorToken}` }).send({ "username": "personal" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK moderator unfollowed to business', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${moderatorToken}` }).send({ "username": "business" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK moderator unfollowed to admin', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${moderatorToken}` }).send({ "username": "admin" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK admin unfollowed to moderator', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${adminToken}` }).send({ "username": "moderator" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK admin unfollowed to business', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${adminToken}` }).send({ "username": "business" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('DEL /user/unfollow 200 OK admin unfollowed to personal', async () => {
+        let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${adminToken}` }).send({ "username": "personal" });
+        expect(response.body.message).toContain("you have unfollowed to");
+        expect(response.statusCode).toBe(200);
+    });
+
+    describe("Follow on personal private user", () => {
         beforeAll(async () => {
-            await clearDatabase();
-
-            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
-            let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
-            const newUser = {
-                name: "uvgram",
-                presentation: "Welcome to UVGram.",
-                username: "uvgram",
-                password: "hola1234",
-                phoneNumber: "2212345678",
-                email: "admin@uvgram.com",
-                birthdate: "2000-01-01",
-                verificationCode
-            }
-            response = await request(server).post("/accounts/create").send(newUser);
-
-            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
-            let vCode = await getVerificationCodeFromEmail("uvgram2@uvgram.com");
-            const newUser2 = {
-                name: "uvgram second user",
-                presentation: "Welcome to UVGram.",
-                username: "uvgram2",
-                password: "hola1234",
-                phoneNumber: "2212345678",
-                email: "uvgram2@uvgram.com",
-                birthdate: "2000-01-01",
-                verificationCode: vCode
-            }
-            response = await request(server).post("/accounts/create").send(newUser2);
-            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
-            accessToken = response.body.message.accessToken;
+            await request(server).post("/accounts/users/change-privacy").set("authorization", `Bearer ${personalToken}`).send({ "privacy": "privado" });
+            await request(server).post("/accounts/users/change-privacy").set("authorization", `Bearer ${moderatorToken}`).send({ "privacy": "privado" });
         });
 
-        test('DEL /user/unfollow 403 Forbidden User can not unfollow himself', async () => {
-            let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
-            expect(response.body.message).toContain("you can not unfollow yourself");
-            expect(response.statusCode).toBe(403);
-        });
-
-        test('DEL /user/unfollow 403 Forbidden username is empty (username is required)', async () => {
-            let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "" });
-            expect(response.body.errors[0].msg).toContain("username is required")
-            expect(response.statusCode).toBe(400);
-        });
-
-        test('DEL /user/unfollow 403 Forbidden username is null (username is required)', async () => {
-            let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": null });
-            expect(response.body.errors[0].msg).toContain("username is required")
-            expect(response.statusCode).toBe(400);
-        });
-
-        test('DEL /user/unfollow 403 Forbidden username is undefined (username is required)', async () => {
-            let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": undefined });
-            expect(response.body.errors[0].msg).toContain("username is require");
-            expect(response.statusCode).toBe(400);
-        });
-
-        test('DEL /user/unfollow 403 Forbidden username does not exist', async () => {
-            let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram99" });
-            expect(response.body.message).toContain("username does not exist")
-            expect(response.statusCode).toBe(403);
-        });
-
-        test('DEL /user/unfollow 400 Bad Request Bearer Token invalid', async () => {
-            let response = await request(server).delete("/user/unfollow").set({ "authorization": `${accessToken}` }).send({ "username": "uvgram99" });
-            expect(response.body.errors[0].msg).toContain("Bearer token is not valid");
-            expect(response.statusCode).toBe(400);
-        });
-
-        test('DEL /user/unfollow 403 Bad Token invalid', async () => {
-            let response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${accessToken}s` }).send({ "username": "uvgram99" });
-            expect(response.body.message.error).toContain("JsonWebTokenError: invalid signature");
-            expect(response.statusCode).toBe(403);
-        });
-
-        test('DEL /user/unfollow 200 OK username is following other user', async () => {
-            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
-            response = await request(server).delete("/user/unfollow").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
-            expect(response.body.message).toContain("you have unfollowed to");
+        test('POST /user/follow 200 OK admin send following request to personal', async () => {
+            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${adminToken}` }).send({ "username": "personal" });
+            expect(response.body.message).toContain("follower request sent");
             expect(response.statusCode).toBe(200);
         });
+
+        test('POST /user/follow 200 OK moderator send following request to personal', async () => {
+            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${moderatorToken}` }).send({ "username": "personal" });
+            expect(response.body.message).toContain("follower request sent");
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('POST /user/follow 200 OK business send following request to personal', async () => {
+            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${businessToken}` }).send({ "username": "personal" });
+            expect(response.body.message).toContain("follower request sent");
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('POST /user/follow 200 OK personal send following request to moderator', async () => {
+            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "moderator" });
+            expect(response.body.message).toContain("follower request sent");
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followers-by/personal 200 OK 0 Followers of personal', async () => {
+            let response = await request(server).get("/user/followers-of/personal").set({ "authorization": `Bearer ${personalToken}` });
+            expect(response.body.message.length).toBe(0);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('POST /user/followers/pending 200 OK 3 followers request sent to personal user', async () => {
+            let response = await request(server).get("/user/followers/pending").set({ "authorization": `Bearer ${personalToken}` });
+            expect(response.body.message.length).toBe(3);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('POST /user/followers/pending 200 OK 1 follower request sent to moderator user', async () => {
+            let response = await request(server).get("/user/followers/pending").set({ "authorization": `Bearer ${moderatorToken}` });
+            expect(response.body.message.length).toBe(1);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('DEL /user/followers/deny 200 OK personal deny admin request', async () => {
+            let response = await request(server).del("/user/followers/deny").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "admin" });
+            expect(response.body.message).toBe(true);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('DEL /user/followers/deny 200 OK personal deny moderator request', async () => {
+            let response = await request(server).del("/user/followers/deny").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "moderator" });
+            expect(response.body.message).toBe(true);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('DEL /user/followers/deny 200 OK personal deny business request', async () => {
+            let response = await request(server).del("/user/followers/deny").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "business" });
+            expect(response.body.message).toBe(true);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('DEL /user/followers/deny 403 OK personal deny invalid request', async () => {
+            let response = await request(server).del("/user/followers/deny").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "helloworld" });
+            expect(response.body.message).toContain("username does not exist");
+            expect(response.statusCode).toBe(403);
+        });
+
+        test('DEL /user/followers/deny 403 OK personal deny invalid request', async () => {
+            let response = await request(server).del("/user/followers/deny").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "personal" });
+            expect(response.body.message).toContain("you can not accept or deny follower request from yourself");
+            expect(response.statusCode).toBe(403);
+        });
+
+        test('DEL /user/followers/deny 403 Forbidden personal deny no existing request', async () => {
+            let response = await request(server).del("/user/followers/deny").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "admin" });
+            expect(response.body.message).toContain("there is no follower request from");
+            expect(response.statusCode).toBe(403);
+        });
+
+        test('POST /user/followers/pending 200 OK 0 followers request sent to personal user', async () => {
+            let response = await request(server).get("/user/followers/pending").set({ "authorization": `Bearer ${personalToken}` });
+            expect(response.body.message.length).toBe(0);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('POST /user/followers/accept 200 OK personal accept admin request', async () => {
+            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${adminToken}` }).send({ "username": "personal" });
+            response = await request(server).post("/user/followers/accept").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "admin" });
+            expect(response.body.message).toBe(true);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('POST /user/followers/accept 200 OK personal accept moderator request', async () => {
+            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${moderatorToken}` }).send({ "username": "personal" });
+            response = await request(server).post("/user/followers/accept").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "moderator" });
+            expect(response.body.message).toBe(true);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('POST /user/followers/accept 200 OK personal accept business request', async () => {
+            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${businessToken}` }).send({ "username": "personal" });
+            response = await request(server).post("/user/followers/accept").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "business" });
+            expect(response.body.message).toBe(true);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followers-of/personal 200 OK personal has 3 followers on accepted request', async () => {
+            let response = await request(server).get("/user/followers-of/personal").set({ "authorization": `Bearer ${personalToken}` });
+            expect(response.body.message.length).toBe(3);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followed-by/personal 200 OK personal is following to 0 users', async () => {
+            let response = await request(server).get("/user/followed-by/personal").set({ "authorization": `Bearer ${personalToken}` });
+            expect(response.body.message.length).toBe(0);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followers-of/business 200 OK personal has 0 followers on accepted request', async () => {
+            let response = await request(server).get("/user/followers-of/business").set({ "authorization": `Bearer ${businessToken}` });
+            expect(response.body.message.length).toBe(0);
+            expect(response.statusCode).toBe(200);
+        });
+
+        test('GET /user/followers-of/business 200 OK personal block user and get 0 followers request', async () => {
+            let response = await request(server).post("/user/follow").set({ "authorization": `Bearer ${moderatorToken}` }).send({ "username": "personal" });
+            response = await request(server).post("/user/block/").set({ "authorization": `Bearer ${personalToken}` }).send({ "username": "moderator" });
+            response = await request(server).get("/user/followers/pending").set({ "authorization": `Bearer ${personalToken}` });
+            expect(response.body.message.length).toBe(0);
+            expect(response.statusCode).toBe(200);
+        });
+
     });
 });
 
@@ -526,6 +785,7 @@ describe('GET /user/followers-of/:username', () => {
     });
 });
 
+
 describe('POST /user/block/', () => {
     test('POST /user/block/ 404 Resource Not Found ', async () => {
         let response = await request(server).post("/user/blocsk/").set({ "authorization": "Bearer sadfasdfas" }).send();
@@ -542,11 +802,8 @@ describe('POST /user/block/', () => {
 
         beforeAll(async () => {
             await clearDatabase();
-
-
             let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
-
             const newUser = {
                 name: "uvgram",
                 presentation: "Welcome to UVGram.",
@@ -558,10 +815,8 @@ describe('POST /user/block/', () => {
                 verificationCode
             }
             response = await request(server).post("/accounts/create").send(newUser);
-
             response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
             let vCode = await getVerificationCodeFromEmail("uvgram2@uvgram.com");
-
             const newUser2 = {
                 name: "uvgram second user",
                 presentation: "Welcome to UVGram.",
@@ -606,59 +861,7 @@ describe('POST /user/block/', () => {
             expect(response.body.message).toContain("you have blocked to");
             expect(response.statusCode).toBe(200);
         });
-    });
-});
 
-describe('POST /user/unblock/', () => {
-    test('POST /user/unblock/ 404 Resource Not Found ', async () => {
-        let response = await request(server).post("/user/unblocsk/").set({ "authorization": "Bearer sadfasdfas" }).send();
-        expect(response.statusCode).toBe(404);
-    });
-
-    describe('POST /user/unblock/ After 2 new users', () => {
-        let accessToken;
-
-        afterAll(async () => {
-            await clearDatabase();
-
-        });
-
-        beforeAll(async () => {
-            await clearDatabase();
-
-            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "admin@uvgram.com" });
-            let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
-
-            const newUser = {
-                name: "uvgram",
-                presentation: "Welcome to UVGram.",
-                username: "uvgram",
-                password: "hola1234",
-                phoneNumber: "2212345678",
-                email: "admin@uvgram.com",
-                birthdate: "2000-01-01",
-                verificationCode
-            }
-            response = await request(server).post("/accounts/create").send(newUser);
-
-            response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
-            let vCode = await getVerificationCodeFromEmail("uvgram2@uvgram.com");
-
-            const newUser2 = {
-                name: "uvgram second user",
-                presentation: "Welcome to UVGram.",
-                username: "uvgram2",
-                password: "hola1234",
-                phoneNumber: "2212345678",
-                email: "uvgram2@uvgram.com",
-                birthdate: "2000-01-01",
-                verificationCode: vCode
-            }
-            response = await request(server).post("/accounts/create").send(newUser2);
-            response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
-            accessToken = response.body.message.accessToken;
-            response = await request(server).post("/user/block").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
-        });
 
         test('POST /user/unblock/ 403 Forbidden User can not block himself', async () => {
             let response = await request(server).delete("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram" });
@@ -689,5 +892,7 @@ describe('POST /user/unblock/', () => {
             expect(response.body.message).toContain("you have unblocked to");
             expect(response.statusCode).toBe(200);
         });
+
+
     });
 });

@@ -6,21 +6,20 @@ beforeAll(async () => {
     await delayServerConnections();
     await clearDatabase();
 
-    let response = await request(server).post("/data/region/").send({ "region": "PUEBLA" });
-    response = await request(server).post("/data/region/").send({ "region": "VERACRUZ" });
-    response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
-    response = await request(server).post("/data/faculty/").send({ "idRegion": "3", "faculty": "FACULTAD_ESTADISTICA_E_INFORMATICA" });
-    response = await request(server).post("/data/faculty/").send({ "idRegion": "3", "faculty": "FACULTAD_DE_CONTABILIDAD" });
-    response = await request(server).post("/data/faculty/").send({ "idRegion": "3", "faculty": "FACULTAD_DE_INGENIERIA" });
-    response = await request(server).post("/data/faculty/").send({ "idRegion": "2", "faculty": "FACULTAD_DE_DERECHO" });
-    response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
-    response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "LICENCIATURA_INGENIERIA_ALIMENTOS", "idFaculty": "3" });
-    response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "INGENIERIA_DE_SOFTWARE", "idFaculty": "3" });
-    response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "INGENIERIA_MECANICA", "idFaculty": "3" });
-    response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "MEDICINA", "idFaculty": "2" });
-    response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "DERECHO", "idFaculty": "2" });
-    response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
-
+    await request(server).post("/data/region/").send({ "region": "PUEBLA" });
+    await request(server).post("/data/region/").send({ "region": "VERACRUZ" });
+    await request(server).post("/data/region/").send({ "region": "XALAPA" });
+    await request(server).post("/data/faculty/").send({ "idRegion": "3", "faculty": "FACULTAD_ESTADISTICA_E_INFORMATICA" });
+    await request(server).post("/data/faculty/").send({ "idRegion": "3", "faculty": "FACULTAD_DE_CONTABILIDAD" });
+    await request(server).post("/data/faculty/").send({ "idRegion": "3", "faculty": "FACULTAD_DE_INGENIERIA" });
+    await request(server).post("/data/faculty/").send({ "idRegion": "2", "faculty": "FACULTAD_DE_DERECHO" });
+    await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
+    await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "LICENCIATURA_INGENIERIA_ALIMENTOS", "idFaculty": "3" });
+    await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "INGENIERIA_DE_SOFTWARE", "idFaculty": "3" });
+    await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "INGENIERIA_MECANICA", "idFaculty": "3" });
+    await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "MEDICINA", "idFaculty": "2" });
+    await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "DERECHO", "idFaculty": "2" });
+    await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
 });
 
 afterAll(async () => {

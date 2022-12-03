@@ -1,5 +1,8 @@
 # UVGramAPI
 
+<a href="https://www.codacy.com/gh/adrianc68/UVGramAPI/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=adrianc68/UVGramAPI&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/82edac800f3b45edb5ca69cd96f24dfd"/></a>
+
+
 UVGram es un proyecto para las experiencias educativas de **Desarrollo de Sistemas en Red** y **Desarrollo de Aplicaciones** de la Universidad Veracruzana.
 
 Cuyo objetivo es el siguiente:
@@ -82,7 +85,7 @@ La siguiente tabla describe los pares clave/valor que son necesarios para el fun
 | `TEST_DB_DATABASE`          | Corresponde al nombre de la base de datos de **PRUEBAS**. Por ejemplo `test_uvgram_db`                                                                                                                                                                        |
 | `TEST_DB_PASSWORD`          | Corresponde a la contraseña de acceso para el usuario para la base de datos de **PRUEBAS**. Por ejemplo `hola1234`.                                                                                                                                           |
 | `TEST_DB_PORT`              | Corresponde al puerto de la base de datos de **PRUEBAS** donde el servicio se ofrece en el host. Por ejemplo `6380`                                                                                                                                           |
-| `SV_ADDRESS` |  Corresponde a la dirección IP y puerto donde se ejecutará el servidor. Por ejemplo: `http://192.168.1.10:8080`, incluyendo el puerto y sin "/" al final. | 
+| `SV_ADDRESS` | Corresponde a la dirección IP y puerto donde se ejecutará el servidor o donde será expuesto. Por ejemplo: `http://192.168.1.10:8080`, incluyendo el puerto y sin "/" al final. Su propósito permite generar URL's que apunten al mismo servidor. | 
 | `AES_SECRET_KEY` | Corresponde a una llave que sirve para el envío de datos cifrados a través de URL en peticiones GET. 
 | `SERVER_KEY` | Corresponde a una llave secreta, que permite cambiar el rol de un usuario al iniciar el servidor. |
 | `TEST_NODEMAILER_HOST`| Corresponde a la dirección del host que provee el servicio de correo electrónico en el ambiente de **PRUEBAS**. El utilizado para este sistema es Mailhog. |

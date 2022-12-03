@@ -1,6 +1,7 @@
 const request = require('supertest');
 const { connetionToServers } = require('../src/app');
 const { getVerificationCodeFromEmail, getURLConfirmationFromEmail } = require('../src/dataaccess/mailDataAccess');
+const { logger } = require('../src/helpers/logger');
 const { CategoryType } = require('../src/models/enum/CategoryType');
 const { GenderType } = require('../src/models/enum/GenderType');
 const { server, delayServerConnections, clearMessagesMailHog, clearDatabase } = require("../src/server")
@@ -16,8 +17,6 @@ afterAll(async () => {
 });
 
 describe('On URL and code generation Test', () => {
-    // CAN FAIL BY MAILHOG ENCODING (URL in mailhog add 3D and \n\r )
-    // CAN FAIL BY MAILHOG ENCODING (URL in mailhog add 3D and \n\r )
     // CAN FAIL BY MAILHOG ENCODING (URL in mailhog add 3D and \n\r )
     let accessToken;
     afterAll(async () => {
@@ -2104,63 +2103,198 @@ describe('POST /accounts/users/roles/change', () => {
         accessToken = response.body.message.accessToken;
     })
 
-    test('PATCH /accounts/edit/personal 200 OK Change to administrator', async () => {
+    test('POST /accounts/users/roles/change 200 OK Change to administrator', async () => {
         let response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "administrador" });
         expect(response.body.message.isUpdated).toBe(true);
         expect(response.statusCode).toBe(200);
     });
 
-    test('PATCH /accounts/edit/personal 200 OK Change to moderator', async () => {
+    test('POST /accounts/users/roles/change 200 OK Change to moderator', async () => {
         let response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "moderador" });
         expect(response.body.message.isUpdated).toBe(true);
         expect(response.statusCode).toBe(200);
     });
 
-    test('PATCH /accounts/edit/personal 200 OK Change to business', async () => {
+    test('POST /accounts/users/roles/change 200 OK Change to business', async () => {
         let response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "empresarial" });
         expect(response.body.message.isUpdated).toBe(true);
         expect(response.statusCode).toBe(200);
     });
 
-    test('PATCH /accounts/edit/personal 200 OK Change to personal', async () => {
+    test('POST /accounts/users/roles/change 200 OK Change to personal', async () => {
         let response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "personal" });
         expect(response.body.message.isUpdated).toBe(true);
         expect(response.statusCode).toBe(200);
     });
 
-    test('PATCH /accounts/edit/personal 200 OK Change to administrator again', async () => {
+    test('POST /accounts/users/roles/change 200 OK Change to administrator again', async () => {
         let response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "administrador" });
         expect(response.body.message.isUpdated).toBe(true);
         expect(response.statusCode).toBe(200);
     });
 
-    test('PATCH /accounts/edit/personal 200 OK Change to moderator again', async () => {
+    test('POST /accounts/users/roles/change 200 OK Change to moderator again', async () => {
         let response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "moderador" });
         expect(response.body.message.isUpdated).toBe(true);
         expect(response.statusCode).toBe(200);
     });
 
-    test('PATCH /accounts/edit/personal 200 OK Change to business again', async () => {
+    test('POST /accounts/users/roles/change 200 OK Change to business again', async () => {
         let response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "empresarial" });
         expect(response.body.message.isUpdated).toBe(true);
         expect(response.statusCode).toBe(200);
     });
 
-    test('PATCH /accounts/edit/personal 200 OK Change to personal again', async () => {
+    test('POST /accounts/users/roles/change 200 OK Change to personal again', async () => {
         let response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "personal" });
         expect(response.body.message.isUpdated).toBe(true);
         expect(response.statusCode).toBe(200);
     });
 
-    test('PATCH /accounts/edit/personal 404 Not Found Resource not found', async () => {
+    test('POST /accounts/users/roles/change 404 Not Found Resource not found', async () => {
         let response = await request(server).post("/accounts/users/roles/changes").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "personal" });
         expect(response.statusCode).toBe(404);
     });
 
-    test('PATCH /accounts/edit/personal 400 Bad Request invalid user role type', async () => {
+    test('POST /accounts/users/roles/change400 Bad Request invalid user role type', async () => {
         let response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "coco" });
         expect(response.body.errors[0].msg).toContain("newRoleType must be one this:")
         expect(response.statusCode).toBe(400);
+    });
+});
+
+
+describe('POST /accounts/users/change-privacy and GET /accounts/data', () => {
+    let adminToken;
+    let moderatorToken;
+    let businessToken;
+    let personalToken;
+
+    afterAll(async () => {
+        await clearDatabase();
+    });
+
+    beforeAll(async () => {
+        await clearDatabase();
+
+        let response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
+        response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
+        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "DERECHO", "idFaculty": "1" });
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "admin", "email": "admin@uvgram.com" });
+        let verificationCode = await getVerificationCodeFromEmail("admin@uvgram.com");
+        const admin = {
+            name: "Administrator",
+            presentation: "Welcome to UVGram.",
+            username: "admin",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "admin@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(admin);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "admin", "password": "hola1234" });
+        adminToken = response.body.message.accessToken;
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "moderator", "email": "moderator@uvgram.com" });
+        verificationCode = await getVerificationCodeFromEmail("moderator@uvgram.com");
+        const moderator = {
+            name: "Moderator",
+            presentation: "Welcome to UVGram.",
+            username: "moderator",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "moderator@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(moderator);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "moderator", "password": "hola1234" });
+        moderatorToken = response.body.message.accessToken;
+
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "business", "email": "business@uvgram.com" });
+        verificationCode = await getVerificationCodeFromEmail("business@uvgram.com");
+        const business = {
+            name: "business",
+            presentation: "Welcome to UVGram.",
+            username: "business",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "business@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(business);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "business", "password": "hola1234" });
+        businessToken = response.body.message.accessToken;
+
+
+        response = await request(server).post("/accounts/create/verification").send({ "username": "personal", "email": "personal@uvgram.com" });
+        verificationCode = await getVerificationCodeFromEmail("personal@uvgram.com");
+        const personal = {
+            name: "personal",
+            presentation: "Welcome to UVGram.",
+            username: "personal",
+            password: "hola1234",
+            phoneNumber: "2212345678",
+            email: "personal@uvgram.com",
+            birthdate: "2000-01-01",
+            verificationCode
+        }
+        response = await request(server).post("/accounts/create").send(personal);
+        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "personal", "password": "hola1234" });
+        personalToken = response.body.message.accessToken;
+    });
+
+    test('POST /accounts/users/change-privacy 200 OK Change privacy of personal user', async () => {
+        let response = await request(server).post("/accounts/users/change-privacy").set("authorization", `Bearer ${personalToken}`).send({ "privacy": "privado" });
+        expect(response.body.message).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/users/change-privacy 200 OK Change privacy of business user', async () => {
+        let response = await request(server).post("/accounts/users/change-privacy").set("authorization", `Bearer ${businessToken}`).send({ "privacy": "privado" });
+        expect(response.body.message).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/users/change-privacy 200 OK Change privacy of moderator user', async () => {
+        let response = await request(server).post("/accounts/users/change-privacy").set("authorization", `Bearer ${moderatorToken}`).send({ "privacy": "privado" });
+        expect(response.body.message).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/users/change-privacy 200 OK Change privacy of admin user', async () => {
+        let response = await request(server).post("/accounts/users/change-privacy").set("authorization", `Bearer ${adminToken}`).send({ "privacy": "privado" });
+        expect(response.body.message).toBe(true);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/data 200 OK Get data of personal user', async () => {
+        let response = await request(server).get("/accounts/data").set("authorization", `Bearer ${personalToken}`);
+        expect(response.body.message.privacy).toContain("PRIVADO")
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/data 200 OK Get data of business user', async () => {
+        let response = await request(server).get("/accounts/data").set("authorization", `Bearer ${businessToken}`);
+        expect(response.body.message.privacy).toContain("PRIVADO")
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/data 200 OK Get data of moderator user', async () => {
+        let response = await request(server).get("/accounts/data").set("authorization", `Bearer ${moderatorToken}`);
+        expect(response.body.message.privacy).toContain("PRIVADO")
+        expect(response.statusCode).toBe(200);
+    });
+
+    test('POST /accounts/data 200 OK Get data of admin user', async () => {
+        let response = await request(server).get("/accounts/data").set("authorization", `Bearer ${adminToken}`);
+        expect(response.body.message.privacy).toContain("PRIVADO")
+        expect(response.statusCode).toBe(200);
     });
 });
 

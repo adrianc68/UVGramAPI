@@ -121,7 +121,7 @@ const deleteUserByUsername = async (username) => {
         await t.commit();
     } catch (error) {
         await t.rollback();
-        throw new Error(error);
+        throw error;
     }
     return message;
 };
@@ -170,7 +170,7 @@ const createUser = async (user) => {
         await t.commit();
     } catch (error) {
         await t.rollback();
-        throw new Error(error);
+        throw error;
     }
     return "New entity was added";
 };
@@ -191,7 +191,7 @@ const generateCodeVerification = async (username) => {
         await t.commit();
     } catch (error) {
         await t.rollback();
-        throw new Error(error);
+        throw error;
     }
     return verificationData.code;
 };
@@ -478,7 +478,7 @@ const isUserFollowedByUser = async (id_user_follower, id_user_followed) => {
         });
         isFollowed = (data.length !== 0);
     } catch (error) {
-        throw new Error(error);
+        throw error;
     }
     return isFollowed;
 };
@@ -501,7 +501,7 @@ const isRequestFollowerSent = async (id_user_follower, id_user_followed) => {
         });
         isRequestSent = (data.length !== 0);
     } catch (error) {
-        throw new Error(error);
+        throw error;
     }
     return isRequestSent;
 };
@@ -529,7 +529,7 @@ const getFollowedByUser = async (id) => {
             raw: true
         });
     } catch (error) {
-        throw new Error(error);
+        throw error;
     }
     return followedByUser;
 };
@@ -557,7 +557,7 @@ const getFollowersOfUser = async (id) => {
             raw: true
         });
     } catch (error) {
-        throw new Error(error);
+        throw error;
     }
     return followers;
 };
@@ -1054,7 +1054,7 @@ const getAllAccountData = async (id) => {
     try {
         accountInfo = await User.findOne({
             where: { id },
-            attributes: ["name", "presentation", "username", "Account.email", "Account.phone_number", "Account.birthday", "UserRole.role"],
+            attributes: ["name", "presentation", "username", "Account.email", "Account.phone_number", "Account.birthday", "UserRole.role", "UserConfiguration.privacy"],
             include: [{
                 model: Account,
                 as: "Account",
@@ -1062,6 +1062,9 @@ const getAllAccountData = async (id) => {
             }, {
                 model: UserRole,
                 as: "UserRole",
+                attributes: []
+            }, {
+                model:UserConfiguration,
                 attributes: []
             }],
             raw: true

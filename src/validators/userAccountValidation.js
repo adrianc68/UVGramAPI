@@ -1,7 +1,7 @@
 const { isEducationalProgramRegistered } = require("../dataaccess/educationalProgramDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isEmailRegistered, isUsernameRegistered, isVerificationCodeGenerated, doesVerificationCodeMatches,
-    isOldPasswordValid, getAccountLoginData, getAccountLoginDataById, changePrivacyTypeUser, getActualPrivacyType } = require("../dataaccess/userDataAccess");
+    isOldPasswordValid, getAccountLoginData, getAccountLoginDataById, getActualPrivacyType } = require("../dataaccess/userDataAccess");
 const { decryptAES } = require("../helpers/aes-encryption");
 const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden, httpResponseUnauthorized } = require("../helpers/httpResponses");
 const { CategoryType } = require("../models/enum/CategoryType");
