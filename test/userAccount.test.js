@@ -1,7 +1,6 @@
 const request = require('supertest');
 const { connetionToServers } = require('../src/app');
 const { getVerificationCodeFromEmail, getURLConfirmationFromEmail } = require('../src/dataaccess/mailDataAccess');
-const { logger } = require('../src/helpers/logger');
 const { CategoryType } = require('../src/models/enum/CategoryType');
 const { GenderType } = require('../src/models/enum/GenderType');
 const { server, delayServerConnections, clearMessagesMailHog, clearDatabase } = require("../src/server")
