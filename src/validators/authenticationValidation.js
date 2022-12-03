@@ -6,7 +6,7 @@ const { AccountStatusType } = require("../models/enum/AccountStatusType");
 
 const doesExistUser = (user) => {
     let doesExistUser = false;
-    if (user != undefined && user.length != 0) {
+    if (user != undefined && user.length !== 0) {
         doesExistUser = true;
     }
     return doesExistUser;

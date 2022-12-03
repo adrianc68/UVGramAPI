@@ -223,7 +223,7 @@ const deleteAllSessionsByUserId = async (id_user) => {
                 id_user
             },
         });
-        if (result.length != 0) {
+        if (result.length !== 0) {
             await Promise.all(result.map(async (session) => {
                 try {
                     await removeTokenByJTI(session.token);

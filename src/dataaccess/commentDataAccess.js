@@ -1,7 +1,6 @@
 const { Sequelize, Op } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { generateRandomUUID } = require("../helpers/generateCode");
-const { logger } = require("../helpers/logger");
 const { Comment } = require("../models/Comment");
 const { CommentLike } = require("../models/CommentLike");
 const { NestedComment } = require("../models/NestedComment");
@@ -20,7 +19,7 @@ const createCommentInPost = async (comment, id_post, id_user) => {
     const t = await sequelize.transaction();
     try {
         let uuid = generateRandomUUID(11);
-        object = await Comment.create({
+        let object = await Comment.create({
             comment,
             id_post,
             id_user,

@@ -23,7 +23,7 @@ const sendEmailCodeVerification = async (codeVerification, to) => {
             subject: `UVGram Code Confirmation`,
             html,
         });
-        isSend = (result.accepted.length != 0);
+        isSend = (result.accepted.length !== 0);
     } catch (error) {
         throw new Error(error.message);
     }

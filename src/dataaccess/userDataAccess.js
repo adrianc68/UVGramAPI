@@ -85,7 +85,7 @@ const isUsernameRegistered = async (username) => {
     const user = await User.findAll({
         where: { username }
     });
-    isUsernameRegistered = (user.length != 0);
+    isUsernameRegistered = (user.length !== 0);
     return isUsernameRegistered;
 };
 
@@ -99,7 +99,7 @@ const isEmailRegistered = async (email) => {
     const account = await Account.findAll({
         where: { email }
     });
-    isEmailRegistered = (account.length != 0);
+    isEmailRegistered = (account.length !== 0);
     return isEmailRegistered;
 };
 
@@ -209,7 +209,7 @@ const isVerificationCodeGenerated = async (username) => {
             username: encodeStringSHA256(username)
         }
     });
-    isCodeGenerated = (verificationData.length != 0);
+    isCodeGenerated = (verificationData.length !== 0);
     return isCodeGenerated;
 };
 
@@ -277,7 +277,7 @@ const doesVerificationCodeMatches = async (username, verificationCode) => {
             code: verificationCode
         }
     });
-    doesMatches = (verificationData.length != 0);
+    doesMatches = (verificationData.length !== 0);
     return doesMatches;
 };
 
@@ -477,7 +477,7 @@ const isUserFollowedByUser = async (id_user_follower, id_user_followed) => {
                 status: FollowRequestStatusType.ACCEPTED
             }
         });
-        isFollowed = data.length != 0;
+        isFollowed = (data.length !== 0);
     } catch (error) {
         throw new Error(error);
     }
@@ -500,7 +500,7 @@ const isRequestFollowerSent = async (id_user_follower, id_user_followed) => {
                 status: FollowRequestStatusType.PENDING
             }
         });
-        isRequestSent = data.length != 0;
+        isRequestSent = (data.length !== 0);
     } catch (error) {
         throw new Error(error);
     }
@@ -746,7 +746,7 @@ const isUserBlockedByUser = async (id_user_blocker, id_user_blocked) => {
                 id_user_blocked
             }
         });
-        isBlocked = data.length != 0;
+        isBlocked = (data.length !== 0);
     } catch (error) {
         throw new Error(error);
     }

@@ -39,24 +39,24 @@ app.use(require("./routers/comment"));
 app.use(require("./routers/resource"));
 
 const connetionToServers = async () => {
-    try {
-        await sequelize.authenticate().then(async x => {
-            await sequelize.sync({ force: false });
-            logger.info(`PostgreSQL Client initialized on port ${sequelize.config.port}`)
-        });
+    await sequelize.authenticate().then(async () => {
+        await sequelize.sync({ force: false });
+        logger.info(`PostgreSQL Client initialized on port ${sequelize.config.port}`)
+    }).then(async () => {
         await redisClient.connect().then(x => {
             logger.info(`Redis Client initialized on port ${REDIS_PORT_CONNECTED_TO}`);
         });
+    }).then(async () => {
         await mailer.verify().then(x => {
             logger.info(`Nodemailer initialized on port ${mailer.options.port}`);
         });
-
+    }).then(async () => {
         await connectToFtpServer().then(x => {
             logger.info(`FTPClient initialized on port ${FTP_PORT_CONNECTION}`);
         });
-    } catch (error) {
+    }).catch(error => {
         logger.fatal(error);
-    }
+    });
 }
 
 module.exports = { app, connetionToServers };

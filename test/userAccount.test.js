@@ -27,7 +27,7 @@ describe('On URL and code generation Test', () => {
 
     beforeAll(async () => {
         await clearDatabase();
-        response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
+        let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "uvgram@uvgram.com" });
         let vCode = await getVerificationCodeFromEmail("uvgram@uvgram.com");
         const newUser = {
             name: "uvgram user",
@@ -49,13 +49,13 @@ describe('On URL and code generation Test', () => {
 
     beforeEach(async () => {
         // Don't change username on this test or will fail.
-        response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
+        let response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
         accessToken = response.body.message.accessToken;
     })
 
     describe('POST /accounts/password/reset/confirmation/?:data', () => {
         test('POST /accounts/password/reset/confirmation/?:data 200 OK', async () => {
-            response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram@uvgram.com" });
+            let response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram@uvgram.com" });
             let url = await getURLConfirmationFromEmail("uvgram@uvgram.com");
             url = url.substring(url.search("/accounts"))
             response = await request(server).get(url);
@@ -71,7 +71,7 @@ describe('On URL and code generation Test', () => {
 
     describe('POST /accounts/verification/url/change_password?:data', () => {
         test('POST /accounts/verification/url/change_password?:data 200 OK', async () => {
-            response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram" });
+            let response = await request(server).post("/accounts/password/reset").send({ "emailOrUsername": "uvgram" });
             let url = await getURLConfirmationFromEmail("uvgram@uvgram.com");
             url = url.substring(url.search("/accounts"));
             response = await request(server).get(url);
@@ -86,7 +86,7 @@ describe('On URL and code generation Test', () => {
 
     describe('POST /accounts/verification/url/confirm_email?:data', () => {
         test('POST /accounts/verification/url/confirm_email?:data 200 OK', async () => {
-            response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
+            let response = await request(server).patch("/accounts/edit/personal").set({ "authorization": `Bearer ${accessToken}` }).send({
                 name: "uvgram user",
                 presentation: "Welcome to UVGram.",
                 username: "uvgram",
@@ -108,57 +108,57 @@ describe('On URL and code generation Test', () => {
 describe('POST /accounts/create/verification', () => {
     describe('Test that must fail', () => {
         test('POST /accounts/create/verifications 404 Resource not found', async () => {
-            const response = await request(server).post("/accounts/create/verifications").send({ "userjasfd": "uvgram", "email": "admin@uvgram.com" });
+            let response = await request(server).post("/accounts/create/verifications").send({ "userjasfd": "uvgram", "email": "admin@uvgram.com" });
             expect(response.statusCode).toBe(404);
         });
 
         test('POST /accounts/create/verification 400 Bad Request username is required', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "userjasfd": "uvgram", "email": "admin@uvgram.com" });
+            let response = await request(server).post("/accounts/create/verification").send({ "userjasfd": "uvgram", "email": "admin@uvgram.com" });
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /accounts/create/verification 400 Bad Request email is required', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "afsdpk": "admin@uvgram.com" });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "afsdpk": "admin@uvgram.com" });
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /accounts/create/verification 400 Bad Request username is empty', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": "", "email": "admin@uvgram.com" });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "", "email": "admin@uvgram.com" });
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /accounts/create/verification 400 Bad Request username is null', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": null, "email": "admin@uvgram.com" });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": null, "email": "admin@uvgram.com" });
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /accounts/create/verification 400 Bad Request username is undefined ', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": undefined, "email": "admin@uvgram.com" });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": undefined, "email": "admin@uvgram.com" });
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /accounts/create/verification 400 Bad Request email is empty', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "" });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": "" });
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /accounts/create/verification 400 Bad Request email is null', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": null });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": null });
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /accounts/create/verification 400 Bad Request email is undefined', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": undefined });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram", "email": undefined });
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /accounts/create/verification 404 Bad Request on JSON', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": "uvgr\"am", "email": "admin@uvgram.com" });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgr\"am", "email": "admin@uvgram.com" });
             expect(response.statusCode).toBe(400);
         });
 
         test('POST /accounts/create/verification 404 Bad Request on JSON', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": "uvgr\"am", "email": "admin@uvgram.com" });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "uvgr\"am", "email": "admin@uvgram.com" });
             expect(response.statusCode).toBe(400);
         });
     });
@@ -166,19 +166,19 @@ describe('POST /accounts/create/verification', () => {
 
     describe('Test that must pass', () => {
         test('POST /accounts/create/verification 200 OK Response For new user', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": "ricardolopez", "email": "riclopez@uvgram.com" });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "ricardolopez", "email": "riclopez@uvgram.com" });
             let verificationCode = await getVerificationCodeFromEmail("riclopez@uvgram.com");
             expect(verificationCode).toHaveLength(8);
             expect(response.statusCode).toBe(200);
         });
 
         test('POST /accounts/create/verification 403 Forbidden Code already generated should wait 5 minutes', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": "ricardolopez", "email": "riclopez@uvgram.com" });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "ricardolopez", "email": "riclopez@uvgram.com" });
             expect(response.statusCode).toBe(403);
         });
 
         test('POST /accounts/create/verification 200 OK Response For another user', async () => {
-            const response = await request(server).post("/accounts/create/verification").send({ "username": "robertolopez", "email": "lopezroberto@test.com" });
+            let response = await request(server).post("/accounts/create/verification").send({ "username": "robertolopez", "email": "lopezroberto@test.com" });
             expect(response.statusCode).toBe(200);
             let verificationCode = await getVerificationCodeFromEmail("lopezroberto@test.com");
             expect(verificationCode).toHaveLength(8);
@@ -200,7 +200,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/creates").send(newUser);
+            let response = await request(server).post("/accounts/creates").send(newUser);
             expect(response.statusCode).toBe(404);
         });
 
@@ -215,7 +215,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("name must have the allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -231,7 +231,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.message).toContain("verification code is not valid");
             expect(response.statusCode).toBe(403);
         });
@@ -247,7 +247,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.message).toContain("verification code is not valid");
             expect(response.statusCode).toBe(403);
         });
@@ -263,7 +263,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.message).toContain("verification code is not valid");
             expect(response.statusCode).toBe(403);
         });
@@ -279,7 +279,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.message).toContain("verification code is not valid");
             expect(response.statusCode).toBe(403);
         });
@@ -295,7 +295,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.message).toContain("verification code is not valid");
             expect(response.statusCode).toBe(403);
         });
@@ -310,7 +310,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username is required");
             expect(response.statusCode).toBe(400);
         });
@@ -326,7 +326,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username is required");
             expect(response.statusCode).toBe(400);
         });
@@ -342,7 +342,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username is required");
             expect(response.statusCode).toBe(400);
         });
@@ -358,7 +358,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username must have the allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -374,7 +374,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username is not valid, must have allowed characters");
             expect(response.statusCode).toBe(400);
         });
@@ -390,7 +390,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username is not valid, must have allowed characters");
             expect(response.statusCode).toBe(400);
         });
@@ -406,7 +406,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username is not valid, must have allowed characters");
             expect(response.statusCode).toBe(400);
         });
@@ -422,7 +422,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username is not valid, must have allowed characters");
             expect(response.statusCode).toBe(400);
         });
@@ -438,7 +438,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username is not valid, must have allowed characters");
             expect(response.statusCode).toBe(400);
         });
@@ -454,7 +454,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username is not valid, must have allowed characters");
             expect(response.statusCode).toBe(400);
         });
@@ -470,7 +470,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("username is not valid, must have allowed characters");
             expect(response.statusCode).toBe(400);
         });
@@ -486,7 +486,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("password is required");
             expect(response.statusCode).toBe(400);
         });
@@ -502,7 +502,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("password is required");
             expect(response.statusCode).toBe(400);
         });
@@ -518,7 +518,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("password is required");
             expect(response.statusCode).toBe(400);
         });
@@ -534,7 +534,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("password must have the allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -550,7 +550,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("password must have the allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -566,7 +566,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("phoneNumber must have the allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -582,7 +582,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("phoneNumber must have the allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -598,7 +598,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("phoneNumber must have the allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -614,7 +614,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("phoneNumber must have the allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -630,7 +630,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("phoneNumber must have the allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -646,7 +646,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("phoneNumber must have the allowed characters");
             expect(response.statusCode).toBe(400);
         });
@@ -662,7 +662,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("email is required");
             expect(response.statusCode).toBe(400);
         });
@@ -678,7 +678,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("email is required");
             expect(response.statusCode).toBe(400);
         });
@@ -694,7 +694,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("email is required");
             expect(response.statusCode).toBe(400);
         });
@@ -710,7 +710,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("email format is not valid. must have allowed format");
             expect(response.statusCode).toBe(400);
         });
@@ -726,7 +726,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-09-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("email allowed length");
             expect(response.statusCode).toBe(400);
         });
@@ -742,7 +742,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "200009-09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("birthday format is invalid, must have the allowed format");
             expect(response.statusCode).toBe(400);
         });
@@ -758,7 +758,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000/09/09",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("birthday format is invalid, must have the allowed format");
             expect(response.statusCode).toBe(400);
         });
@@ -774,7 +774,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "09-09-2000",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("birthday format is invalid, must have the allowed format");
             expect(response.statusCode).toBe(400);
         });
@@ -790,7 +790,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-13-12",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("birthday format is invalid, must have the allowed format");
             expect(response.statusCode).toBe(400);
         });
@@ -806,7 +806,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-12-32",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("birthday format is invalid, must have the allowed format");
             expect(response.statusCode).toBe(400);
         });
@@ -822,7 +822,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-1-32",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("birthday format is invalid, must have the allowed format");
             expect(response.statusCode).toBe(400);
         });
@@ -838,7 +838,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "0-12-32",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("birthday format is invalid, must have the allowed format");
             expect(response.statusCode).toBe(400);
         });
@@ -854,7 +854,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2001-02-29",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("birthday does not exist");
             expect(response.statusCode).toBe(400);
         });
@@ -870,7 +870,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2001-04-31",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.errors[0].msg).toContain("birthday does not exist");
             expect(response.statusCode).toBe(400);
         });
@@ -886,7 +886,7 @@ describe('POST /accounts/create/', () => {
                 birthdate: "2000-03-31",
                 verificationCode: "00000000"
             }
-            const response = await request(server).post("/accounts/create").send(newUser);
+            let response = await request(server).post("/accounts/create").send(newUser);
             expect(response.body.message).toContain("verification code is not valid");
             expect(response.statusCode).toBe(403);
         });

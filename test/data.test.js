@@ -7,7 +7,7 @@ beforeAll(async () => {
     await delayServerConnections();
     await clearDatabase();
 
-    response = await request(server).post("/data/region/").send({ "region": "PUEBLA" });
+    let response = await request(server).post("/data/region/").send({ "region": "PUEBLA" });
     response = await request(server).post("/data/region/").send({ "region": "VERACRUZ" });
     response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
     response = await request(server).post("/data/faculty/").send({ "idRegion": "3", "faculty": "FACULTAD_ESTADISTICA_E_INFORMATICA" });
@@ -31,7 +31,7 @@ afterAll(async () => {
 
 describe('GET /data/faculty/', () => {
     test('GET /data/faculty 200 OK Get 5 faculties availables ', async () => {
-        response = await request(server).get("/data/faculty/").send();
+        let response = await request(server).get("/data/faculty/").send();
         expect(response.body.message.length).toEqual(5);
         expect(response.statusCode).toBe(200);
     });
@@ -39,7 +39,7 @@ describe('GET /data/faculty/', () => {
 
 describe('GET /data/region/', () => {
     test('GET /data/region/ 200 OK Get 3 region availables ', async () => {
-        response = await request(server).get("/data/region/").send();
+        let response = await request(server).get("/data/region/").send();
         expect(response.body.message.length).toEqual(3);
         expect(response.statusCode).toBe(200);
     });
@@ -47,7 +47,7 @@ describe('GET /data/region/', () => {
 
 describe('GET /data/educationalprogram/', () => {
     test('GET /data/educationalprogram/ 200 OK Get educational programs availables ', async () => {
-        response = await request(server).get("/data/educationalprogram/").send();
+        let response = await request(server).get("/data/educationalprogram/").send();
         expect(response.body.message.length).toEqual(6);
         expect(response.statusCode).toBe(200);
     });
@@ -57,17 +57,17 @@ describe('GET /data/educationalprogram/', () => {
 
 describe('POST /data/educationalprogram/', () => {
     test('POST /data/educationalprogram 200 OK POST educational programs ', async () => {
-        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "METALURGIA", "idFaculty": "1" });
+        let response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "METALURGIA", "idFaculty": "1" });
         expect(response.statusCode).toBe(200);
     });
 
     test('POST /data/educationalprogram 200 OK POST educational programs ', async () => {
-        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "QUIMICA", "idFaculty": "1" });
+        let response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "QUIMICA", "idFaculty": "1" });
         expect(response.statusCode).toBe(200);
     });
 
     test('POST /data/educationalprogram 200 OK POST educational programs ', async () => {
-        response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "INFORMATICA", "idFaculty": "2" });
+        let response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "INFORMATICA", "idFaculty": "2" });
         expect(response.statusCode).toBe(200);
     });
 });
@@ -75,17 +75,17 @@ describe('POST /data/educationalprogram/', () => {
 
 describe('POST /data/faculty/', () => {
     test('POST /data/faculty 200 OK POST 1 faculty added ', async () => {
-        response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_PSICOLOGIA" });
+        let response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_PSICOLOGIA" });
         expect(response.statusCode).toBe(200);
     });
 
     test('POST /data/faculty 200 OK POST 1 faculty added', async () => {
-        response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_CIENCIAS" });
+        let response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_CIENCIAS" });
         expect(response.statusCode).toBe(200);
     });
 
     test('POST /data/faculty 200 OK POST 1 faculty added', async () => {
-        response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_CIENCIAS_SOCIALES" });
+        let response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_CIENCIAS_SOCIALES" });
         expect(response.statusCode).toBe(200);
     });
 });
@@ -93,17 +93,17 @@ describe('POST /data/faculty/', () => {
 
 describe('POST /data/region/', () => {
     test('POST /data/region 200 OK POST 1 region added ', async () => {
-        response = await request(server).post("/data/region/").send({ "region": "TABASCO" });
+        let response = await request(server).post("/data/region/").send({ "region": "TABASCO" });
         expect(response.statusCode).toBe(200);
     });
 
     test('POST /data/region 200 OK POST 1 region added ', async () => {
-        response = await request(server).post("/data/region/").send({ "region": "RIO_PANUCO" });
+        let response = await request(server).post("/data/region/").send({ "region": "RIO_PANUCO" });
         expect(response.statusCode).toBe(200);
     });
 
     test('POST /data/region 200 OK POST 1 region added ', async () => {
-        response = await request(server).post("/data/region/").send({ "region": "CORDOBA" });
+        let response = await request(server).post("/data/region/").send({ "region": "CORDOBA" });
         expect(response.statusCode).toBe(200);
     });
 });

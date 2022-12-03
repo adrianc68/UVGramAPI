@@ -97,7 +97,7 @@ const dislikePost = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, isUnliked);
-}
+};
 
 const getUsersWhoLikesPost = async (request, response) => {
     const token = (request.headers.authorization).split(" ")[1];
@@ -121,7 +121,7 @@ const getUsersWhoLikesPost = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, { likedBy });
-}
+};
 
 module.exports = {
     getPostsByUsername, createPost, getPostDataByUUID,

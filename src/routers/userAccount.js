@@ -6,7 +6,6 @@ const { formatValidationEmailOrUsername } = require('../validators/formatValidat
 const { formatValidationUserAccountData, formatValidationAccountEmail, formatValidationAccountUsername, formatValidationVerificationCode, formatValidationPassword, formatValidationOldPassword, formatValidationBasicUserAccountData, formatValidationPersonalData, formatValidationBusinessData, formatValidationAdminData, formatValidationModerator, formatValidationNewRoleType, formatValidationPrivacyData } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationIsURLRecoverAlreadyGeneratedByEmailOrUsername } = require('../validators/urlRecoverValidation');
 const { validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist, validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationModeratorRoleData, validationAdminRoleData, validationBusinessRoleData, validationSecretKey, validationUserPrivacy } = require('../validators/userAccountValidation');
-const { validationRejectOnUsernameNotRegistered } = require('../validators/userValidation');
 
 router.post("/accounts/create",
     formatValidationUserAccountData,

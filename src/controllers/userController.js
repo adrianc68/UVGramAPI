@@ -13,7 +13,7 @@ const followUser = async (request, response) => {
     const idUserFollower = await verifyToken(token).then(data => { return data.id });
     let message;
     try {
-        userStateType = await getActualPrivacyType(idUserFollowed);
+        let userStateType = await getActualPrivacyType(idUserFollowed);
         if (userStateType == PrivacyType.PRIVATE) {
             let resultData = await sendRequestFollowToUser(idUserFollower, idUserFollowed);
             if (resultData) {
