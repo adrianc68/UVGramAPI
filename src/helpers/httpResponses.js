@@ -142,7 +142,7 @@ const httpResponseInternalServerError = (response, error) => {
  * @param {*} response 
  * @param {*} route 
  */
-const httpResponseRedirect = (request, response, route, message) => {
+const httpResponseRedirect = (request, response, route) => {
     response.writeHead(StatusCodes.MOVED_TEMPORARILY, {
         Location: "http" + (request.socket.encrypted ? "s" : "") + "://" +
             request.headers.host + route

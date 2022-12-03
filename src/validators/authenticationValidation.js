@@ -1,4 +1,4 @@
-const { httpResponseInternalServerError, httpResponseNotFound, httpResponseErrorToken, httpResponseForbidden } = require("../helpers/httpResponses");
+const { httpResponseInternalServerError, httpResponseErrorToken, httpResponseForbidden } = require("../helpers/httpResponses");
 const { encondePassword } = require("../helpers/cipher");
 const { getAccountLoginData } = require("../dataaccess/userDataAccess");
 const { getTokenExist, TOKEN_TYPE } = require("../dataaccess/tokenDataAccess");
@@ -6,7 +6,7 @@ const { AccountStatusType } = require("../models/enum/AccountStatusType");
 
 const doesExistUser = (user) => {
     let doesExistUser = false;
-    if (user != undefined && user.length != 0) {
+    if (user != undefined && user.length !== 0) {
         doesExistUser = true;
     }
     return doesExistUser;

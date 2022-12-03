@@ -9,7 +9,7 @@ function encondeSHA256(lines) {
         hash.write(line);
     }
     return hash.digest('hex');
-};
+}
 
 function encondeSHA512(lines) {
     const hash = createHash('sha512');

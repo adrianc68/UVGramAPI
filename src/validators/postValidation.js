@@ -1,7 +1,6 @@
 const { getPostByUUID, isPostLikedByUser, getIdPostByPostUUID } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 
 const validationDoesExistPostUUID = async (request, response, next) => {
     let uuid = request.params.uuid;

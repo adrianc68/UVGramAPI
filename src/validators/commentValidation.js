@@ -1,8 +1,7 @@
 const { getCommentByUUID, getIdCommentByUUID, isCommentLikedByUser } = require("../dataaccess/commentDataAccess");
-const { getPostByUUID, getPostById } = require("../dataaccess/postDataAccess");
+const { getPostById } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { httpResponseForbidden, httpResponseInternalServerError } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 
 const validationDoesExistCommentUUID = async (request, response, next) => {
     let uuid = request.params.uuid;

@@ -29,7 +29,7 @@ const changePasswordOnUnloggedUserAndLogInOnURLConfirmation = async (request, re
     try {
         let localData = response.locals.data;
         let userData = await getAccountLoginDataById(localData.idUser);
-        let resultSession = await deleteAllSessionsByUserId(userData.id);
+        await deleteAllSessionsByUserId(userData.id);
         isUpdated = await changePassword(userData.email, password);
         if (!isUpdated) {
             return httpResponseForbidden(response, "can not change password, try later");
@@ -40,7 +40,10 @@ const changePasswordOnUnloggedUserAndLogInOnURLConfirmation = async (request, re
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    return httpResponseOk(response, { isUpdated, ...tokens });
+    if (tokens) {
+        tokens = { ...tokens }
+    }
+    return httpResponseOk(response, { isUpdated, tokens });
 };
 
 const getRedirectionURLOnConfirmation = async (request, response) => {
