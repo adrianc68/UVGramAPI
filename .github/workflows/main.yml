@@ -1,8 +1,10 @@
 name: Docker build and push to hub
 
 on:
+  push:
+    branches: [ release, main]
   pull_request:
-    branches: main
+    branches: [ release, main]
 
 jobs:
   build:
