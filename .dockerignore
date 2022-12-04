@@ -6,8 +6,6 @@ test
 services
 README.md
 messages.log
-Dockerfile
-docker-compose.yml
 services.tar
 .git
 .gitignore
