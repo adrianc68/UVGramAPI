@@ -164,7 +164,7 @@ const removeToken = async (token) => {
 const deleteAllSessionByAccessToken = async (accessToken) => {
     let isRemoved;
     try {
-        let refreshTokenJTI = (await verifyToken(accessToken)).refreshTokenJti;;
+        let refreshTokenJTI = (await verifyToken(accessToken)).refreshTokenJti;
         await deleteSessionInDbByRefreshJTI(refreshTokenJTI);
         await removeTokenByJTI(refreshTokenJTI);
         await removeToken(accessToken);

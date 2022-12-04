@@ -78,7 +78,7 @@ const validateUsernameData = [
         .bail()
         .isLength({ min: 3, max: 30 })
         .withMessage("username must have the allowed length: {min: 3, max: 30}")
-        .matches(/^[\w\d]+(\.([\w\d]+))*$/)
+        .matches(/^[\w]+(\.([\w]+))*$/)
         .withMessage("username is not valid, must have allowed characters: words, numbers. no allowed spaces and period as last character")
         .isLowercase()
         .withMessage("username is not valid, must have allowed characters: only lowercase allowed")

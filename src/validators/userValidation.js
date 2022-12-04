@@ -27,7 +27,7 @@ const validationRejectOnUsernameNotRegistered = async (request, response, next) 
     let { username } = request.body;
     if (!username) username = request.params.username;
     try {
-        let isRegistered = await isUsernameRegistered(username);;
+        let isRegistered = await isUsernameRegistered(username);
         if (!isRegistered) {
             return httpResponseForbidden(response, "username does not exist");
         }
