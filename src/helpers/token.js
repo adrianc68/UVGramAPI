@@ -78,7 +78,7 @@ const verifyToken = async (token) => {
  */
 const addToken = async (token, jti) => {
     const check = await redisClient.EXISTS(jti);
-    if (check == 1) {
+    if (check === 1) {
         return;
     }
     const value = `${TOKEN_STATE.VALID} ${token}`

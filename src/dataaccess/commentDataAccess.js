@@ -1,7 +1,6 @@
 const { Sequelize, Op } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { generateRandomUUID } = require("../helpers/generateCode");
-const { logger } = require("../helpers/logger");
 const { Comment } = require("../models/Comment");
 const { CommentLike } = require("../models/CommentLike");
 const { NestedComment } = require("../models/NestedComment");
@@ -20,7 +19,7 @@ const createCommentInPost = async (comment, id_post, id_user) => {
     const t = await sequelize.transaction();
     try {
         let uuid = generateRandomUUID(11);
-        object = await Comment.create({
+        let object = await Comment.create({
             comment,
             id_post,
             id_user,
@@ -130,7 +129,7 @@ const likeCommentByIds = async (id_user, id_comment) => {
     let isLiked = false;
     const t = await sequelize.transaction();
     try {
-        let result = await CommentLike.create({
+        await CommentLike.create({
             id_user,
             id_comment
         }, {
@@ -155,7 +154,7 @@ const dislikeCommentByIds = async (id_user, id_comment) => {
     let isDisliked = false;
     const t = await sequelize.transaction();
     try {
-        let result = await CommentLike.destroy({
+        await CommentLike.destroy({
             where: {
                 id_user,
                 id_comment
@@ -365,7 +364,7 @@ const createAnswerComment = async (parent_id_comment, comment, id_post, id_user)
             uuid
         }, { transaction: t })
 
-        let nested = await NestedComment.create({
+        await NestedComment.create({
             parent_id_comment,
             child_id_comment: object.id
         }, { transaction: t });

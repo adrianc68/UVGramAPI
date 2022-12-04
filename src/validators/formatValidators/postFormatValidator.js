@@ -1,6 +1,5 @@
 const { httpResponseValidation } = require('../../helpers/httpResponses');
-const { logger } = require('../../helpers/logger');
-const { validateFileData, validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed, validatePostUUID, validateCity } = require('./formatValidator');
+const { validateFileData, validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed, validatePostUUID } = require('./formatValidator');
 
 const formatValidationPostData = [
     validateFileData,

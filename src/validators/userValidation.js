@@ -1,7 +1,6 @@
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { isUserFollowedByUser, getIdByUsername, isUserBlockedByUser, isUsernameRegistered, getActualPrivacyType, isRequestFollowerSent } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
-const { logger } = require("../helpers/logger");
 const { PrivacyType } = require("../models/enum/PrivacyType");
 
 const isUserAlreadyFollowedByUser = async (idUserFollower, idUserFollowed) => {
@@ -28,7 +27,7 @@ const validationRejectOnUsernameNotRegistered = async (request, response, next) 
     let { username } = request.body;
     if (!username) username = request.params.username;
     try {
-        let isRegistered = await isUsernameRegistered(username);;
+        let isRegistered = await isUsernameRegistered(username);
         if (!isRegistered) {
             return httpResponseForbidden(response, "username does not exist");
         }
@@ -115,7 +114,7 @@ const validationBlockingUser = async (request, response, next) => {
         if (idUserBlocked == idUserBlocker) {
             return httpResponseForbidden(response, "you can not block yourself");
         }
-        isAlreadyBlocked = await isUserAlreadyBlockedByUser(idUserBlocker, idUserBlocked);
+        let isAlreadyBlocked = await isUserAlreadyBlockedByUser(idUserBlocker, idUserBlocked);
         if (isAlreadyBlocked) {
             return httpResponseForbidden(response, "user is already blocked");
         }
@@ -134,7 +133,7 @@ const validationUnblockingUser = async (request, response, next) => {
         if (idUserBlocked == idUserBlocker) {
             return httpResponseForbidden(response, "you can not unblock yourself");
         }
-        isAlreadyBlocked = !(await isUserAlreadyBlockedByUser(idUserBlocker, idUserBlocked));
+        let isAlreadyBlocked = !(await isUserAlreadyBlockedByUser(idUserBlocker, idUserBlocked));
         if (isAlreadyBlocked) {
             return httpResponseForbidden(response, "user is already unblocked");
         }

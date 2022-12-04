@@ -2,9 +2,9 @@ name: Docker build and push to hub
 
 on:
   push:
-    branches: [ release, master]
+    branches: [ release, main]
   pull_request:
-    branches: [ release, master]
+    branches: [ release, main]
 
 jobs:
   build:

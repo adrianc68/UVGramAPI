@@ -78,7 +78,7 @@ const validateUsernameData = [
         .bail()
         .isLength({ min: 3, max: 30 })
         .withMessage("username must have the allowed length: {min: 3, max: 30}")
-        .matches(/^[\w\d]+(\.([\w\d]+))*$/)
+        .matches(/^[\w]+(\.([\w]+))*$/)
         .withMessage("username is not valid, must have allowed characters: words, numbers. no allowed spaces and period as last character")
         .isLowercase()
         .withMessage("username is not valid, must have allowed characters: only lowercase allowed")
@@ -423,16 +423,16 @@ const valueExistInEnumType = (value, enumType) => {
 
 const isValidDate = (dateString) => {
     // Parse the date parts to integers
-    var parts = dateString.split("-");
-    var day = parseInt(parts[2], 10);
-    var month = parseInt(parts[1], 10);
-    var year = parseInt(parts[0], 10);
+    let parts = dateString.split("-");
+    let day = parseInt(parts[2], 10);
+    let month = parseInt(parts[1], 10);
+    let year = parseInt(parts[0], 10);
     // Check the ranges of month and year
-    if (year < 1000 || year > 3000 || month == 0 || month > 12)
+    if (year < 1000 || year > 3000 || month === 0 || month > 12)
         return false;
-    var monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     // Adjust for leap years
-    if (year % 400 == 0 || (year % 100 != 0 && year % 4 == 0))
+    if (year % 400 === 0 || (year % 100 !== 0 && year % 4 === 0))
         monthLength[1] = 29;
     // Check the range of the day
     return day > 0 && day <= monthLength[month - 1];

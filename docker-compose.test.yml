@@ -1,0 +1,75 @@
+version: '3.8'
+services:
+  db_test:
+    build:
+      context: ./testing
+      dockerfile: "./dkfs/DockerfileDB"
+    restart: always
+    container_name: "test_uvgram_db"
+    image: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=dev
+      - POSTGRES_PASSWORD=soydesarrollador
+      - POSTGRES_DB=uvgram_db
+    volumes:
+      - ./prod/database/dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    networks:
+      testing_network:
+        aliases:
+          - db_testing_host
+  redis_test:
+    build:
+      context: ./testing
+      dockerfile: "./dkfs/DockerfileRES"
+    image: redis:latest
+    container_name: "test_uvgram_redis"
+    restart: always
+    ports:
+      - "6380:6379"
+    command: redis-server --requirepass development
+    environment:
+      - REDIS_REPLICATION_MODE=master
+    networks:
+      testing_network:
+        aliases:
+          - redis_testing_host
+  mailhog_test:
+    build:
+      context: ./testing
+      dockerfile: "./dkfs/DockerfileMAH"
+    container_name: "test_uvgram_mailhog"
+    image: mailhog:latest
+    restart: always
+    ports:
+      - 8025:8025
+      - 1025:1025
+    networks:
+      testing_network:
+        aliases:
+          - mail_testing_host
+  ftpserver_test:
+    build:
+      context: ./testing
+      dockerfile: "./dkfs/DockerfileFTP"
+    container_name: "test_uvgram_ftp"
+    restart: always
+    ports:
+      - "2121-2130:2121-2130"
+    image: fclairamb/ftpserver
+    volumes:
+      - ./testing/storage/files:/tmp
+      - ./testing/storage/conf:/app
+    networks:
+      testing_network:
+        aliases:
+          - ftp_testing_host
+volumes:
+  testing: {}
+networks:
+  testing_network:
+    name: testing_net
+    driver: bridge
+    ipam:
+      driver: default
