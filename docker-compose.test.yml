@@ -1,79 +1,75 @@
 version: '3.8'
 services:
-  db:
+  db_test:
     build:
-      context: ./dev
+      context: ./testing
       dockerfile: "./dkfs/DockerfileDB"
     restart: always
-    container_name: "dev_uvgram_db"
+    container_name: "test_uvgram_db"
     image: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       - POSTGRES_USER=dev
       - POSTGRES_PASSWORD=soydesarrollador
       - POSTGRES_DB=uvgram_db
     volumes:
-      - ./dev/database/data:/var/lib/postgresql/data
-      - ./dev/database/dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      - ./prod/database/dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
     networks:
-      dev_network:
+      testing_network:
         aliases:
-          - db_dev_host
-  redis:
+          - db_testing_host
+  redis_test:
     build:
-      context: ./dev
+      context: ./testing
       dockerfile: "./dkfs/DockerfileRES"
     image: redis:latest
-    container_name: "dev_uvgram_redis"
+    container_name: "test_uvgram_redis"
     restart: always
     ports:
-      - "6379:6379"
+      - "6380:6379"
     command: redis-server --requirepass development
-    volumes:
-      - ./dev/authentication/data/redis-data:/var/lib/redis
-      - ./dev/authentication/data/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:
-      dev_network:
+      testing_network:
         aliases:
-          - redis_dev_host
-  mailhog:
+          - redis_testing_host
+  mailhog_test:
     build:
-      context: ./dev
+      context: ./testing
       dockerfile: "./dkfs/DockerfileMAH"
-    container_name: "dev_uvgram_mailhog"
+    container_name: "test_uvgram_mailhog"
     image: mailhog:latest
     restart: always
     ports:
       - 8025:8025
       - 1025:1025
     networks:
-      dev_network:
+      testing_network:
         aliases:
-          - mail_dev_host
-  ftpserver:
+          - mail_testing_host
+  ftpserver_test:
     build:
-      context: ./dev
+      context: ./testing
       dockerfile: "./dkfs/DockerfileFTP"
-    container_name: "dev_uvgram_ftp"
+    container_name: "test_uvgram_ftp"
     restart: always
-    image: fclairamb/ftpserver
     ports:
       - "2121-2130:2121-2130"
+    image: fclairamb/ftpserver
     volumes:
-      - ./dev/storage/files:/tmp
-      - ./dev/storage/conf:/app
+      - ./testing/storage/files:/tmp
+      - ./testing/storage/conf:/app
     networks:
-      dev_network:
+      testing_network:
         aliases:
-          - ftp_dev_host
+          - ftp_testing_host
 volumes:
-  dev: {}
+  testing: {}
 networks:
-  dev_network:
-    name: dev_net
+  testing_network:
+    name: testing_net
     driver: bridge
     ipam:
       driver: default

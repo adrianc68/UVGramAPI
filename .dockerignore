@@ -6,11 +6,12 @@ test
 services
 README.md
 messages.log
-Dockerfile
-docker-compose.yml
 services.tar
 .git
 .gitignore
 /prod/database/data
 /prod/authentication/data
 /prod/storage/files
+/testing/database/data
+/testing/authentication/data
+/testing/storage/files

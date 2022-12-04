@@ -3,7 +3,6 @@ const { URLRecover } = require("../models/URLRecover");
 const { v4: uuidv4 } = require("uuid");
 const { ActionURLRecoverType } = require("../models/enum/ActionURLRecoverType");
 const { encryptAES, decryptAES } = require("../helpers/aes-encryption");
-const { logger } = require("../helpers/logger");
 
 const decryptURI = async (uri) => {
     let parameters;
@@ -232,7 +231,6 @@ const getResourceGetURL = async (url) => {
 
 const getServerURLAddress = () => {
     let address = `${process.env.SV_ADDRESS}`;
-    logger.debug(address);
     if (address) {
         if (address.charAt(address.length - 1) == "/") {
             address = address.slice(0, address.length - 1);
