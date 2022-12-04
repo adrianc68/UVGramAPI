@@ -39,6 +39,8 @@ jobs:
     needs: [test]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Install buildx
         id: buildx
         uses: crazy-max/ghaction-docker-buildx@v1
