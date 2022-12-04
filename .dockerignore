@@ -17,4 +17,3 @@ services.tar
 /testing/database/data
 /testing/authentication/data
 /testing/storage/files
-tmp
