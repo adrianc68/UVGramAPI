@@ -88,7 +88,7 @@ const getUsersWhoLikesComment = async (request, response) => {
     try {
         const userDataId = await verifyToken(token).then(data => { return data.id });
         const commetId = await getIdCommentByUUID(uuid);
-        usersResult = await getUsersWhoLikeCommentById(commetId);
+        let usersResult = await getUsersWhoLikeCommentById(commetId);
         await Promise.all(usersResult.map(async function (data) {
             try {
                 data.isFollowed = await isUserFollowedByUser(userDataId, data.id);

@@ -3,7 +3,7 @@ const { saveFiles } = require("../dataaccess/fileServerDataAccess");
 const { getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById, getPostFilenamesById } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { getAccountLoginData, isUserFollowedByUser } = require("../dataaccess/userDataAccess");
-const { httpResponseInternalServerError, httpResponseOk, httpResponseForbidden } = require("../helpers/httpResponses");
+const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
 
 const getPostsByUsername = async (request, response) => {
     const username = request.params.username;
@@ -60,7 +60,7 @@ const createPost = async (request, response) => {
         let postDataCreated = await createPostByUserId(userDataId, description, commentsAllowed, likesAllowed, files);
         if (postDataCreated != null) {
             postInfo = postDataCreated;
-            resultFiles = postDataCreated.files;
+            let resultFiles = postDataCreated.files;
             await saveFiles(resultFiles, userDataId, postDataCreated.id);
         }
     } catch (error) {
@@ -97,7 +97,7 @@ const dislikePost = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, isUnliked);
-}
+};
 
 const getUsersWhoLikesPost = async (request, response) => {
     const token = (request.headers.authorization).split(" ")[1];
@@ -106,7 +106,7 @@ const getUsersWhoLikesPost = async (request, response) => {
     try {
         const userDataId = await verifyToken(token).then(data => { return data.id });
         const postDataId = await getIdPostByPostUUID(uuid);
-        usersResult = await getUsersWhoLikePostById(postDataId);
+        let usersResult = await getUsersWhoLikePostById(postDataId);
         await Promise.all(usersResult.map(async function (data) {
             try {
                 data.isFollowed = await isUserFollowedByUser(userDataId, data.id);
@@ -121,7 +121,7 @@ const getUsersWhoLikesPost = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, { likedBy });
-}
+};
 
 module.exports = {
     getPostsByUsername, createPost, getPostDataByUUID,

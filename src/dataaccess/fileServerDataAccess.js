@@ -4,18 +4,18 @@ const fs = require('fs');
 const saveFiles = async (files, idUser, idPost) => {
     const fileServerClient = await connectToFtpServer();
     await Promise.all(files.map(async function (file) {
-        await file.mv(`./tmp/${file.filename}`).then((result) => {
+        await file.mv(`./tmp/${file.filename}`).then(() => {
             return fileServerClient.ensureDir(`/media/users/${idUser}/${idPost}`);
-        }).then((result) => {
+        }).then(() => {
             return fileServerClient.uploadFrom(`./tmp/${file.filename}`, `/media/users/${idUser}/${idPost}/${file.filename}`);
-        }).then(reslt => {
+        }).then(() => {
             fileServerClient.close();
             fs.unlinkSync(`./tmp/${file.filename}`);
         }).catch((error) => {
             throw error;
         });
-    })).then((result) => {
-        isCreated = true;
+    })).then(() => {
+        return true;
     }).catch((error) => {
         removeTempFile(files);
         throw error;
@@ -34,12 +34,7 @@ const getFiles = async (idUser, idPost, filename, writeStream, contentType) => {
     fileServerClient.close();
 };
 
-const removeFile = async () => {
-
-};
-
 const removeTempFile = async (files) => {
-    const fileServerClient = await connectToFtpServer();
     try {
         await Promise.all(files.map(async function (file) {
             if (file) {

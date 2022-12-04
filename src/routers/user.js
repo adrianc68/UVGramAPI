@@ -5,7 +5,7 @@ const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authent
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationFollowingUser, validationUnfollowingUser, validationBlockingUser,
-    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser, validationDoesUserIsPrivateAndUnfollowedByActualUser, validationAcceptOrDenyFollowerRequest, validationDenyFollowerRequest, validationRemoveUserFromFollowers } = require('../validators/userValidation');
+    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser, validationDoesUserIsPrivateAndUnfollowedByActualUser, validationAcceptOrDenyFollowerRequest, validationRemoveUserFromFollowers } = require('../validators/userValidation');
 const router = require('express').Router();
 
 router.post("/user/follow/",

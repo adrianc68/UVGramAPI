@@ -2,7 +2,7 @@ const axios = require('axios');
 const { app, connetionToServers } = require("./app");
 const { sequelize } = require("./database/connectionDatabaseSequelize");
 const { redisClient } = require("./database/connectionRedis");
-const { connectToFtpServer, fileServerClient } = require('./database/connetionFtpServer');
+const { fileServerClient } = require('./database/connetionFtpServer');
 const { logger } = require("./helpers/logger");
 
 const server = app.listen({

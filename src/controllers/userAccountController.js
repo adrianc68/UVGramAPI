@@ -9,7 +9,7 @@ const { PrivacyType } = require("../models/enum/PrivacyType");
 const { UserRoleType } = require("../models/enum/UserRoleType");
 
 const addUser = async (request, response) => {
-    const { password, email, name, presentation, username, phoneNumber, birthdate, verificationCode } = request.body;
+    const { password, email, name, presentation, username, phoneNumber, birthdate } = request.body;
     let user = {
         password,
         email,
@@ -19,6 +19,7 @@ const addUser = async (request, response) => {
         phoneNumber,
         birthdate
     }
+    let message;
     try {
         message = await createUser(user);
         await removeVerificationCode(username);
@@ -113,8 +114,9 @@ const removeUserByUsername = async (request, response) => {
 const createURLVerification = async (request, response) => {
     let { emailOrUsername } = request.body;
     let message;
+    let userData
     try {
-        let userData = await getAccountLoginData(emailOrUsername);
+        userData = await getAccountLoginData(emailOrUsername);
         let urlResult = await generateURLUpdatePasswordConfirmation(userData.id, emailOrUsername);
         if (urlResult) {
             let emailResult = await sendEmailPasswordURLConfirmation(urlResult, userData.email);
@@ -136,8 +138,9 @@ const createURLVerification = async (request, response) => {
 const createVerificationCode = async (request, response) => {
     let { username, email } = request.body;
     let isGenerated = false;
+    let verificationCode;
     try {
-        let verificationCode = await generateCodeVerification(username);
+        verificationCode = await generateCodeVerification(username);
         if (verificationCode) {
             let isSentToEmail = await sendEmailCodeVerification(verificationCode, email);
             isGenerated = isSentToEmail;
@@ -183,7 +186,7 @@ const changeUserRoleByEmailOrUsername = async (request, response) => {
         let userData = await getAccountLoginData(emailOrUsername);
         isUpdated = await changeUserRoleType(userData.id, newRoleType.toUpperCase());
         if (isUpdated) {
-            let resultSession = await deleteAllSessionsByUserId(userData.id);
+            await deleteAllSessionsByUserId(userData.id);
         }
     } catch (error) {
         return httpResponseInternalServerError(response, error);
@@ -191,7 +194,7 @@ const changeUserRoleByEmailOrUsername = async (request, response) => {
     return httpResponseOk(response, { isUpdated })
 }
 
-const changePrivacyType = async (request, response, next) => {
+const changePrivacyType = async (request, response) => {
     const token = (request.headers.authorization).split(" ")[1];
     const { privacy } = request.body;
     let result = false;
@@ -199,7 +202,7 @@ const changePrivacyType = async (request, response, next) => {
         let userDataId = await verifyToken(token).then(data => { return data.id });
         result = await changePrivacyTypeUser(userDataId, privacy);
         if (privacy == PrivacyType.PUBLIC) {
-            let resultAcceptAllRequest = await acceptAllFollowerRequestById(userDataId);
+            await acceptAllFollowerRequestById(userDataId);
         }
     } catch (error) {
         return httpResponseInternalServerError(response, error);

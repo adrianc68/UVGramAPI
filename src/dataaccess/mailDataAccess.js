@@ -2,7 +2,6 @@ const { mailer } = require("../database/connetionEmail");
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-const { logger } = require("../helpers/logger");
 const { TEST_NODEMAILER_HOST, TEST_NODEMAILER_PORT_APIV2 } = process.env;
 
 /**
@@ -23,7 +22,7 @@ const sendEmailCodeVerification = async (codeVerification, to) => {
             subject: `UVGram Code Confirmation`,
             html,
         });
-        isSend = (result.accepted.length != 0);
+        isSend = (result.accepted.length !== 0);
     } catch (error) {
         throw new Error(error.message);
     }
@@ -48,7 +47,7 @@ const sendEmailChangeURLConfirmation = async (url, to) => {
             subject: `UVGram URL Verification`,
             html,
         });
-        isSend = (result.accepted.length != 0);
+        isSend = (result.accepted.length !== 0);
     } catch (error) {
         throw new Error(error.message);
     }
@@ -73,7 +72,7 @@ const sendEmailPasswordURLConfirmation = async (url, to) => {
             subject: `UVGram URL Verification`,
             html,
         });
-        isSend = (result.accepted.length != 0);
+        isSend = (result.accepted.length !== 0);
     } catch (error) {
         throw new Error(error.message);
     }

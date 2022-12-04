@@ -1,93 +1,79 @@
 version: '3.8'
 services:
-  uvgram:
-    container_name: "uvgram"
-    image: adrianc68/uvgram:latest
-    restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    volumes:
-      - .env:/app/.env
-      - ./prod/node/resources:/app/resources
-    networks:
-      prod_network:
-        aliases:
-          - node_prod_host
-    depends_on:
-      db:
-        condition: service_started
-      redis:
-        condition: service_started
-      mailhog:
-        condition: service_started
-      ftpserver:
-        condition: service_started
   db:
     build:
-      context: ./prod
+      context: ./dev
       dockerfile: "./dkfs/DockerfileDB"
     restart: always
-    container_name: "uvgram_db"
+    container_name: "dev_uvgram_db"
     image: postgres
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_USER=dev
       - POSTGRES_PASSWORD=soydesarrollador
       - POSTGRES_DB=uvgram_db
     volumes:
-      - ./prod/database/dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      - ./dev/database/data:/var/lib/postgresql/data
+      - ./dev/database/dump/dump.sql:/docker-entrypoint-initdb.d/dump.sql
     networks:
-      prod_network:
+      dev_network:
         aliases:
-          - db_prod_host
+          - db_dev_host
   redis:
     build:
-      context: ./prod
+      context: ./dev
       dockerfile: "./dkfs/DockerfileRES"
     image: redis:latest
-    container_name: "uvgram_redis"
+    container_name: "dev_uvgram_redis"
     restart: always
+    ports:
+      - "6379:6379"
     command: redis-server --requirepass development
+    volumes:
+      - ./dev/authentication/data/redis-data:/var/lib/redis
+      - ./dev/authentication/data/redis.conf:/usr/local/etc/redis/redis.conf
     environment:
       - REDIS_REPLICATION_MODE=master
     networks:
-      prod_network:
+      dev_network:
         aliases:
-          - redis_prod_host
+          - redis_dev_host
   mailhog:
     build:
-      context: ./prod
+      context: ./dev
       dockerfile: "./dkfs/DockerfileMAH"
-    container_name: "uvgram_mailhog"
+    container_name: "dev_uvgram_mailhog"
     image: mailhog:latest
     restart: always
     ports:
       - 8025:8025
+      - 1025:1025
     networks:
-      prod_network:
+      dev_network:
         aliases:
-          - mail_prod_host
+          - mail_dev_host
   ftpserver:
     build:
-      context: ./prod
+      context: ./dev
       dockerfile: "./dkfs/DockerfileFTP"
-    container_name: "uvgram_ftp"
+    container_name: "dev_uvgram_ftp"
     restart: always
     image: fclairamb/ftpserver
+    ports:
+      - "2121-2130:2121-2130"
     volumes:
-      - ./prod/storage/files:/tmp
-      - ./prod/storage/conf:/app
+      - ./dev/storage/files:/tmp
+      - ./dev/storage/conf:/app
     networks:
-      prod_network:
+      dev_network:
         aliases:
-          - ftp_prod_host
+          - ftp_dev_host
 volumes:
-  prod: {}
+  dev: {}
 networks:
-  prod_network:
-    name: prod_net
+  dev_network:
+    name: dev_net
     driver: bridge
     ipam:
       driver: default
