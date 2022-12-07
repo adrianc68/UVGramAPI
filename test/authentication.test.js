@@ -133,10 +133,10 @@ describe('POST /authentication/logout', () => {
         expect(response.statusCode).toBe(400);
     });
 
-    test('POST /authentication/logout 400 Bad Request autohrization is malformed ', async () => {
+    test('POST /authentication/logout 401 Unauthorized autohrization is malformed ', async () => {
         let response = await request(server).post("/authentication/logout").set({ "authorization": "Bearer test" }).send();
-        expect(response.body.message.error).toContain("JsonWebTokenError: jwt malformed");
-        expect(response.statusCode).toBe(403);
+        expect(response.body.message).toContain("You don't have permissions to perform this action!");
+        expect(response.statusCode).toBe(401);
     });
 
     describe('POST /authentication/logout After user creation', () => {
@@ -217,10 +217,10 @@ describe('POST /authentication/refresh', () => {
             await clearDatabase();
         });
 
-        test('POST /authentication/refresh 403 Forbidden Provide a token of type refresh.', async () => {
+        test('POST /authentication/refresh 401 Unauthorized Provide a token of type refresh.', async () => {
             let response = await request(server).post("/authentication/refresh").set({ "authorization": `Bearer ${accessToken}` }).send();
-            expect(response.body.message.error).toContain("you must provide a token of type refreshToken");
-            expect(response.statusCode).toBe(403);
+            expect(response.body.message).toContain("You don't have permissions to perform this action!");
+            expect(response.statusCode).toBe(401);
         });
 
         test('POST /authentication/refresh 200 OK Refresh accessToken removing last accessToken', async () => {
