@@ -1191,10 +1191,10 @@ describe('POST /accounts/password/change', () => {
         expect(response.statusCode).toBe(200);
     });
 
-    test('POST /accounts/password/change 403 Forbidden Bearer token is not valid', async () => {
+    test('POST /accounts/password/change 401 Unauthorized Bearer token is not valid', async () => {
         let response = await request(server).post("/accounts/password/change").set({ "authorization": `Bearer ${accessToken}s` }).send({ "password": "hola1234", "oldPassword": undefined });
-        expect(response.body.message.error).toContain("JsonWebTokenError: invalid signature");
-        expect(response.statusCode).toBe(403);
+        expect(response.body.message).toContain("You don't have permissions to perform this action!");
+        expect(response.statusCode).toBe(401);
     });
 });
 
