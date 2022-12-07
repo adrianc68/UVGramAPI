@@ -1,4 +1,4 @@
-const { httpResponseInternalServerError, httpResponseErrorToken, httpResponseForbidden } = require("../helpers/httpResponses");
+const { httpResponseInternalServerError, httpResponseErrorToken, httpResponseForbidden, httpResponseUnauthorized } = require("../helpers/httpResponses");
 const { encondePassword } = require("../helpers/cipher");
 const { getAccountLoginData } = require("../dataaccess/userDataAccess");
 const { getTokenExist, TOKEN_TYPE } = require("../dataaccess/tokenDataAccess");
@@ -47,8 +47,7 @@ const validationAccesTokenDataAsAuthorization = async (request, response, next) 
     try {
         await getTokenExist(accessToken, TOKEN_TYPE.ACCESS);
     } catch (error) {
-        const payload = { error: error.message }
-        return httpResponseErrorToken(response, payload);
+        return httpResponseUnauthorized(response);
     }
     return next();
 };
@@ -58,8 +57,7 @@ const validationRefreshTokenDataAsAuthorization = async (request, response, next
     try {
         await getTokenExist(refreshToken, TOKEN_TYPE.REFRESH);
     } catch (error) {
-        const payload = { error: error.message }
-        return httpResponseErrorToken(response, payload);
+        return httpResponseUnauthorized(response);
     }
     return next();
 };
@@ -69,8 +67,7 @@ const validationRefreshTokenDataAsParameter = async (request, response, next) =>
     try {
         await getTokenExist(refreshToken, TOKEN_TYPE.REFRESH);
     } catch (error) {
-        const payload = { error: error.message }
-        return httpResponseErrorToken(response, payload);
+        return httpResponseUnauthorized(response);
     }
     return next();
 }

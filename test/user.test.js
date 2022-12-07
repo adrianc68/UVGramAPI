@@ -610,10 +610,10 @@ describe('GET /user/followed-by/:username', () => {
             expect(response.statusCode).toBe(400);
         });
 
-        test('GET /user/followed-by/:username 403 Forbidden uvgram6 token does not exist', async () => {
+        test('GET /user/followed-by/:username 401 Unauthorized uvgram6 token does not exist', async () => {
             let response = await request(server).get("/user/followed-by/uvgram6").set({ "authorization": `Bearer ${accessTokenUser3}s` }).send();
-            expect(response.body.message.error).toContain("JsonWebTokenError: invalid signature");
-            expect(response.statusCode).toBe(403);
+            expect(response.body.message).toContain("You don't have permissions to perform this action!");
+            expect(response.statusCode).toBe(401);
         });
     });
 });
@@ -777,10 +777,10 @@ describe('GET /user/followers-of/:username', () => {
             expect(response.statusCode).toBe(400);
         });
 
-        test('GET /user/followers-of/:username 403 Forbidden uvgram6 token does not exist', async () => {
+        test('GET /user/followers-of/:username 401 Unauthorized uvgram6 token does not exist', async () => {
             let response = await request(server).get("/user/followers-of/uvgram6").set({ "authorization": `Bearer ${accessTokenUser3}s` }).send();
-            expect(response.body.message.error).toContain("JsonWebTokenError: invalid signature");
-            expect(response.statusCode).toBe(403);
+            expect(response.body.message).toContain("You don't have permissions to perform this action!");
+            expect(response.statusCode).toBe(401);
         });
     });
 });
