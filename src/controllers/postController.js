@@ -1,6 +1,6 @@
-const { getAllCommentsByIdPost, getCommentsCountById } = require("../dataaccess/commentDataAccess");
+const { getAllCommentsByIdPost, getCommentsCountById, isCommentLikedByUser } = require("../dataaccess/commentDataAccess");
 const { saveFiles } = require("../dataaccess/fileServerDataAccess");
-const { getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById, getPostFilenamesById } = require("../dataaccess/postDataAccess");
+const { getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById, getPostFilenamesById, isPostLikedByUser } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { getAccountLoginData, isUserFollowedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
@@ -18,6 +18,7 @@ const getPostsByUsername = async (request, response) => {
                 return;
             }
             post.comments = await getCommentsCountById(postId);
+            post.isLiked = await isPostLikedByUser(userData.id, postId);
             post.files = await getPostFilenamesById(post.id_user, post.id);
             delete post["id_user"];
             delete post["id"];
@@ -31,10 +32,19 @@ const getPostsByUsername = async (request, response) => {
 const getPostDataByUUID = async (request, response) => {
     const uuid = request.params.uuid;
     let postDetails = null;
+    const token = (request.headers.authorization).split(" ")[1];
     try {
+        const userDataId = await verifyToken(token).then(data => { return data.id });
         let postData = await getPostByUUID(uuid);
+        postData.isLiked = await isPostLikedByUser(userDataId, postData.id);
+        delete postData["id_user"];
+        delete postData["id"];
         let postID = await getIdPostByPostUUID(uuid);
         let commentData = await getAllCommentsByIdPost(postID);
+        await Promise.all(commentData.map(async function (comment) {
+            comment.isLiked = await isCommentLikedByUser(userDataId, comment.id);
+            delete comment["id"];
+        }));
         let countLikes = await getPostLikesById(postID);
         let files = await getPostFilenamesById(postData.id_user, postID);
         postDetails = {
