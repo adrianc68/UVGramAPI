@@ -105,9 +105,7 @@ const getAllCommentsByIdPost = async (id_post) => {
                     group: ["username", "Comment.comment", "Comment.created_time", "Comment.uuid", "Comment.id",],
                     raw: true,
                 });
-                delete parentComment["id"]
                 parentComment.replies = childComments;
-
             } catch (error) {
                 throw error;
             }
