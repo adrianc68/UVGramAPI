@@ -47,7 +47,7 @@ const getPostByUUID = async (uuid) => {
     try {
         post = await Post.findOne({
             where: { uuid },
-            attributes: ["description", "comments_allowed", "likes_allowed", "uuid", "id_user"],
+            attributes: ["description", "comments_allowed", "likes_allowed", "uuid", "id_user", "id"],
             raw: true
         });
     } catch (error) {
