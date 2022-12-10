@@ -40,7 +40,11 @@ const validationIsUsernameRegisteredWithNext = async (request, response, next) =
 const validationIsEmailRegistered = async (request, response) => {
     let isRegistered;
     try {
-        const { email } = request.body;
+        let { email } = request.body;
+        if (!email) {
+            email = request.params.email
+            email = decodeURIComponent(email);
+        }
         isRegistered = await isEmailRegistered(email);
     } catch (err) {
         return httpResponseInternalServerError(response, err);
@@ -56,7 +60,8 @@ const validationIsEmailRegistered = async (request, response) => {
 
 const validationIsUsernameRegistered = async (request, response) => {
     let isRegistered;
-    const { username } = request.body;
+    let { username } = request.body;
+    if (!username) username = request.params.username;
     try {
         isRegistered = await isUsernameRegistered(username);
     } catch (error) {
