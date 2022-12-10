@@ -38,12 +38,12 @@ router.post("/accounts/password/change",
     changePasswordOnLoggedUser
 );
 
-router.get("/accounts/username/check",
+router.get("/accounts/username/check/:username",
     formatValidationAccountUsername,
     validationIsUsernameRegistered
 );
 
-router.get("/accounts/email/check",
+router.get("/accounts/email/check/:email",
     formatValidationAccountEmail,
     validationIsEmailRegistered
 );
