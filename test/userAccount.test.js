@@ -946,22 +946,22 @@ describe('POST /accounts/create/', () => {
 });
 
 describe('GET /accounts/email/check', () => {
-    test('POST /accounts/email/checks 404 Resource Not Found ', async () => {
+    test('GET /accounts/email/checks 404 Not Found Not Found ', async () => {
         let response = await request(server).get("/accounts/email/checks").send({ "email": "test234232@uvgram.com" });
         expect(response.statusCode).toBe(404);
     });
 
-    test('POST /accounts/email/check 400 Bad Request Invalid JSON ', async () => {
+    test('GET /accounts/email/check 404 Not Found Invalid JSON ', async () => {
         let response = await request(server).get("/accounts/email/check").send({ "emai\"l": "test234232@uvgram.com" });
-        expect(response.statusCode).toBe(400);
+        expect(response.statusCode).toBe(404);
     });
 
-    test('POST /accounts/email/check 400 Bad Request email is required ', async () => {
+    test('GET /accounts/email/check 404 Not Found email is required ', async () => {
         let response = await request(server).get("/accounts/email/check").send({ "s": "test234232@uvgram.com" });
-        expect(response.statusCode).toBe(400);
+        expect(response.statusCode).toBe(404);
     });
 
-    test('POST /accounts/email/check 200 OK email exist', async () => {
+    test('GET /accounts/email/check 200 OK email exist', async () => {
         let response = await request(server).post("/accounts/create/verification").send({ "username": "test1000", "email": "test1000@uvgram.com" });
         let verificationCode = await getVerificationCodeFromEmail("test1000@uvgram.com");
         const newUser = {
@@ -975,13 +975,13 @@ describe('GET /accounts/email/check', () => {
             verificationCode
         }
         response = await request(server).post("/accounts/create").send(newUser);
-        response = await request(server).get("/accounts/email/check").send({ "email": "test1000@uvgram.com" });
+        response = await request(server).get("/accounts/email/check/" + encodeURIComponent("test1000@uvgram.com")).send();
         expect(response.body.message.exist).toBe(true);
         expect(response.statusCode).toBe(200);
     });
 
-    test('POST /accounts/email/check 200 OK email does not exist', async () => {
-        let response = await request(server).get("/accounts/email/check").send({ "email": "test234232@uvgram.com" });
+    test('GET /accounts/email/check 200 OK email does not exist', async () => {
+        let response = await request(server).get("/accounts/email/check/" + encodeURIComponent("test234232@uvgram.com")).send();
         expect(response.body.message.exist).toBe(false);
         expect(response.statusCode).toBe(200);
     });
@@ -991,16 +991,6 @@ describe('GET /accounts/username/check', () => {
     test('POST /accounts/username/checks 404 Resource Not Found ', async () => {
         let response = await request(server).get("/accounts/username/checks").send({ "username": "test234232" });
         expect(response.statusCode).toBe(404);
-    });
-
-    test('POST /accounts/username/check 400 Bad Request Invalid JSON ', async () => {
-        let response = await request(server).get("/accounts/username/check").send({ "username\"l": "test234232" });
-        expect(response.statusCode).toBe(400);
-    });
-
-    test('POST /accounts/username/check 400 Bad Request username is required ', async () => {
-        let response = await request(server).get("/accounts/username/check").send({ "s": "test234232" });
-        expect(response.statusCode).toBe(400);
     });
 
     test('POST /accounts/username/check 200 OK username exist', async () => {
@@ -1017,13 +1007,13 @@ describe('GET /accounts/username/check', () => {
             verificationCode
         }
         response = await request(server).post("/accounts/create").send(newUser);
-        response = await request(server).get("/accounts/username/check").send({ "username": "test88888" });
+        response = await request(server).get("/accounts/username/check/test88888").send();
         expect(response.body.message.exist).toBe(true);
         expect(response.statusCode).toBe(200);
     });
 
     test('POST /accounts/username/check 200 OK username does not exist', async () => {
-        let response = await request(server).get("/accounts/username/check").send({ "username": "test3453464" });
+        let response = await request(server).get("/accounts/username/check/test3453464").send();
         expect(response.body.message.exist).toBe(false);
         expect(response.statusCode).toBe(200);
     });
