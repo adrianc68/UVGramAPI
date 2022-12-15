@@ -43,7 +43,7 @@ const unfollowUser = async (request, response) => {
     let message;
     try {
         message = await unfollowUserUserDataAccess(idUserFollower, idUserFollowed);
-        if(message) {
+        if (message) {
             message = `you have unfollowed to ${username}`;
         }
     } catch (error) {
@@ -60,7 +60,7 @@ const deleteFollower = async (request, response) => {
     let message;
     try {
         message = await unfollowUserUserDataAccess(idUserFollower, userDataId);
-        if(message) {
+        if (message) {
             message = `you have removed ${username} from your followers`;
         }
     } catch (error) {
@@ -102,8 +102,8 @@ const getProfileOfUser = async (request, response) => {
         // find with include and raw support:
         // https://github.com/sequelize/sequelize/issues/3885 #3885 <--- Issue
         user = await getUserProfileUserDataAccess(idUser);
-        user.followers = (await getFollowedUsersOfUserUserDataAccess(idUser)).length;
-        user.followed = (await getFollowersOfUserUserDataAccess(idUser)).length;
+        user.followed = (await getFollowedUsersOfUserUserDataAccess(idUser)).length;
+        user.followers = (await getFollowersOfUserUserDataAccess(idUser)).length;
         user.posts = await getAllPostFromUserId(idUser);
         await Promise.all(user.posts.map(async function (post) {
             let postId = await getIdPostByPostUUID(post.uuid);
@@ -147,7 +147,7 @@ const unblockUser = async (request, response) => {
     let message;
     try {
         message = await unblockUserUserDataAccess(idUserBlocker, idUserToUnblock);
-        if(message) {
+        if (message) {
             message = `you have unblocked to ${username}`;
         }
     } catch (error) {
