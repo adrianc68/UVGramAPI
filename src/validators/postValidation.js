@@ -1,4 +1,4 @@
-const { getPostByUUID, isPostLikedByUser, getIdPostByPostUUID } = require("../dataaccess/postDataAccess");
+const { getPostByUUID, isPostLikedByUser, getIdPostByPostUUID, isUserOwnerOfPost } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
 
@@ -16,7 +16,7 @@ const validationDoesExistPostUUID = async (request, response, next) => {
         return httpResponseInternalServerError(response, error);
     }
     return next();
-}
+};
 
 const validationIsPostAlreadyLikedByUser = async (request, response, next) => {
     const token = (request.headers.authorization).split(" ")[1];
@@ -33,7 +33,7 @@ const validationIsPostAlreadyLikedByUser = async (request, response, next) => {
         return httpResponseForbidden(response, "post is already liked");
     }
     return next();
-}
+};
 
 const validationIsPostAlreadyDislikedByUser = async (request, response, next) => {
     const token = (request.headers.authorization).split(" ")[1];
@@ -50,6 +50,25 @@ const validationIsPostAlreadyDislikedByUser = async (request, response, next) =>
         return httpResponseForbidden(response, "post is already disliked");
     }
     return next();
-}
+};
 
-module.exports = { validationDoesExistPostUUID, validationIsPostAlreadyLikedByUser, validationIsPostAlreadyDislikedByUser };
+const validationIsUserOwnerOfPost = async (request, response, next) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    const { uuid } = request.body;
+    try {
+        const userDataId = await verifyToken(token).then(data => { return data.id });
+        const postDataId = await getIdPostByPostUUID(uuid);
+        let IsUserOwnerOfPost = await isUserOwnerOfPost(userDataId, postDataId);
+        if (!IsUserOwnerOfPost) {
+            return httpResponseForbidden(response, "you can not delete posts from other users");
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return next();
+};
+
+module.exports = {
+    validationDoesExistPostUUID, validationIsPostAlreadyLikedByUser,
+    validationIsPostAlreadyDislikedByUser, validationIsUserOwnerOfPost
+};

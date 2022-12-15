@@ -1,6 +1,6 @@
 const { getAllCommentsByIdPost, getCommentsCountById, isCommentLikedByUser } = require("../dataaccess/commentDataAccess");
 const { saveFiles } = require("../dataaccess/fileServerDataAccess");
-const { getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById, getPostFilenamesById, isPostLikedByUser } = require("../dataaccess/postDataAccess");
+const { getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById, getPostFilenamesById, isPostLikedByUser, deletePost } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { getAccountLoginData, isUserFollowedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseOk } = require("../helpers/httpResponses");
@@ -133,7 +133,21 @@ const getUsersWhoLikesPost = async (request, response) => {
     return httpResponseOk(response, { likedBy });
 };
 
+const deletePostOfUser = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    const uuid = request.body.uuid;
+    let isRemoved = false;
+    try {
+        const userDataId = await verifyToken(token).then(data => { return data.id });
+        const postDataId = await getIdPostByPostUUID(uuid);
+        isRemoved = await deletePost(userDataId, postDataId);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, { isRemoved });
+};
+
 module.exports = {
     getPostsByUsername, createPost, getPostDataByUUID,
-    likePost, dislikePost, getUsersWhoLikesPost
+    likePost, dislikePost, getUsersWhoLikesPost, deletePostOfUser
 }

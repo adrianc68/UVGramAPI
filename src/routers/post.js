@@ -1,9 +1,9 @@
-const { getPostsByUsername, createPost, getPostDataByUUID, likePost, dislikePost, getUsersWhoLikesPost } = require('../controllers/postController');
+const { getPostsByUsername, createPost, getPostDataByUUID, likePost, dislikePost, getUsersWhoLikesPost, deletePostOfUser } = require('../controllers/postController');
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationPostData, formatValidationUUIDPostData } = require('../validators/formatValidators/postFormatValidator');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
-const { validationDoesExistPostUUID, validationIsPostAlreadyLikedByUser, validationIsPostAlreadyDislikedByUser } = require('../validators/postValidation');
+const { validationDoesExistPostUUID, validationIsPostAlreadyLikedByUser, validationIsPostAlreadyDislikedByUser, validationIsUserOwnerOfPost } = require('../validators/postValidation');
 const { validationRejectOnUsernameNotRegistered, validationDoesUserBlocked, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../validators/userValidation');
 const router = require('express').Router();
 
@@ -60,5 +60,12 @@ router.get("/post/details/:uuid",
     getPostDataByUUID
 );
 
+router.delete("/post/delete/",
+    checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
+    formatValidationUUIDPostData,
+    validationDoesExistPostUUID,
+    validationIsUserOwnerOfPost,
+    deletePostOfUser
+);
 
 module.exports = router;
