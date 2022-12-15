@@ -887,12 +887,10 @@ describe('POST /user/block/', () => {
             expect(response.statusCode).toBe(403);
         });
 
-        test('POST /user/unblock/ 200 OK username is now blocked', async () => {
+        test('POST /user/unblock/ 403 OK username is now blocked', async () => {
             let response = await request(server).delete("/user/unblock/").set({ "authorization": `Bearer ${accessToken}` }).send({ "username": "uvgram2" });
-            expect(response.body.message).toContain("you have unblocked to");
-            expect(response.statusCode).toBe(200);
+            expect(response.body.message).toContain("you have blocked the user");
+            expect(response.statusCode).toBe(403);
         });
-
-
     });
 });

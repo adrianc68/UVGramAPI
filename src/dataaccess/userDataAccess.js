@@ -736,7 +736,7 @@ const unblockUser = async (id_user_blocker, id_user_blocked) => {
  * @param {*} id_user_blocked the user who is probably blocked.
  * @returns true if it's blocked otherwise false.
  */
-const isUserBlockedByUser = async (id_user_blocker, id_user_blocked) => {
+const isUserBlockingToUser = async (id_user_blocker, id_user_blocked) => {
     let isBlocked = false;
     try {
         let data = await Block.findAll({
@@ -1117,7 +1117,7 @@ module.exports = {
     generateCodeVerification, isVerificationCodeGenerated, removeVerificationCode,
     doesVerificationCodeMatches, getIdByUsername,
     getAllUsers, followUser, isUserFollowedByUser, unfollowUser, getFollowedByUser,
-    getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockedByUser,
+    getFollowersOfUser, getUserProfile, blockUser, unblockUser, isUserBlockingToUser,
     changePassword, isOldPasswordValid, updateUserPersonalData, updateAdministratorData,
     updateModeratorData, updateBusinessData, updateUserEmail, changeUserRoleType,
     deleteFollowerAndFollowing, changePrivacyTypeUser, getActualPrivacyType,
