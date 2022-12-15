@@ -1,5 +1,5 @@
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
-const { isUserFollowedByUser, getIdByUsername, isUserBlockedByUser, isUsernameRegistered, getActualPrivacyType, isRequestFollowerSent } = require("../dataaccess/userDataAccess");
+const { isUserFollowedByUser, getIdByUsername, isUserBlockingToUser, isUsernameRegistered, getActualPrivacyType, isRequestFollowerSent } = require("../dataaccess/userDataAccess");
 const { httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
 const { PrivacyType } = require("../models/enum/PrivacyType");
 
@@ -16,7 +16,7 @@ const isUserAlreadyFollowedByUser = async (idUserFollower, idUserFollowed) => {
 const isUserAlreadyBlockedByUser = async (idUserBlocker, idUserBlocked) => {
     let isBlocked = false;
     try {
-        isBlocked = await isUserBlockedByUser(idUserBlocker, idUserBlocked);
+        isBlocked = await isUserBlockingToUser(idUserBlocker, idUserBlocked);
     } catch (error) {
         throw new Error(error);
     }
@@ -166,7 +166,7 @@ const validationAcceptOrDenyFollowerRequest = async (request, response, next) =>
     return next();
 };
 
-const validationDoesUserBlockedActualUser = async (request, response, next) => {
+const validationDoesUserBlocked = async (request, response, next) => {
     const token = (request.headers.authorization).split(" ")[1];
     let ownerResourceUserId;
     let username = request.body.username;
@@ -182,13 +182,18 @@ const validationDoesUserBlockedActualUser = async (request, response, next) => {
         if (userData.id == ownerResourceUserId) {
             return next();
         }
-        result = await isUserBlockedByUser(ownerResourceUserId, userData.id);
+        result = await isUserBlockingToUser(ownerResourceUserId, userData.id);
+        if (result) {
+            return httpResponseForbidden(response, "user has blocked you");
+        }
+        result = await isUserBlockingToUser(userData.id, ownerResourceUserId);
+        if (result) {
+            return httpResponseForbidden(response, "you have blocked the user")
+        }
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    if (result) {
-        return httpResponseForbidden(response, "user has blocked you");
-    }
+
     return next();
 }
 
@@ -224,7 +229,7 @@ const validationDoesUserIsPrivateAndUnfollowedByActualUser = async (request, res
 
 module.exports = {
     validationFollowingUser, validationUnfollowingUser, validationBlockingUser,
-    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser,
+    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser, validationAcceptOrDenyFollowerRequest,
     validationRemoveUserFromFollowers
 }
