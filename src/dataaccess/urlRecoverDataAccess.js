@@ -30,7 +30,7 @@ const decryptURI = async (uri) => {
  * @param {*} newEmail the newEmail which will replace the old one.
  * @returns URL or null
  */
-const generateURLChangeEmailConfirmation = async (id_user, newEmail) => {
+const generateURLToChangeEmailOnConfirmation = async (id_user, newEmail) => {
     let url;
     const t = await sequelize.transaction();
     let data;
@@ -56,7 +56,7 @@ const generateURLChangeEmailConfirmation = async (id_user, newEmail) => {
  * @param {*} emailOrUsername emailorUsername 
  * @returns URL or null
  */
-const generateURLUpdatePasswordConfirmation = async (id_user, emailOrUsername) => {
+const generateURLToUpdatePasswordOnConfirmation = async (id_user, emailOrUsername) => {
     let url;
     const t = await sequelize.transaction();
     let data;
@@ -67,7 +67,7 @@ const generateURLUpdatePasswordConfirmation = async (id_user, emailOrUsername) =
             id_user,
         }, { transaction: t });
         let payload = { emailOrUsername: emailOrUsername }
-        url = `${getServerURLAddress()}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CHANGE_PASSWORD.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+        url = `${getServerWebAddress()}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CHANGE_PASSWORD.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
         await t.commit();
     } catch (error) {
         await t.rollback();
@@ -82,7 +82,7 @@ const generateURLUpdatePasswordConfirmation = async (id_user, emailOrUsername) =
  * @param {*} uuid the user id
  * @returns url or null
  */
-const createRedirectionURLChangePassword = (uuid, id_user) => {
+const createURLRedirectionToChangePasswordRoute = (uuid, id_user) => {
     let url;
     try {
         url = `${getServerURLAddress()}/accounts/password/reset/confirmation?uuid=${encodeURIComponent(encryptAES(uuid))}&id=${encodeURIComponent(id_user)}`;
@@ -191,7 +191,8 @@ const doesURLVerificationAlreadyGenerated = async (id_user) => {
     return isAlreadyGenerated;
 }
 
-const createResourceGetURL = async (id_user, id_post, filename) => {
+
+const createURLResource = async (id_user, id_post, filename) => {
     let url;
 
     let fileExtension = filename.split(".")[1];
@@ -215,7 +216,7 @@ const createResourceGetURL = async (id_user, id_post, filename) => {
     return url;
 }
 
-const getResourceGetURL = async (url) => {
+const getURLResourceData = async (url) => {
     let result;
     try {
         let data = (url.data) ? JSON.parse(decryptAES(decodeURIComponent(url.data))) : null;
@@ -239,10 +240,21 @@ const getServerURLAddress = () => {
     return address;
 }
 
+const getServerWebAddress = () => {
+    let address = `${process.env.WEB_SV_ADDRESS}`;
+    if (address) {
+        if (address.charAt(address.length - 1) == "/") {
+            address = address.slice(0, address.length - 1);
+        }
+    }
+    return address;
+}
+
 
 
 module.exports = {
-    generateURLChangeEmailConfirmation, getDataURLRecover, doesURLVerificationAlreadyGenerated,
-    removeURLVerification, generateURLUpdatePasswordConfirmation, getDataURLByIdUser, getDataURLRecoverByUUID,
-    createRedirectionURLChangePassword, createResourceGetURL, getResourceGetURL, getServerURLAddress
+    generateURLToChangeEmailOnConfirmation, getDataURLRecover, doesURLVerificationAlreadyGenerated,
+    removeURLVerification, generateURLToUpdatePasswordOnConfirmation, getDataURLByIdUser, getDataURLRecoverByUUID,
+    createURLRedirectionToChangePasswordRoute, createURLResource, getURLResourceData, getServerURLAddress,
+    getServerWebAddress
 }

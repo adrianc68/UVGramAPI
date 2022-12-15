@@ -16,7 +16,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Business\",\n    \"presentation\": null,\n    \"username\": \"uvgram1\",\n    \"password\": \"hola1234\",\n    \"phoneNumber\": \"2234567890\",\n    \"email\": \"uvgram1@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"verificationCode\": \"0dde196b\"\n}",
+							"raw": "{\n    \"name\": \"Business\",\n    \"presentation\": null,\n    \"username\": \"uvgram1\",\n    \"password\": \"hola1234\",\n    \"phoneNumber\": \"2234567890\",\n    \"email\": \"uvgram1@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"verificationCode\": \"c3ed3337\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -24,12 +24,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/create",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/create",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"create"
@@ -54,12 +52,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/create/verification",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/create/verification",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"create",
@@ -90,12 +86,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/password/change",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/password/change",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"password",
@@ -120,12 +114,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/password/reset/",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/password/reset/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"password",
@@ -158,15 +150,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8080/accounts/password/reset/confirmation?uuid=tGIO67qTabPGrqSM90rQ9AmTAJhlKcXJh4mQ%2F0fStUr8x%2BYAyJ8bgdNmrmMiTrym&id=2",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/password/reset/confirmation?uuid=tGIO67qTabPGrqSM90rQ9AmTAJhlKcXJh4mQ%2F0fStUr8x%2BYAyJ8bgdNmrmMiTrym&id=2",
 							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"password",
@@ -193,15 +180,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://127.0.0.1:8080/accounts/verification/url/confirm_email?uuid=9n4h8i1jkBzzxv1QU%2Btb6Oa3FPlNiVrAbq4%2F0D85LNxac4bPIgSMuafF3ISII8oE&id=1&data=xluCKCVB%2BKYCg5N3p5693d1q%2B6ji7EA%2B%2BQgtqr%2BohiM%3D",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/verification/url/confirm_email?uuid=9n4h8i1jkBzzxv1QU%2Btb6Oa3FPlNiVrAbq4%2F0D85LNxac4bPIgSMuafF3ISII8oE&id=1&data=xluCKCVB%2BKYCg5N3p5693d1q%2B6ji7EA%2B%2BQgtqr%2BohiM%3D",
 							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"verification",
@@ -232,15 +214,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://127.0.0.1:8080/accounts/verification/url/confirm_email?uuid=9n4h8i1jkBzzxv1QU%2Btb6Oa3FPlNiVrAbq4%2F0D85LNxac4bPIgSMuafF3ISII8oE&id=1&data=xluCKCVB%2BKYCg5N3p5693d1q%2B6ji7EA%2B%2BQgtqr%2BohiM%3D",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/verification/url/confirm_email?uuid=9n4h8i1jkBzzxv1QU%2Btb6Oa3FPlNiVrAbq4%2F0D85LNxac4bPIgSMuafF3ISII8oE&id=1&data=xluCKCVB%2BKYCg5N3p5693d1q%2B6ji7EA%2B%2BQgtqr%2BohiM%3D",
 							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"verification",
@@ -278,7 +255,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Administrator\",\n    \"presentation\": null,\n    \"username\": \"uvgram1\",\n    \"phoneNumber\": \"2283687920\",\n    \"email\": \"uvgram99@uvgram.com\",\n    \"birthdate\": \"2022-01-26\"\n}",
+							"raw": "{\n    \"name\": \"Administrators\",\n    \"presentation\": null,\n    \"username\": \"uvgram1\",\n    \"phoneNumber\": \"2283687920\",\n    \"email\": \"uvgram99@uvgram.com\",\n    \"birthdate\": \"2022-01-26\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -286,12 +263,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/edit/admin",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/edit/admin",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"edit",
@@ -314,7 +289,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"UVGram personal\",\n    \"presentation\": null,\n    \"username\": \"uvgram1\",\n    \"phoneNumber\": \"2283687920\",\n    \"email\": \"uvgram1@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"gender\": \"MASCULINO\",\n    \"idCareer\": \"2\"\n}",
+							"raw": "{\n    \"name\": \"Personal\",\n    \"presentation\": \"Cuenta personal de adrian\",\n    \"username\": \"uvgram1\",\n    \"phoneNumber\": \"2283687920\",\n    \"email\": \"uvgram1@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"gender\": \"MASCULINO\",\n    \"idCareer\": \"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -322,12 +297,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/edit/personal",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/edit/personal",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"edit",
@@ -358,12 +331,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/edit/business",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/edit/business",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"edit",
@@ -394,12 +365,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/edit/moderator",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/edit/moderator",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"edit",
@@ -419,7 +388,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"uvgram1@uvgram.com\"\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -427,16 +396,15 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/email/check",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/email/check/uvgram1%40uvgsram.com",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"email",
-								"check"
+								"check",
+								"uvgram1%40uvgsram.com"
 							]
 						}
 					},
@@ -452,7 +420,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\":\"UVGram\"\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -460,17 +428,15 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/username/check/",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/username/check/uvgram2",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"username",
 								"check",
-								""
+								"uvgram2"
 							]
 						}
 					},
@@ -497,12 +463,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/username/delete/",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/username/delete/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"username",
@@ -525,12 +489,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/accounts/users/",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/users/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"users",
@@ -547,7 +509,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"key\": \"+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4\",\n    \"emailOrUsername\": \"uvgram1\",\n    \"newRoleType\": \"personal\"\n}",
+							"raw": "{\n    \"key\": \"+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4\",\n    \"emailOrUsername\": \"uvgram1\",\n    \"newRoleType\": \"administrador\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -555,12 +517,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/users/roles/change",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/users/roles/change",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"users",
@@ -592,12 +552,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/accounts/users/change-privacy/",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/users/change-privacy/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"users",
@@ -620,12 +578,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/accounts/data",
-							"protocol": "http",
+							"raw": "{{server}}/accounts/data",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"accounts",
 								"data"
@@ -670,12 +626,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/authentication/testing",
-							"protocol": "http",
+							"raw": "{{server}}/authentication/testing",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"authentication",
 								"testing"
@@ -712,12 +666,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/authentication/login",
-							"protocol": "http",
+							"raw": "{{server}}/authentication/login",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"authentication",
 								"login"
@@ -728,6 +680,18 @@
 				},
 				{
 					"name": "/authentication/refresh",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"accessToken\", jsonData.message.accessToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [
@@ -752,12 +716,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/authentication/refresh",
-							"protocol": "http",
+							"raw": "{{server}}/authentication/refresh",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"authentication",
 								"refresh"
@@ -794,12 +756,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/authentication/logout",
-							"protocol": "http",
+							"raw": "{{server}}/authentication/logout",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"authentication",
 								"logout"
@@ -825,12 +785,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/user/followers/pending/",
-							"protocol": "http",
+							"raw": "{{server}}/user/followers/pending/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"followers",
@@ -854,7 +812,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram3\"\n}",
+							"raw": "{\n    \"username\": \"uvgrasadfm3\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -862,12 +820,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/user/followers/deny/",
-							"protocol": "http",
+							"raw": "{{server}}/user/followers/deny/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"followers",
@@ -899,12 +855,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/user/followers/accept/",
-							"protocol": "http",
+							"raw": "{{server}}/user/followers/accept/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"followers",
@@ -936,12 +890,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/user/followers/delete/",
-							"protocol": "http",
+							"raw": "{{server}}/user/followers/delete/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"followers",
@@ -965,7 +917,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram2\"\n}",
+							"raw": "{\n    \"username\": \"uvgram1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -973,12 +925,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/user/follow/",
-							"protocol": "http",
+							"raw": "{{server}}/user/follow/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"follow",
@@ -1009,12 +959,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/user/unfollow/",
-							"protocol": "http",
+							"raw": "{{server}}/user/unfollow/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"unfollow",
@@ -1036,12 +984,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/user/followed-by/uvgram1",
-							"protocol": "http",
+							"raw": "{{server}}/user/followed-by/uvgram1",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"followed-by",
@@ -1063,12 +1009,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/user/followers-of/uvgram1",
-							"protocol": "http",
+							"raw": "{{server}}/user/followers-of/uvgram1",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"followers-of",
@@ -1099,12 +1043,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/user/block/",
-							"protocol": "http",
+							"raw": "{{server}}/user/block/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"block",
@@ -1135,12 +1077,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/user/unblock/",
-							"protocol": "http",
+							"raw": "{{server}}/user/unblock/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"unblock",
@@ -1174,12 +1114,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/user/blocked/all",
-							"protocol": "http",
+							"raw": "{{server}}/user/blocked/all",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"user",
 								"blocked",
@@ -1195,12 +1133,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/uvgram1",
-							"protocol": "http",
+							"raw": "{{server}}/uvgram1",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"uvgram1"
 							]
@@ -1219,12 +1155,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/data/faculty/",
-							"protocol": "http",
+							"raw": "{{server}}/data/faculty/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"data",
 								"faculty",
@@ -1240,12 +1174,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/data/region/",
-							"protocol": "http",
+							"raw": "{{server}}/data/region/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"data",
 								"region",
@@ -1261,12 +1193,10 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8080/data/educationalprogram/",
-							"protocol": "http",
+							"raw": "{{server}}/data/educationalprogram/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"data",
 								"educationalprogram",
@@ -1291,12 +1221,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/data/region/",
-							"protocol": "http",
+							"raw": "{{server}}/data/region/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"data",
 								"region",
@@ -1321,12 +1249,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/data/faculty/",
-							"protocol": "http",
+							"raw": "{{server}}/data/faculty/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"data",
 								"faculty",
@@ -1351,12 +1277,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/data/educationalProgram/",
-							"protocol": "http",
+							"raw": "{{server}}/data/educationalProgram/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"data",
 								"educationalProgram",
@@ -1388,10 +1312,7 @@
 								{
 									"key": "file[]",
 									"type": "file",
-									"src": [
-										"/Users/kerberos/Desktop/imagen2.png",
-										"/Users/kerberos/Desktop/imagen1.png"
-									]
+									"src": "/Users/kerberos/Desktop/Captura de Pantalla 2022-12-04 a la(s) 17.10.45.png"
 								},
 								{
 									"key": "description",
@@ -1411,12 +1332,10 @@
 							]
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/create/",
-							"protocol": "http",
+							"raw": "{{server}}/post/create/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"create",
@@ -1438,12 +1357,10 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/post/user/uvgram1",
-							"protocol": "http",
+							"raw": "{{server}}/post/user/uvgram1",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"user",
@@ -1466,7 +1383,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\":\"e4984b9b799\"\n}",
+							"raw": "{\n    \"uuid\":\"35cf364f103\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1474,12 +1391,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/like/",
-							"protocol": "http",
+							"raw": "{{server}}/post/like/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"like",
@@ -1510,12 +1425,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/dislike/",
-							"protocol": "http",
+							"raw": "{{server}}/post/dislike/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"dislike",
@@ -1549,17 +1462,15 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/details/likes/e4984b9b799",
-							"protocol": "http",
+							"raw": "{{server}}/post/details/likes/35cf364f103",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"details",
 								"likes",
-								"e4984b9b799"
+								"35cf364f103"
 							]
 						}
 					},
@@ -1589,16 +1500,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/details/e4984b9b799",
-							"protocol": "http",
+							"raw": "{{server}}/post/details/35cf364f103",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"details",
-								"e4984b9b799"
+								"35cf364f103"
 							]
 						}
 					},
@@ -1622,7 +1531,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"comment\": \"Primer comentario en tu post1 uvgram1!\",\n    \"uuid\": \"f6dadc675da\"\n}",
+							"raw": "{\n    \"comment\": \"segundo comentario en tu post1 uvgram1!\",\n    \"uuid\": \"35cf364f103\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1630,12 +1539,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/comment/create/",
-							"protocol": "http",
+							"raw": "{{server}}/post/comment/create/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"comment",
@@ -1667,12 +1574,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/comment/reply",
-							"protocol": "http",
+							"raw": "{{server}}/post/comment/reply",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"comment",
@@ -1695,7 +1600,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\": \"c1228c24188\"\n}",
+							"raw": "{\n    \"uuid\": \"0027ef1c209\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1703,12 +1608,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/comment/like/",
-							"protocol": "http",
+							"raw": "{{server}}/post/comment/like/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"comment",
@@ -1740,12 +1643,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/comment/dislike/",
-							"protocol": "http",
+							"raw": "{{server}}/post/comment/dislike/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"comment",
@@ -1780,12 +1681,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/comment/details/likes/a0b6e9f8100",
-							"protocol": "http",
+							"raw": "{{server}}/post/comment/details/likes/a0b6e9f8100",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"comment",
@@ -1818,12 +1717,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/comment/delete/",
-							"protocol": "http",
+							"raw": "{{server}}/post/comment/delete/",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"comment",
@@ -1858,17 +1755,15 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/post/comment/all/8337974e4a6",
-							"protocol": "http",
+							"raw": "{{server}}/post/comment/all/35cf364f103",
 							"host": [
-								"localhost"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"post",
 								"comment",
 								"all",
-								"8337974e4a6"
+								"35cf364f103"
 							]
 						}
 					},
@@ -1897,15 +1792,10 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8080/resources/post-files?data=wMVIAaO5fjZ0a7d6KQoHPgxeW3JliQdTCEJTYW4R44IAgbNlh9RQ0HMbaVyODsWbbCl%2FlS8LT2XYv6VcrSlIIw%3D%3D",
-							"protocol": "http",
+							"raw": "{{server}}/resources/post-files?data=wMVIAaO5fjZ0a7d6KQoHPgxeW3JliQdTCEJTYW4R44IAgbNlh9RQ0HMbaVyODsWbbCl%2FlS8LT2XYv6VcrSlIIw%3D%3D",
 							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
+								"{{server}}"
 							],
-							"port": "8080",
 							"path": [
 								"resources",
 								"post-files"

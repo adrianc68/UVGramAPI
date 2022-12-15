@@ -5,14 +5,14 @@ const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authent
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationFollowingUser, validationUnfollowingUser, validationBlockingUser,
-    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlockedActualUser, validationDoesUserIsPrivateAndUnfollowedByActualUser, validationAcceptOrDenyFollowerRequest, validationRemoveUserFromFollowers } = require('../validators/userValidation');
+    validationUnblockingUser, validationRejectOnUsernameNotRegistered, validationDoesUserBlocked, validationDoesUserIsPrivateAndUnfollowedByActualUser, validationAcceptOrDenyFollowerRequest, validationRemoveUserFromFollowers } = require('../validators/userValidation');
 const router = require('express').Router();
 
 router.post("/user/follow/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationFollowingUser,
     followUser,
 );
@@ -21,7 +21,7 @@ router.delete("/user/unfollow/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationUnfollowingUser,
     unfollowUser
 );
@@ -59,7 +59,7 @@ router.get("/user/followed-by/:username/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getFollowedByUser
 );
@@ -68,7 +68,7 @@ router.get("/user/followers-of/:username",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getFollowersOfUser
 );
@@ -77,7 +77,7 @@ router.post("/user/block/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationBlockingUser,
     blockUser
 );
@@ -86,7 +86,7 @@ router.delete("/user/unblock/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationUnblockingUser,
     unblockUser
 );

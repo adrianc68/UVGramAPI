@@ -4,7 +4,7 @@ const { UserRoleType } = require('../models/enum/UserRoleType');
 const { validationDoesExistCommentUUID, validationIsCommentAlreadyLikedByUser, validationIsCommentAlreadyDislikedByUser, validationDeleteCommentIfOwner } = require('../validators/commentValidation');
 const { formatValidationUUIDCommentData, formatValidationCommentData } = require('../validators/formatValidators/commentValidator');
 const { validationDoesExistPostUUID } = require('../validators/postValidation');
-const { validationDoesUserBlockedActualUser, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../validators/userValidation');
+const { validationDoesUserBlocked, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../validators/userValidation');
 const router = require('express').Router();
 
 router.post("/post/comment/create/",
@@ -12,7 +12,7 @@ router.post("/post/comment/create/",
     formatValidationUUIDCommentData,
     formatValidationCommentData,
     validationDoesExistPostUUID,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
     createCommentPost
 );
@@ -22,7 +22,7 @@ router.post("/post/comment/reply",
     formatValidationUUIDCommentData,
     formatValidationCommentData,
     validationDoesExistCommentUUID,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
     createAnswerToComment
 );
@@ -31,7 +31,7 @@ router.post("/post/comment/like/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationUUIDCommentData,
     validationDoesExistCommentUUID,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
     validationIsCommentAlreadyLikedByUser,
     likeComment
@@ -41,7 +41,7 @@ router.post("/post/comment/dislike/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationUUIDCommentData,
     validationDoesExistCommentUUID,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
     validationIsCommentAlreadyDislikedByUser,
     dislikeComment
@@ -51,7 +51,7 @@ router.get("/post/comment/details/likes/:uuid",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationUUIDCommentData,
     validationDoesExistCommentUUID,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getUsersWhoLikesComment
 );
@@ -60,7 +60,7 @@ router.delete("/post/comment/delete/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationUUIDCommentData,
     validationDoesExistCommentUUID,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
     validationDeleteCommentIfOwner,
     deleteComment
@@ -70,7 +70,7 @@ router.get("/post/comment/all/:uuid",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationUUIDCommentData,
     validationDoesExistPostUUID,
-    validationDoesUserBlockedActualUser,
+    validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
     getAllCommentsOfUUIDPost
 );
