@@ -114,7 +114,6 @@ const httpResponseBadRequest = (response, message) => {
         error: message.message
     };
     return response.status(StatusCodes.BAD_REQUEST).json(payload);
-
 };
 
 /**
@@ -135,12 +134,12 @@ const httpResponseInternalServerError = (response, error) => {
 };
 
 /**
- * 307 Moved temporarily 
+ * 302 Moved temporarily 
  * the resource requested has been temporarily moved to 
  * the URL given by the Location headers.
- * @param {*} request 
- * @param {*} response 
- * @param {*} route 
+ * @param {*} request the http request.
+ * @param {*} response the http response
+ * @param {*} route the route to redirect
  */
 const httpResponseRedirect = (request, response, route) => {
     response.writeHead(StatusCodes.MOVED_TEMPORARILY, {
@@ -148,11 +147,25 @@ const httpResponseRedirect = (request, response, route) => {
             request.headers.host + route
     });
     return response.end();
-}
+};
+
+/**
+ * 301 Moved Permanently
+ * URI of requested resource has been changed. 
+ * Probably, new URI would be given in the response.
+ * @param {*} request the http request
+ * @param {*} response the http response
+ * @param {*} data the new route
+ */
+const httpResponseRedirectToWeb = (response, data) => {
+    response.writeHead(StatusCodes.MOVED_PERMANENTLY, {
+        Location: data
+    }).end();
+};
 
 module.exports = {
     httpResponseInternalServerError, httpResponseValidation, httpResponseUnauthorized,
     httpResponseNotFound, httpResponseOk, httpResponseBadRequest,
     httpResponseErrorToken, httpResponseForbidden, httpResponseNotImplement,
-    httpResponseRedirect
+    httpResponseRedirect, httpResponseRedirectToWeb
 }
