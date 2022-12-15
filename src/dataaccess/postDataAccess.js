@@ -204,8 +204,7 @@ const dislikePostByIds = async (id_user, id_post) => {
             where: {
                 id_user,
                 id_post
-            }
-        }, {
+            },
             transaction: t
         });
         await t.commit();
@@ -309,10 +308,54 @@ const deleteAllLikesOfUserFromAllPost = async (id_user_to_remove, id_user_posts_
     return isDeleted;
 }
 
+/**
+ * Check if user is owner of specific post.
+ * @param {*} id_user the owner of post
+ * @param {*} id_post the post to retrieve information.
+ * @returns true if is it otherwise false.
+ */
+const isUserOwnerOfPost = async (id_user, id_post) => {
+    let isOwner = false;
+    try {
+        let result = await Post.findOne({
+            where: { id_user, id: id_post },
+            raw: true
+        });
+        if (result != null) {
+            isOwner = true;
+        }
+    } catch (error) {
+        throw error;
+    }
+    return isOwner;
+}
+
+/**
+ * Delete post from user.
+ * @param {*} id_user the owner of post
+ * @param {*} id_post the post to remove
+ * @returns true if removed otherwise false
+ */
+const deletePost = async (id_user, id_post) => {
+    let isRemoved = false;
+    const t = await sequelize.transaction();
+    try {
+        await Post.destroy({
+            where: { id_user, id: id_post },
+            transaction: t
+        });
+        await t.commit();
+        isRemoved = true;
+    } catch (error) {
+        throw error;
+    }
+    return isRemoved;
+}
+
 module.exports = {
     getAllPostFromUserId, createPostByUserId, getPostByUUID,
     getIdPostByPostUUID, likePostByIds, isPostLikedByUser,
     dislikePostByIds, getPostLikesById, getUsersWhoLikePostById,
-    getPostById, deleteAllLikesOfUserFromAllPost, getPostFilenamesById
-
+    getPostById, deleteAllLikesOfUserFromAllPost, getPostFilenamesById,
+    isUserOwnerOfPost, deletePost
 }
