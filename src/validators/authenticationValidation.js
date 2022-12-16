@@ -70,10 +70,25 @@ const validationRefreshTokenDataAsParameter = async (request, response, next) =>
         return httpResponseUnauthorized(response);
     }
     return next();
-}
+};
+
+const validationAccesTokenDataAsOptionalAuthorization = async (request, response, next) => {
+    let accessToken = request.headers.authorization;
+    if (accessToken == null) {
+        return next();
+    }
+    accessToken = accessToken.split(" ")[1];
+    try {
+        await getTokenExist(accessToken, TOKEN_TYPE.ACCESS);
+    } catch (error) {
+        return httpResponseUnauthorized(response);
+    }
+    return next();
+};
 
 module.exports = {
-    validationLoginData, validationAccesTokenDataAsAuthorization, validationRefreshTokenDataAsAuthorization, validationRefreshTokenDataAsParameter
+    validationLoginData, validationAccesTokenDataAsAuthorization, validationRefreshTokenDataAsAuthorization,
+    validationRefreshTokenDataAsParameter, validationAccesTokenDataAsOptionalAuthorization
 }
 
 

@@ -207,7 +207,7 @@ const validateRefreshTokenParameterData = [
 
 const validateOptionalAccessTokenParameterData = [
     header("accessToken")
-        .optional({ nullable: false })
+        .optional({ nullable: true })
         .not()
         .isEmpty()
         .withMessage("accessToken header is optional, but is not allowed to be empty")

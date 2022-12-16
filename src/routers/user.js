@@ -1,7 +1,7 @@
 const { acceptFollowerRequest, denyFollowerRequest } = require('../controllers/userAccountController');
 const { followUser, unfollowUser, getFollowersOfUser,
     getProfileOfUser, blockUser, unblockUser, getFollowedByUser, getPendingFollowRequest, deleteFollower, getBlockedUsers } = require('../controllers/userController');
-const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
+const { checkAccessTokenAndAuthRoleMiddleware, checkAccessTokenAsOptionalMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
 const { validationFollowingUser, validationUnfollowingUser, validationBlockingUser,
@@ -17,7 +17,7 @@ router.post("/user/follow/",
     followUser,
 );
 
-router.delete("/user/unfollow/",
+router.post("/user/unfollow/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
@@ -82,11 +82,10 @@ router.post("/user/block/",
     blockUser
 );
 
-router.delete("/user/unblock/",
+router.post("/user/unblock/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
-    validationDoesUserBlocked,
     validationUnblockingUser,
     unblockUser
 );
@@ -98,6 +97,7 @@ router.get("/user/blocked/all",
 
 // Need to get profile image
 router.get("/:username/",
+    checkAccessTokenAsOptionalMiddleware(),
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     getProfileOfUser

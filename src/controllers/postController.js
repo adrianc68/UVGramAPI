@@ -73,6 +73,8 @@ const createPost = async (request, response) => {
             let resultFiles = postDataCreated.files;
             await saveFiles(resultFiles, userDataId, postDataCreated.id);
         }
+        delete postInfo["id"];
+        delete postInfo["id_user"]
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
