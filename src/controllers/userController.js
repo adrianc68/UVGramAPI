@@ -1,8 +1,9 @@
 const { deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments, getCommentsCountById } = require("../dataaccess/commentDataAccess");
 const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID, getPostFilenamesById } = require("../dataaccess/postDataAccess");
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
-    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers } = require("../dataaccess/userDataAccess");
+    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers, isUserFollowedByUser } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
+const { logger } = require("../helpers/logger");
 const { verifyToken } = require("../helpers/token");
 const { PrivacyType } = require("../models/enum/PrivacyType");
 
@@ -96,14 +97,27 @@ const getFollowersOfUser = async (request, response) => {
 const getProfileOfUser = async (request, response) => {
     let username = request.params.username;
     let user;
+    let idUser;
     try {
-        const idUser = await getIdByUsername(username).then(id => { return id });
-        // Methods separated because findAll only returns first element on inner array
-        // find with include and raw support:
-        // https://github.com/sequelize/sequelize/issues/3885 #3885 <--- Issue
+        idUser = await getIdByUsername(username).then(id => { return id });
         user = await getUserProfileUserDataAccess(idUser);
         user.followed = (await getFollowedUsersOfUserUserDataAccess(idUser)).length;
         user.followers = (await getFollowersOfUserUserDataAccess(idUser)).length;
+        user.privacyType = await getActualPrivacyType(idUser);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    let accessToken = request.headers.authorization;
+    let userLoggedId;
+    if (accessToken != null) {
+        try {
+            userLoggedId = await verifyToken(accessToken.split(" ")[1]).then(data => { return data.id });
+            user.isFollowed = await isUserFollowedByUser(userLoggedId, idUser);
+        } catch (error) {
+            logger.info(error);
+        }
+    }
+    if (PrivacyType.PUBLIC === user.privacyType || user.isFollowed || idUser == userLoggedId) {
         user.posts = await getAllPostFromUserId(idUser);
         await Promise.all(user.posts.map(async function (post) {
             let postId = await getIdPostByPostUUID(post.uuid);
@@ -116,8 +130,6 @@ const getProfileOfUser = async (request, response) => {
             delete post["id_user"];
             delete post["id"];
         }));
-    } catch (error) {
-        return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, user);
 };
