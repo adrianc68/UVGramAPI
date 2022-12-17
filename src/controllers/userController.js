@@ -1,7 +1,7 @@
 const { deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments, getCommentsCountById } = require("../dataaccess/commentDataAccess");
 const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID, getPostFilenamesById } = require("../dataaccess/postDataAccess");
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
-    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers, isUserFollowedByUser } = require("../dataaccess/userDataAccess");
+    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers, isUserFollowedByUser, isRequestFollowerSent } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const { verifyToken } = require("../helpers/token");
@@ -113,6 +113,7 @@ const getProfileOfUser = async (request, response) => {
         try {
             userLoggedId = await verifyToken(accessToken.split(" ")[1]).then(data => { return data.id });
             user.isFollowed = await isUserFollowedByUser(userLoggedId, idUser);
+            user.isFollowerRequestSent = await isRequestFollowerSent(userLoggedId, idUser);
         } catch (error) {
             logger.info(error);
         }
