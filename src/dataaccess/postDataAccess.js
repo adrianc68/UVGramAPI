@@ -352,10 +352,29 @@ const deletePost = async (id_user, id_post) => {
     return isRemoved;
 }
 
+/**
+ * Count number post of user
+ * @param {*} id_user 
+ * @returns number of records or 0 if there is no post.
+ */
+const countPost = async (id_user) => {
+    let count = 0;
+    try {
+        count = await Post.count({
+            where: {
+                id_user
+            }
+        });
+    } catch (error) {
+        throw error;
+    }
+    return count;
+}
+
 module.exports = {
     getAllPostFromUserId, createPostByUserId, getPostByUUID,
     getIdPostByPostUUID, likePostByIds, isPostLikedByUser,
     dislikePostByIds, getPostLikesById, getUsersWhoLikePostById,
     getPostById, deleteAllLikesOfUserFromAllPost, getPostFilenamesById,
-    isUserOwnerOfPost, deletePost
+    isUserOwnerOfPost, deletePost, countPost
 }

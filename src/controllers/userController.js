@@ -1,7 +1,7 @@
 const { deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments, getCommentsCountById } = require("../dataaccess/commentDataAccess");
-const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID, getPostFilenamesById } = require("../dataaccess/postDataAccess");
+const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID, getPostFilenamesById, countPost } = require("../dataaccess/postDataAccess");
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
-    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers, isUserFollowedByUser, isRequestFollowerSent } = require("../dataaccess/userDataAccess");
+    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers, isUserFollowedByUser, isRequestFollowerSent, isUserBlockingToUser } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const { verifyToken } = require("../helpers/token");
@@ -104,6 +104,7 @@ const getProfileOfUser = async (request, response) => {
         user.followed = (await getFollowedUsersOfUserUserDataAccess(idUser)).length;
         user.followers = (await getFollowersOfUserUserDataAccess(idUser)).length;
         user.privacyType = await getActualPrivacyType(idUser);
+        user.postsCreated = await countPost(idUser);
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
@@ -114,23 +115,37 @@ const getProfileOfUser = async (request, response) => {
             userLoggedId = await verifyToken(accessToken.split(" ")[1]).then(data => { return data.id });
             user.isFollowed = await isUserFollowedByUser(userLoggedId, idUser);
             user.isFollowerRequestSent = await isRequestFollowerSent(userLoggedId, idUser);
+            user.isBlocked = await isUserBlockingToUser(userLoggedId, idUser);
+            user.isBlocker = await isUserBlockingToUser(idUser, userLoggedId);
+            user.isFollower = await isUserFollowedByUser(idUser, userLoggedId);
+            user.hasSubmittedFollowerRequest = await isUserFollowedByUser(idUser, userLoggedId);
         } catch (error) {
             logger.info(error);
         }
     }
-    if (PrivacyType.PUBLIC === user.privacyType || user.isFollowed || idUser == userLoggedId) {
-        user.posts = await getAllPostFromUserId(idUser);
-        await Promise.all(user.posts.map(async function (post) {
-            let postId = await getIdPostByPostUUID(post.uuid);
-            if (!postId) {
-                post.comments = 0;
-                return;
+    try {
+        if (!user.isBlocked) {
+            if (PrivacyType.PUBLIC === user.privacyType || user.isFollowed || idUser == userLoggedId) {
+                user.posts = await getAllPostFromUserId(idUser);
+                await Promise.all(user.posts.map(async function (post) {
+                    let postId = await getIdPostByPostUUID(post.uuid);
+                    if (!postId) {
+                        post.comments = 0;
+                        return;
+                    }
+                    post.comments = await getCommentsCountById(postId);
+                    post.files = await getPostFilenamesById(post.id_user, post.id);
+                    delete post["id_user"];
+                    delete post["id"];
+                }));
             }
-            post.comments = await getCommentsCountById(postId);
-            post.files = await getPostFilenamesById(post.id_user, post.id);
-            delete post["id_user"];
-            delete post["id"];
-        }));
+        } else {
+            user.followers = 0;
+            user.followed = 0;
+            user.postsCreated = 0;
+        }
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, user);
 };
@@ -191,11 +206,25 @@ const getBlockedUsers = async (request, response) => {
         return httpResponseInternalServerError(response, error);
     }
     return httpResponseOk(response, blocked);
-}
+};
+
+const checkIfUserLoggedIsBlockedByUser = async (request, response) => {
+    const token = (request.headers.authorization).split(" ")[1];
+    let username = request.params.username;
+    let isBlocked = false;
+    try {
+        const userDataId = await verifyToken(token).then(data => { return data.id });
+        const idUserBlocker = await getIdByUsername(username).then(id => { return id });
+        isBlocked = await isUserBlockingToUser(idUserBlocker, userDataId);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, isBlocked);
+};
 
 module.exports = {
     followUser, unfollowUser, getFollowedByUser,
     getFollowersOfUser, getProfileOfUser, blockUser,
     unblockUser, getPendingFollowRequest, deleteFollower,
-    getBlockedUsers
+    getBlockedUsers, checkIfUserLoggedIsBlockedByUser
 }
