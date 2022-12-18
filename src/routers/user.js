@@ -1,6 +1,6 @@
 const { acceptFollowerRequest, denyFollowerRequest } = require('../controllers/userAccountController');
 const { followUser, unfollowUser, getFollowersOfUser,
-    getProfileOfUser, blockUser, unblockUser, getFollowedByUser, getPendingFollowRequest, deleteFollower, getBlockedUsers, checkIfUserLoggedIsBlockedByUser } = require('../controllers/userController');
+    getProfileOfUser, blockUser, unblockUser, getFollowedByUser, getPendingFollowRequest, deleteFollower, getBlockedUsers, checkIfUserLoggedIsBlockedByUser, findByFilter } = require('../controllers/userController');
 const { checkAccessTokenAndAuthRoleMiddleware, checkAccessTokenAsOptionalMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { formatValidationAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
@@ -108,6 +108,10 @@ router.get("/user/check/block/:username",
     formatValidationAccountUsername,
     validationRejectOnUsernameNotRegistered,
     checkIfUserLoggedIsBlockedByUser
+);
+
+router.get("/users/:filter",
+    findByFilter,
 );
 
 module.exports = router;
