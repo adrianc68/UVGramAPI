@@ -1,7 +1,7 @@
 const { deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments, getCommentsCountById } = require("../dataaccess/commentDataAccess");
 const { getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID, getPostFilenamesById, countPost } = require("../dataaccess/postDataAccess");
 const { followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
-    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers, isUserFollowedByUser, isRequestFollowerSent, isUserBlockingToUser } = require("../dataaccess/userDataAccess");
+    , blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers, isUserFollowedByUser, isRequestFollowerSent, isUserBlockingToUser, getAllUsersByFilter } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError } = require("../helpers/httpResponses");
 const { logger } = require("../helpers/logger");
 const { verifyToken } = require("../helpers/token");
@@ -222,9 +222,21 @@ const checkIfUserLoggedIsBlockedByUser = async (request, response) => {
     return httpResponseOk(response, isBlocked);
 };
 
+const findByFilter = async (request, response) => {
+    const filter = request.params.filter;
+    let users = [];
+    try {
+        users = await getAllUsersByFilter(filter);
+    } catch (error) {
+        return httpResponseInternalServerError(response, error);
+    }
+    return httpResponseOk(response, users);
+};
+
 module.exports = {
     followUser, unfollowUser, getFollowedByUser,
     getFollowersOfUser, getProfileOfUser, blockUser,
     unblockUser, getPendingFollowRequest, deleteFollower,
-    getBlockedUsers, checkIfUserLoggedIsBlockedByUser
+    getBlockedUsers, checkIfUserLoggedIsBlockedByUser,
+    findByFilter
 }
