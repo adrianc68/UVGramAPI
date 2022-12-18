@@ -1,4 +1,4 @@
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../database/connectionDatabaseSequelize");
 const { encondePassword, encodeStringSHA256 } = require("../helpers/cipher");
 const { generateRandomCode } = require("../helpers/generateCode");
@@ -10,9 +10,11 @@ const { BusinessUserRole } = require("../models/BusinessUserRole");
 const { EducationalProgram } = require("../models/EducationalProgram");
 const { FollowRequestStatusType } = require("../models/enum/FollowRequestStatusType");
 const { UserRoleType } = require("../models/enum/UserRoleType");
+const { Faculty } = require("../models/Faculty");
 const { Follower } = require("../models/Follower");
 const { ModeratorUserRole } = require("../models/ModeratorUserRole");
 const { PersonalUserRole } = require("../models/PersonalUserRole");
+const { Region } = require("../models/Region");
 const { User } = require("../models/User");
 const { UserConfiguration } = require("../models/UserConfiguration");
 const { UserRole } = require("../models/UserRole");
@@ -1064,7 +1066,7 @@ const getAllAccountData = async (id) => {
                 as: "UserRole",
                 attributes: []
             }, {
-                model:UserConfiguration,
+                model: UserConfiguration,
                 attributes: []
             }],
             raw: true
@@ -1076,10 +1078,26 @@ const getAllAccountData = async (id) => {
             if (result.role == UserRoleType.PERSONAL) {
                 data = await PersonalUserRole.findOne({
                     where: { id_user: id },
-                    attributes: ["gender", "EducationalProgram.educational_program"],
+                    attributes: ["gender",
+                        [Sequelize.literal('"EducationalProgram"."id"'), "id_educational_program"],
+                        [Sequelize.col("EducationalProgram.Faculty.Region.id"), "id_region"],
+                        [Sequelize.col("EducationalProgram.Faculty.id"), "id_faculty"],
+                    ],
                     include: [{
                         model: EducationalProgram,
-                        attributes: []
+                        attributes: [],
+                        include: [
+                            {
+                                model: Faculty,
+                                attributes: [],
+                                include: [
+                                    {
+                                        model: Region,
+                                        attributes: []
+                                    }
+                                ]
+                            }
+                        ]
                     }],
                     raw: true,
                 });
@@ -1109,6 +1127,34 @@ const getAllAccountData = async (id) => {
         throw error;
     }
     return accountInfo;
+};
+
+/**
+ * Search any user by username or name
+ * @param {*} usernameOrName the filter that is triggering.
+ * @returns array with users matching filter or [] empty array.
+ */
+const getAllUsersByFilter = async (usernameOrName) => {
+    let users = [];
+    try {
+        users = await User.findAll({
+            attributes: ["name", "username"],
+            where: {
+                [Op.or]:
+                    [{ username: { [Op.like]: `%${usernameOrName}%` } },
+                    { name: { [Op.like]: `%${usernameOrName}%` } }],
+            },
+            raw: true,
+            limit: 55,
+            order: [
+                ["username", "ASC"],
+                ["name", "ASC"]
+            ]
+        });
+    } catch (error) {
+        throw error;
+    }
+    return users;
 }
 
 module.exports = {
@@ -1123,5 +1169,5 @@ module.exports = {
     deleteFollowerAndFollowing, changePrivacyTypeUser, getActualPrivacyType,
     sendRequestFollowToUser, isRequestFollowerSent, acceptAllFollowerRequestById,
     getAllFollowerRequestByUserId, acceptFollowerRequestByUserId, denyFollowerRequestByUserId,
-    getAllBlockedUsers, getAllAccountData
+    getAllBlockedUsers, getAllAccountData, getAllUsersByFilter
 }
