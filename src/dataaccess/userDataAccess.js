@@ -599,8 +599,8 @@ const getAllFollowerRequestByUserId = async (id_user_followed) => {
         followerRequest = await Follower.findAll({
             where: { id_user_followed, status: FollowRequestStatusType.PENDING },
             attributes: {
-                include: ["status", "follower.name", "follower.presentation", "follower.username"],
-                exclude: ["follower.id", "id_user_followed", "id_user_follower"]
+                include: ["status", "follower.name", "follower.username"],
+                exclude: ["follower.id", "id_user_followed", "id_user_follower", "follower.presentation"]
             },
             include: [{
                 model: User,
