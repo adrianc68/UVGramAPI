@@ -31,7 +31,8 @@ const createAnswerToComment = async (request, response) => {
         const userDataId = await verifyToken(token).then(data => { return data.id });
         const commentReplyId = await getIdCommentByUUID(uuid);
         let commentRootParentData = await getCommentParentById(commentReplyId);
-        let commentDetails = createAnswerComment(commentRootParentData.id, comment, commentRootParentData.id_post, userDataId);
+        commentDetails = await createAnswerComment(commentRootParentData.id, comment, commentRootParentData.id_post, userDataId);
+        commentDetails.isReplyInnerComment = commentRootParentData.isParent;
         if (commentDetails) {
             isCreated = true;
         }
