@@ -27,7 +27,7 @@ const createCommentInPost = async (comment, id_post, id_user) => {
         }, { transaction: t })
         await t.commit();
         result = {
-            commet: object.comment,
+            comment: object.comment,
             uuid: object.uuid,
             created_time: object.created_time
         }
@@ -83,10 +83,10 @@ const getAllCommentsByIdPost = async (id_post) => {
                         '$NestedCommentParent.parent_id_comment$': parentComment.id
                     },
                     attributes: {
-                        include: ["User.username", "comment", "created_time", "uuid",
+                        include: ["User.username", "comment", "created_time", "uuid", "id",
                             [Sequelize.fn('COUNT', Sequelize.col("id_comment")), 'likes']
                         ],
-                        exclude: ["id_post", "id_user", "id"]
+                        exclude: ["id_post", "id_user"]
                     },
                     include: [{
                         model: NestedComment,
@@ -249,6 +249,9 @@ const getCommentParentById = async (id) => {
         });
         if (comment["NestedCommentParent.parent_id_comment"] != null) {
             comment = await getCommentParentById(comment["NestedCommentParent.parent_id_comment"]);
+            comment.isParent = true;
+        } else {
+            comment.isParent = false;
         }
         delete comment["NestedCommentParent.parent_id_comment"];
     } catch (error) {
@@ -369,7 +372,7 @@ const createAnswerComment = async (parent_id_comment, comment, id_post, id_user)
 
         await t.commit();
         result = {
-            commet: object.comment,
+            comment: object.comment,
             uuid: object.uuid,
             created_time: object.created_time
         }
