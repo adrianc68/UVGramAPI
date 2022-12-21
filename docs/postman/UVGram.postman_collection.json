@@ -289,7 +289,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Personal\",\n    \"presentation\": \"Cuenta personal de adrian\",\n    \"username\": \"uvgram1\",\n    \"phoneNumber\": \"2283687920\",\n    \"email\": \"uvgram1@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"gender\": \"MASCULINO\",\n    \"idCareer\": \"1\"\n}",
+							"raw": "{\n    \"name\": \"Personal\",\n    \"presentation\": \"Cuenta personal de adrian\",\n    \"username\": \"uvgram1\",\n    \"phoneNumber\": \"2283687920\",\n    \"email\": \"uvgram11@uvgram.com\",\n    \"birthdate\": \"2022-01-26\",\n    \"gender\": \"MASCULINO\",\n    \"idCareer\": \"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -379,7 +379,7 @@
 					"response": []
 				},
 				{
-					"name": "/accounts/email/check/",
+					"name": "/accounts/email/check/:username",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -411,7 +411,7 @@
 					"response": []
 				},
 				{
-					"name": "/accounts/username/check/",
+					"name": "/accounts/username/check/:username",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -509,7 +509,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"key\": \"+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4\",\n    \"emailOrUsername\": \"uvgram1\",\n    \"newRoleType\": \"administrador\"\n}",
+							"raw": "{\n    \"key\": \"+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4\",\n    \"emailOrUsername\": \"uvgram1\",\n    \"newRoleType\": \"personal\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -544,7 +544,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"privacy\": \"publico\"\n}",
+							"raw": "{\n    \"privacy\": \"privado\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -847,7 +847,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram1\"\n}",
+							"raw": "{\n    \"username\": \"uvgram3\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -917,7 +917,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram1\"\n}",
+							"raw": "{\n    \"username\": \"uvgram2\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -941,7 +941,7 @@
 				{
 					"name": "/user/unfollow/",
 					"request": {
-						"method": "DELETE",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Authorization",
@@ -951,7 +951,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"uvgram1\"\n}",
+							"raw": "{\n    \"username\": \"uvgram2\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1059,7 +1059,7 @@
 				{
 					"name": "/user/unblock/",
 					"request": {
-						"method": "DELETE",
+						"method": "POST",
 						"header": [
 							{
 								"key": "Authorization",
@@ -1131,14 +1131,64 @@
 					"name": "/:username",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "{{server}}/uvgram1",
+							"raw": "{{server}}/uvgram2",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
-								"uvgram1"
+								"uvgram2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/user/check/block/:username",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{server}}/user/check/block/uvgram2",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"user",
+								"check",
+								"block",
+								"uvgram2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/users/:filter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{server}}/users/uvgram",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"users",
+								"uvgram"
 							]
 						}
 					},
@@ -1241,7 +1291,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"idRegion\":\"1\",\n    \"faculty\":\"FACULTAD_ESTADISTICA_E_INFORMATICA\"\n}",
+							"raw": "{\n    \"idRegion\":\"1\",\n    \"faculty\":\"FACULTAD_BIOLOGIA\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1269,7 +1319,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"educationalProgram\":\"LICENCIATURA_INGENIERIA_DE_SOFTWARE\",\n    \"idFaculty\":\"1\"\n}",
+							"raw": "{\n    \"educationalProgram\":\"ECONOMIA\",\n    \"idFaculty\":\"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1312,7 +1362,7 @@
 								{
 									"key": "file[]",
 									"type": "file",
-									"src": "/Users/kerberos/Desktop/Captura de Pantalla 2022-12-04 a la(s) 17.10.45.png"
+									"src": "/Users/kerberos/Desktop/Captura de Pantalla 2022-12-01 a la(s) 12.21.06.png"
 								},
 								{
 									"key": "description",
@@ -1383,7 +1433,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\":\"35cf364f103\"\n}",
+							"raw": "{\n    \"uuid\":\"d7de613d6c4\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1462,7 +1512,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/post/details/likes/35cf364f103",
+							"raw": "{{server}}/post/details/likes/f4f5733f529",
 							"host": [
 								"{{server}}"
 							],
@@ -1470,7 +1520,7 @@
 								"post",
 								"details",
 								"likes",
-								"35cf364f103"
+								"f4f5733f529"
 							]
 						}
 					},
@@ -1500,14 +1550,48 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/post/details/35cf364f103",
+							"raw": "{{server}}/post/details/f4f5733f529",
 							"host": [
 								"{{server}}"
 							],
 							"path": [
 								"post",
 								"details",
-								"35cf364f103"
+								"f4f5733f529"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/post/delete/",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"uuid\":\"e701a33ae96\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{server}}/post/delete/",
+							"host": [
+								"{{server}}"
+							],
+							"path": [
+								"post",
+								"delete",
+								""
 							]
 						}
 					},
@@ -1531,7 +1615,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"comment\": \"segundo comentario en tu post1 uvgram1!\",\n    \"uuid\": \"35cf364f103\"\n}",
+							"raw": "{\n    \"comment\": \"fadsfsasdaf que les afsdpdpsa kafospkafpd kopafskpsdafkdpofadkkfposdk fsopadfoks fsadfkoaspofkdsafoksapofk aspdfkoaspdfokdaspofksdapofkaspoafkds psodfkaspofksdpafsdpfkodsapoksapdfko sapofksadfoskadppofad guste!\",\n    \"uuid\": \"d7de613d6c4\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1566,7 +1650,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"comment\": \"Muchas gracias uvgram2\",\n    \"uuid\": \"0284e14b138\"\n}",
+							"raw": "{\n    \"comment\": \"Muchas asfdfdasjoiofsijfsjado ajfdsijfioadfsjio sadfjiofasdjoiafsdjio fsadjasdfjoiasfdjoi asdfjifdooija fasasfdjioafsdjoi uvgram2\",\n    \"uuid\": \"99f83be58e5\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1600,7 +1684,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"uuid\": \"0027ef1c209\"\n}",
+							"raw": "{\n    \"uuid\": \"0e87c7da3d4\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1681,7 +1765,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/post/comment/details/likes/a0b6e9f8100",
+							"raw": "{{server}}/post/comment/details/likes/76c9ab8abb7",
 							"host": [
 								"{{server}}"
 							],
@@ -1690,7 +1774,7 @@
 								"comment",
 								"details",
 								"likes",
-								"a0b6e9f8100"
+								"76c9ab8abb7"
 							]
 						}
 					},
@@ -1755,7 +1839,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{server}}/post/comment/all/35cf364f103",
+							"raw": "{{server}}/post/comment/all/d7de613d6c4",
 							"host": [
 								"{{server}}"
 							],
@@ -1763,7 +1847,7 @@
 								"post",
 								"comment",
 								"all",
-								"35cf364f103"
+								"d7de613d6c4"
 							]
 						}
 					},
