@@ -29,14 +29,27 @@ app.use(fileUpload({
 }));
 
 // routers
-app.use(require("./routers/userAccount"));
-app.use(require("./routers/authentication"));
-app.use(require("./routers/user"));
-app.use(require("./routers/data"));
-app.use(require("./routers/urlVerification"));
-app.use(require("./routers/post"));
-app.use(require("./routers/comment"));
-app.use(require("./routers/resource"));
+// app.use(require("./routers/userAccount"));
+// app.use(require("./routers/authentication"));
+// app.use(require("./routers/user"));
+// app.use(require("./routers/data"));
+// app.use(require("./routers/urlVerification"));
+// app.use(require("./routers/post"));
+// app.use(require("./routers/comment"));
+// app.use(require("./routers/resource"));
+//
+//
+
+
+
+app.use(require("./v1/routers/userAccount"));
+// app.use(require("./v1/routers/authentication"));
+// app.use(require("./v1/routers/user"));
+// app.use(require("./v1/routers/data"));
+// app.use(require("./v1/routers/urlVerification"));
+// app.use(require("./v1/routers/post"));
+// app.use(require("./v1/routers/comment"));
+// app.use(require("./v1/routers/resource"));
 
 const connetionToServers = async () => {
     await sequelize.authenticate().then(async () => {
