@@ -8,7 +8,7 @@ const {logger} = require("./loggingService");
 const {generateUUIDv4} = require("../helpers/generateCodeHelper");
 const {apiVersionType} = require("../types/apiVersionType");
 const httpContentType = require("../types/httpContentType");
-const ExceptionType = require("../types/exceptionType");
+const MessageType = require("../types/MessageType");
 
 /**
  * 200 OK
@@ -113,6 +113,23 @@ const NOT_FOUND = (response, message = null, version) => {
 };
 
 /**
+ * 429 Too Many Requests
+ * Too Many Requests
+ * @param {object} response represents the HTTP response
+ * @param {object} message message to send the HTTP response.
+ * @param {apiVersionType} version API's version.
+ */
+const TOO_MANY_REQUESTS = (response, message = null, version) => {
+	let payload = {
+		status: StatusCodes.TOO_MANY_REQUESTS,
+		message: "Too Many Requests",
+		data: buildMessageData(message),
+		version,
+	};
+	sendResponse(response, payload);
+};
+
+/**
  * 403 forbidden 
  * client does not have right access to the content.
  * @param {object} response represents the http response.
@@ -128,6 +145,23 @@ const FORBIDDEN = (response, message, version) => {
 	};
 	sendResponse(response, payload);
 };
+
+/**
+ * 409 Conflict
+ * Conflict
+ * @param {object} response represents the HTTP response
+ * @param {object} message message to send the HTTP response.
+ * @param {apiVersionType} version API's version.
+ */
+const CONFLICT = (response, message = null, version) => {
+	let payload = {
+		status: StatusCodes.CONFLICT,
+		message: "Conflict",
+		data: buildMessageData(message),
+		version
+	};
+	sendResponse(response, payload);
+}
 
 /**
  * 405 Method Not Allowed
@@ -230,7 +264,7 @@ const UNAVAILABLE = (response, version) => {
  */
 const SEND_SINGLE_FILE = (response, file) => {
 	if (file === null) {
-		throw new Error(ExceptionType.NO_FILE_PROVIDED);
+		throw new Error(MessageType.NO_FILE_PROVIDED);
 	}
 	response.setHeader('Content-Type', file.metadata.mimetype);
 	response.setHeader('Content-Disposition', 'attachment; filename=' + file.metadata.filename);
@@ -251,7 +285,7 @@ const SEND_SINGLE_FILE = (response, file) => {
  */
 const SEND_MULTIPLE_FILES = (response, files) => {
 	if (files === null || files.length === 0) {
-		throw new Error(ExceptionType.NO_FILE_PROVIDED);
+		throw new Error(MessageType.NO_FILE_PROVIDED);
 	}
 	const archiver = require('archiver');
 	const zip = archiver('zip');
@@ -295,5 +329,5 @@ module.exports = {
 	INTERNAL_SERVER_ERROR, UNAUTHORIZED, NOT_FOUND, OK, BAD_REQUEST,
 	CREATED, FORBIDDEN, NOT_IMPLEMENTED, BAD_GATEWAY, UNAVAILABLE,
 	NO_CONTENT, METHOD_NOT_ALLOWED, buildMessageData, SEND_SINGLE_FILE,
-	SEND_MULTIPLE_FILES
+	SEND_MULTIPLE_FILES, CONFLICT, TOO_MANY_REQUESTS
 }

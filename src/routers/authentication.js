@@ -3,17 +3,17 @@ const { createTokens, refreshTokens, logoutSession, sayHello } = require('../con
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { validationLoginData, validationRefreshTokenDataAsAuthorization } = require('../validators/authenticationValidation');
-const { formatValidationLogin, formatValidationAuthorizationToken, formatValidationOptionalAccessToken } = require('../validators/formatValidators/authenticationFormatValidator');
+const { validateLoginFormat, validateAuthorizationTokenFormat, validateOptionalAccessTokenFormat } = require('../validators/formatValidators/authenticationFormatValidator');
 
 router.post("/authentication/login",
-    formatValidationLogin,
+    validateLoginFormat,
     validationLoginData,
     createTokens
 );
 
 router.post("/authentication/refresh",
-    formatValidationAuthorizationToken,
-    formatValidationOptionalAccessToken,
+    validateAuthorizationTokenFormat,
+    validateOptionalAccessTokenFormat,
     validationRefreshTokenDataAsAuthorization,
     refreshTokens
 );

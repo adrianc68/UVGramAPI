@@ -1,23 +1,22 @@
 const {httpResponseValidation} = require('../../helpers/httpResponses');
 const {validateError} = require('../../middleware/validationFormatMiddleware');
-const {validateNameData, validatePresentationData, validateUsernameData, validatePasswordData,
-	validatePhoneNumberData, validateEmailData, validateBirthdateData, validateVerificationCodeData, validateOldPasswordData, validateEmailAsOptional, validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode, validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName, validateNewRoleTypeData, validateUserPrivacyData} = require('./formatValidator');
+const {validateNameData, validatePresentationData, validateUsernameData, validatePasswordFormatData,
+	validatePhoneNumberData, validateEmailData, validateBirthdateData, validateVerificationCodeFormatData, validateOldPasswordFormatData, validateEmailAsOptional, validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode, validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName, validateNewRoleTypeFormatData, validateUserPrivacyData} = require('./formatValidator');
 
 const validateUserAccountDataFormat = [
 	validateNameData,
 	validatePresentationData,
 	validateUsernameData,
-	validatePasswordData,
+	validatePasswordFormatData,
 	validatePhoneNumberData,
 	validateEmailData,
 	validateBirthdateData,
 	(request, response, next) => {
 		validateError(request, response, next);
-		return response.status(200);
 	}
 ];
 
-const validateBasicUserAccountData = [
+const validateBasicUserAccountDataFormat = [
 	validateNameData,
 	validatePresentationData,
 	validateUsernameData,
@@ -29,7 +28,7 @@ const validateBasicUserAccountData = [
 	}
 ];
 
-const validatePersonalData = [
+const validatePersonalDataFormat = [
 	validateIdCareer,
 	validateGenderData,
 	(request, response, next) => {
@@ -37,7 +36,7 @@ const validatePersonalData = [
 	}
 ];
 
-const validateBusinessData = [
+const validateBusinessDataFormat = [
 	validateCategory,
 	validateCity,
 	validatePostalCode,
@@ -50,61 +49,61 @@ const validateBusinessData = [
 	}
 ];
 
-const validateAdminData = [
+const validateAdminDataFormat = [
 	(request, response, next) => {
 		validateError(request, response, next);
 	}
 ];
 
-const validateModeratorData = [
+const validateModeratorDataFormat = [
 	(request, response, next) => {
 		validateError(request, response, next);
 	}
 ];
 
-const validateAccountEmail = [
+const validateAccountEmailFormat = [
 	validateEmailData,
 	(request, response, next) => {
 		validateError(request, response, next);
 	}
 ];
 
-const validateAccountUsername = [
+const validateAccountUsernameFormat = [
 	validateUsernameData,
 	(request, response, next) => {
 		validateError(request, response, next);
 	}
 ];
 
-const validateVerificationCode = [
-	validateVerificationCodeData,
+const validateVerificationCodeFormat = [
+	validateVerificationCodeFormatData,
 	(request, response, next) => {
 		validateError(request, response, next);
 	}
 ];
 
-const validateOldPassword = [
-	validateOldPasswordData,
+const validateOldPasswordFormat = [
+	validateOldPasswordFormatData,
 	(request, response, next) => {
 		validateError(request, response, next);
 	}
 ];
 
-const validatePassword = [
-	validatePasswordData,
+const validatePasswordFormat = [
+	validatePasswordFormatData,
 	(request, response, next) => {
 		validateError(request, response, next);
 	}
 ];
 
-const validateNewRoleType = [
-	validateNewRoleTypeData,
+const validateNewRoleTypeFormat = [
+	validateNewRoleTypeFormatData,
 	(request, response, next) => {
 		validateError(request, response, next);
 	}
 ];
 
-const validatePrivacyData = [
+const validatePrivacyDataFormat = [
 	validateUserPrivacyData,
 	(request, response, next) => {
 		validateError(request, response, next);
@@ -112,9 +111,9 @@ const validatePrivacyData = [
 ];
 
 module.exports = {
-	validateUserAccountDataFormat, validateAccountEmail, validateAccountUsername,
-	validateVerificationCode, validateOldPassword, validatePassword,
-	validateBasicUserAccountData, validatePersonalData, validateBusinessData,
-	validateAdminData, validateModeratorData, validateNewRoleType, validatePrivacyData
+	validateUserAccountDataFormat, validateAccountEmailFormat, validateAccountUsernameFormat,
+	validateVerificationCodeFormat, validateOldPasswordFormat, validatePasswordFormat,
+	validateBasicUserAccountDataFormat, validatePersonalDataFormat, validateBusinessDataFormat,
+	validateAdminDataFormat, validateModeratorDataFormat, validateNewRoleTypeFormat, validatePrivacyDataFormat
 }
 

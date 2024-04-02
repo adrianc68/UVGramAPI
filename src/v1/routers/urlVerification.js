@@ -1,6 +1,6 @@
 const { changeEmailDataOnURLConfirmation, getRedirectionURLOnConfirmation, changePasswordOnUnloggedUserOnURLConfirmation } = require('../controllers/urlRecoverController');
-const { validatePassword } = require('../validators/formatValidators/userAccountFormatValidator');
-const { validationURLRecover } = require('../validators/urlRecoverValidation');
+const { validatePasswordFormat } = require('../../validators/formatValidators/userAccountFormatValidator');
+const { validationURLRecover } = require('../../validators/urlRecoverValidation');
 const router = require('express').Router();
 
 router.get("/accounts/verification/url/confirm_email?:data",
@@ -14,7 +14,7 @@ router.get("/accounts/verification/url/change_password?:data",
 );
 
 router.post("/accounts/password/reset/confirmation?:data",
-    validatePassword,
+    validatePasswordFormat,
     validationURLRecover,
     changePasswordOnUnloggedUserOnURLConfirmation
 );

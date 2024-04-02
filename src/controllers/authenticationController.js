@@ -1,6 +1,9 @@
 const { generateTokens, deleteAllSessionByAccessToken, verifyToken, removeToken, refreshAccessToken } = require("../dataaccess/tokenDataAccess");
 const { getAccountLoginData, getAccountLoginDataById } = require("../dataaccess/userDataAccess");
 const { httpResponseOk, httpResponseInternalServerError, httpResponseUnauthorized } = require("../helpers/httpResponses");
+const {INTERNAL_SERVER_ERROR, UNAUTHORIZED} = require("../services/httpResponsesService");
+const {apiVersionType} = require("../types/apiVersionType");
+const MessageType = require("../types/MessageType");
 
 const createTokens = async (request, response) => {
     let { emailOrUsername } = request.body;
@@ -60,11 +63,11 @@ const checkRolesAuth = (roles) => async (request, response, next) => {
     try {
         userRoleData = (await verifyToken(token)).userRole;
     } catch (error) {
-        return httpResponseInternalServerError(response, error);
+				return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
     }
     let rolesAllowed = [].concat(roles);
     if (!rolesAllowed.includes(userRoleData)) {
-        return httpResponseUnauthorized(response)
+				return UNAUTHORIZED(response, MessageType.UNAUTHORIZED, apiVersionType.V1);
     }
     return next();
 };

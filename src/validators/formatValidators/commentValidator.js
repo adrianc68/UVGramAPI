@@ -1,21 +1,20 @@
-const { httpResponseValidation } = require("../../helpers/httpResponses");
-const { validateCommentUUID, validateCommentData } = require("./formatValidator");
+const {validateError} = require("../../middleware/validationFormatMiddleware");
+const {validateCommentUUID, validateCommentData} = require("./formatValidator");
 
-const formatValidationUUIDCommentData = [
-    validateCommentUUID,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+const validateUUIDCommentDataFormat = [
+	validateCommentUUID,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
-
-const formatValidationCommentData = [
-    validateCommentData,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+const validateCommentDataFormat = [
+	validateCommentData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
 module.exports = {
-    formatValidationUUIDCommentData, formatValidationCommentData
+	validateUUIDCommentDataFormat, validateCommentDataFormat
 }

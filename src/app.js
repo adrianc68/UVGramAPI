@@ -40,16 +40,14 @@ app.use(fileUpload({
 //
 //
 
-
-
 app.use(require("./v1/routers/userAccount"));
-// app.use(require("./v1/routers/authentication"));
-// app.use(require("./v1/routers/user"));
-// app.use(require("./v1/routers/data"));
-// app.use(require("./v1/routers/urlVerification"));
-// app.use(require("./v1/routers/post"));
-// app.use(require("./v1/routers/comment"));
-// app.use(require("./v1/routers/resource"));
+app.use(require("./v1/routers/authentication"));
+app.use(require("./v1/routers/user"));
+app.use(require("./v1/routers/data"));
+app.use(require("./v1/routers/urlVerification"));
+app.use(require("./v1/routers/post"));
+app.use(require("./v1/routers/comment"));
+app.use(require("./v1/routers/resource"));
 
 const connetionToServers = async () => {
     await sequelize.authenticate().then(async () => {

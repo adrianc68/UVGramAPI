@@ -2,15 +2,15 @@ const { createCommentPost, getAllCommentsOfUUIDPost, likeComment, dislikeComment
 const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
 const { UserRoleType } = require('../models/enum/UserRoleType');
 const { validationDoesExistCommentUUID, validationIsCommentAlreadyLikedByUser, validationIsCommentAlreadyDislikedByUser, validationDeleteCommentIfOwner } = require('../validators/commentValidation');
-const { formatValidationUUIDCommentData, formatValidationCommentData } = require('../validators/formatValidators/commentValidator');
+const { validateUUIDCommentDataFormat, validateCommentDataFormat } = require('../validators/formatValidators/commentValidator');
 const { validationDoesExistPostUUID } = require('../validators/postValidation');
 const { validationDoesUserBlocked, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../validators/userValidation');
 const router = require('express').Router();
 
 router.post("/post/comment/create/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDCommentData,
-    formatValidationCommentData,
+    validateUUIDCommentDataFormat,
+    validateCommentDataFormat,
     validationDoesExistPostUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -19,8 +19,8 @@ router.post("/post/comment/create/",
 
 router.post("/post/comment/reply",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDCommentData,
-    formatValidationCommentData,
+    validateUUIDCommentDataFormat,
+    validateCommentDataFormat,
     validationDoesExistCommentUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -29,7 +29,7 @@ router.post("/post/comment/reply",
 
 router.post("/post/comment/like/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDCommentData,
+    validateUUIDCommentDataFormat,
     validationDoesExistCommentUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -39,7 +39,7 @@ router.post("/post/comment/like/",
 
 router.post("/post/comment/dislike/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDCommentData,
+    validateUUIDCommentDataFormat,
     validationDoesExistCommentUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -49,7 +49,7 @@ router.post("/post/comment/dislike/",
 
 router.get("/post/comment/details/likes/:uuid",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDCommentData,
+    validateUUIDCommentDataFormat,
     validationDoesExistCommentUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -58,7 +58,7 @@ router.get("/post/comment/details/likes/:uuid",
 
 router.delete("/post/comment/delete/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDCommentData,
+    validateUUIDCommentDataFormat,
     validationDoesExistCommentUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -68,7 +68,7 @@ router.delete("/post/comment/delete/",
 
 router.get("/post/comment/all/:uuid",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDCommentData,
+    validateUUIDCommentDataFormat,
     validationDoesExistPostUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,

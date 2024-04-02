@@ -1,7 +1,10 @@
 const router = require('express').Router();
-const { getFiles } = require('../dataaccess/fileServerDataAccess');
-const { getURLResourceData } = require('../dataaccess/urlRecoverDataAccess');
-const { httpResponseForbidden } = require('../helpers/httpResponses');
+const { getFiles } = require('../../dataaccess/fileServerDataAccess');
+const { getURLResourceData } = require('../../dataaccess/urlRecoverDataAccess');
+const { httpResponseForbidden } = require('../../helpers/httpResponses');
+const {CONFLICT} = require('../../services/httpResponsesService');
+const {apiVersionType} = require('../../types/apiVersionType');
+const MessageType = require('../../types/MessageType');
 
 router.get("/resources/post-files?:data",
     async function (request, response) {
@@ -13,7 +16,7 @@ router.get("/resources/post-files?:data",
                 }
             })
         } catch (error) {
-            return httpResponseForbidden(response, "URL does not exist");
+						return CONFLICT(response, MessageType.USER.URL_INVALID, apiVersionType.V1);
         }
     }
 );

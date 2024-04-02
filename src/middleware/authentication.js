@@ -1,24 +1,24 @@
 const { Router } = require("express");
 const { checkRolesAuth } = require("../controllers/authenticationController");
 const { validationAccesTokenDataAsAuthorization, validationRefreshTokenDataAsParameter, validationAccesTokenDataAsOptionalAuthorization } = require("../validators/authenticationValidation");
-const { formatValidationAuthorizationToken, formatValidationRefreshTokenAsParameter, formatValidationOptionalAccessToken } = require("../validators/formatValidators/authenticationFormatValidator");
+const { validateAuthorizationTokenFormat, validateRefreshTokenAsParameterFormat, validateOptionalAccessTokenFormat } = require("../validators/formatValidators/authenticationFormatValidator");
 
 const checkAccessTokenAndAuthRoleMiddleware = (roles) => Router().use([
-    formatValidationAuthorizationToken,
+    validateAuthorizationTokenFormat,
     validationAccesTokenDataAsAuthorization,
     checkRolesAuth(roles),
 ]);
 
 const checkAccessAndRefreshTokenAndAuthRoleMiddleware = (roles) => Router().use([
-    formatValidationAuthorizationToken,
-    formatValidationRefreshTokenAsParameter,
+    validateAuthorizationTokenFormat,
+    validateRefreshTokenAsParameterFormat,
     validationAccesTokenDataAsAuthorization,
     validationRefreshTokenDataAsParameter,
     checkRolesAuth(roles),
 ]);
 
 const checkAccessTokenAsOptionalMiddleware = () => Router().use([
-    formatValidationOptionalAccessToken,
+    validateOptionalAccessTokenFormat,
     validationAccesTokenDataAsOptionalAuthorization
 ]);
 

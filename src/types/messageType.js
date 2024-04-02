@@ -1,0 +1,77 @@
+const MessageType = {
+	USER: {
+		BAD_PASSWORD: "Password does not match",
+		EMAIL_ALREADY_REGISTERED: "The email is already registered",
+		EMAIL_NOT_REGISTERED: "The email is not registered",
+		USER_ALREADY_REGISTERED: "username is already registered",
+		USER_NOT_REGISTERED: "username not registered",
+		INVALID_INPUT: "Los datos proporcionados son inválidos",
+		PERMISSION_DENIED: "No tienes permisos suficientes para realizar esta acción",
+		NOT_FOUND: "No se encontró el usuario",
+		INVALID_DATA: "Los datos proporcionados son inválidos",
+		MISSING_FIELD: "Falta uno o más campos obligatorios",
+		DATA_TOO_LONG: "Los datos proporcionados son demasiado largos",
+		INVALID_VERIFICATION_CODE: "verification code is not valid",
+		WAITFOR_GENERATE_VERIFICATION_CODE: "Please wait to generate another verification code",
+		WAITFOR_GENERATE_URL: "please wait 5 minutes to generate another one",
+		USERNAME_NOT_FOUND: "username not found",
+		USER_NOT_FOUND: "user not found",
+		URL_EXPIRED: "URL has expired",
+		URL_INVALID: "URL is not valid",
+		ERROR_SEND_CODE_VERIFICATION: "Cannot send message to this address",
+		ERROR_GENERATE_URL: "Cannot generate a new url",
+		CONFIRMATION_CODE_SENT: "a confirmation address has been sent to the email",
+		UNAUTHORIZED: "You don't have permissions to perform this action!",
+		USER_BLOCKED: "The user has been blocked",
+		PASSWORD_NOT_MATCH_WITH_ACTUAL: "The old password does not match actual password",
+		ACCOUNT_PRIVACY_IS_ALREADY_TAKEN: "Your account is already: $",
+		INVALID_CATEGORY_TYPE_PROVIDED: "category type provided does not exist",
+		INVALID_GENDER_TYPE_PROVIDED: "gender provided does not exist",
+		INVALID_IDCAREER_TYPE_PROVIDED: "idCareer provided does not exist",
+		ERROR_CANNOT_CHANGE_EMAIL: "Cannot change email, try later",
+		ERROR_CANNOT_CHANGE_PASSWORD: "Cannot change password, try later",
+		LOGOUT_SUCESSFUL: "Logout sucessfull",
+		BLOCKED_TO: "You have blocked to $",
+		UNBLOCKED_TO: "You have unblocked to $",
+		DELETED_TO: "You have removed $ from your followers",
+		UNFOLLOWED_TO: "You have unfollowed to $",
+		UNABLE_TO_FOLLOW_TO: "Cannot follow to $",
+		FOLLOWING_TO: "You are now following to $",
+		CANNOT_SEND_FOLLOWER_REQUEST_TO: "Cannot send follower request to $",
+		FOLLOWER_REQUEST_SENT_TO: "Follower request sent to $",
+		CANNOT_FOLLOW_YOURSELF: "You cannot follow yourself",
+		CANNOT_UNFOLLOW_YOURSELF: "You cannot unfollow yourself",
+		CANNOT_REMOVE_YOURSELF_FROM_FOLLOWERS: "You cannot delete yourself from your followers",
+		CANNOT_BLOCK_YOURSELF: "You cannot block yourself",
+		CANNOT_UNBLOCK_YOURSELF: "You cannot unblock yourself",
+		CANNOT_ACCEPT_DENY_YOURSELF: "You cannot accept or deny follower request from yourself",
+		USER_IS_ALREADY_FOLLOWED: "User is already followed",
+		USER_IS_ALREADY_UNFOLLOWED: "User is already unfollowed",
+		USER_IS_ALREADY_BLOCKED: "User is already blocked",
+		USER_IS_ALREADY_UNBLOCKED: "User is already unblocked",
+		USER_IS_ALREADY_ACCEPTED: "User is already accepted",
+		USER_HAS_PRIVATE_ACCOUNT: "User has private account",
+		USER_HAS_BLOCKED_YOU: "User has blocked you",
+		NO_FOLLOWER_REQUEST_FROM_USER: "There is no follower request from $",
+		USER_IS_NOT_FOLLOWING_YOU: "$ is not following you",
+		
+		FOLLOWER_REQUEST_ALREADY_SENT: "Follower request is already sent to user"
+
+	},
+	SERVICES: {
+		API_ERROR: "Error al comunicarse con un servicio externo",
+		CONNECTION_ERROR: "Error de conexión con un servicio externo",
+		TIMEOUT_ERROR: "Tiempo de espera agotado al comunicarse con un servicio externo",
+		AUTHENTICATION_ERROR: "Error de autenticación al acceder a un servicio externo",
+		INTERNAL_ERROR: "Error desconocido al intenter realizar una acción en el servidor externo"
+	},
+	SYSTEM: {
+		CONFIGURATION_ERROR: "Error de configuración del sistema",
+		DATABASE_ERROR: "Error en la base de datos",
+		DISK_FULL: "El disco está lleno, no se pueden realizar más operaciones",
+		INTERNAL_ERROR: "Error interno del sistema"
+	}
+};
+
+module.exports = MessageType;
+

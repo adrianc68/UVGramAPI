@@ -103,7 +103,7 @@ const validatePresentationData = [
         .withMessage("presentation must have the allowed length: {min: 0, max: 150}")
 ];
 
-const validatePasswordData = [
+const validatePasswordFormatData = [
     check("password")
         .not()
         .isEmpty()
@@ -155,7 +155,7 @@ const validateEmailOrUsernameData = [
         .withMessage("emailOrUsername must have the allowed length: {min: 3, max: 254}")
 ];
 
-const validateOldPasswordData = [
+const validateOldPasswordFormatData = [
     check("oldPassword")
         .not()
         .isEmpty()
@@ -165,7 +165,7 @@ const validateOldPasswordData = [
         .withMessage("oldpassword must have the allowed length: {min: 6, max: 128}")
 ];
 
-const validateVerificationCodeData = [
+const validateVerificationCodeFormatData = [
     body("verificationCode")
         .not()
         .isEmpty()
@@ -339,7 +339,7 @@ const validateUUIDTemporalToken = [
         .bail()
 ];
 
-const validateNewRoleTypeData = [
+const validateNewRoleTypeFormatData = [
     check("newRoleType")
         .not()
         .isEmpty()
@@ -440,13 +440,13 @@ const isValidDate = (dateString) => {
 
 module.exports = {
     validateEmailData, validateUsernameData, validateNameData,
-    validatePresentationData, validatePasswordData, validatePhoneNumberData,
-    validateBirthdateData, validateEmailOrUsernameData, validateVerificationCodeData,
+    validatePresentationData, validatePasswordFormatData, validatePhoneNumberData,
+    validateBirthdateData, validateEmailOrUsernameData, validateVerificationCodeFormatData,
     validateAuthorizationHeaderData, validateAccessTokenParameterData, validateRefreshTokenParameterData,
-    validateOptionalAccessTokenParameterData, validateOldPasswordData, validateEmailAsOptional,
+    validateOptionalAccessTokenParameterData, validateOldPasswordFormatData, validateEmailAsOptional,
     validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode,
     validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName,
-    validateUUIDTemporalToken, validateNewRoleTypeData, validateFileData,
+    validateUUIDTemporalToken, validateNewRoleTypeFormatData, validateFileData,
     validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed,
     validatePostUUID, validateCommentUUID, validateCommentData, validateUserPrivacyData
 }

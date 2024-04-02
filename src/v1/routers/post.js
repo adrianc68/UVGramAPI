@@ -1,21 +1,21 @@
 const { getPostsByUsername, createPost, getPostDataByUUID, likePost, dislikePost, getUsersWhoLikesPost, deletePostOfUser } = require('../controllers/postController');
-const { checkAccessTokenAndAuthRoleMiddleware } = require('../middleware/authentication');
-const { UserRoleType } = require('../models/enum/UserRoleType');
-const { formatValidationPostData, formatValidationUUIDPostData } = require('../validators/formatValidators/postFormatValidator');
-const { validateAccountUsername } = require('../validators/formatValidators/userAccountFormatValidator');
-const { validationDoesExistPostUUID, validationIsPostAlreadyLikedByUser, validationIsPostAlreadyDislikedByUser, validationIsUserOwnerOfPost } = require('../validators/postValidation');
-const { validationRejectOnUsernameNotRegistered, validationDoesUserBlocked, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../validators/userValidation');
+const { checkAccessTokenAndAuthRoleMiddleware } = require('../../middleware/authentication');
+const { UserRoleType } = require('../../models/enum/UserRoleType');
+const { validatePostDataFormat, validateUUIDPostDataFormat } = require('../../validators/formatValidators/postFormatValidator');
+const { validateAccountUsernameFormat } = require('../../validators/formatValidators/userAccountFormatValidator');
+const { validationDoesExistPostUUID, validationIsPostAlreadyLikedByUser, validationIsPostAlreadyDislikedByUser, validationIsUserOwnerOfPost } = require('../../validators/postValidation');
+const { validationRejectOnUsernameNotRegistered, validationDoesUserBlocked, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../../validators/userValidation');
 const router = require('express').Router();
 
 router.post("/post/create/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationPostData,
+    validatePostDataFormat,
     createPost
 );
 
 router.get("/post/user/:username",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    validateAccountUsername,
+    validateAccountUsernameFormat,
     validationRejectOnUsernameNotRegistered,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -24,7 +24,7 @@ router.get("/post/user/:username",
 
 router.post("/post/like",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDPostData,
+    validateUUIDPostDataFormat,
     validationDoesExistPostUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -34,7 +34,7 @@ router.post("/post/like",
 
 router.post("/post/dislike",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDPostData,
+    validateUUIDPostDataFormat,
     validationDoesExistPostUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -44,7 +44,7 @@ router.post("/post/dislike",
 
 router.get("/post/details/likes/:uuid",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDPostData,
+    validateUUIDPostDataFormat,
     validationDoesExistPostUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -53,7 +53,7 @@ router.get("/post/details/likes/:uuid",
 
 router.get("/post/details/:uuid",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDPostData,
+    validateUUIDPostDataFormat,
     validationDoesExistPostUUID,
     validationDoesUserBlocked,
     validationDoesUserIsPrivateAndUnfollowedByActualUser,
@@ -62,7 +62,7 @@ router.get("/post/details/:uuid",
 
 router.delete("/post/delete/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-    formatValidationUUIDPostData,
+    validateUUIDPostDataFormat,
     validationDoesExistPostUUID,
     validationIsUserOwnerOfPost,
     deletePostOfUser

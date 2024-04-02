@@ -1,37 +1,37 @@
 const { httpResponseValidation } = require('../../helpers/httpResponses');
-const { validatePasswordData, validateEmailOrUsernameData, validateAuthorizationHeaderData,
+const { validatePasswordFormatData, validateEmailOrUsernameData, validateAuthorizationHeaderData,
     validateRefreshTokenParameterData, validateAccessTokenParameterData, validateOptionalAccessTokenParameterData } = require('./formatValidator');
 
-const formatValidationLogin = [
+const validateLoginFormat = [
     validateEmailOrUsernameData,
-    validatePasswordData,
+    validatePasswordFormatData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }
 ];
 
-const formatValidationEmailOrUsername = [
+const validateEmailOrUsernameFormat = [
     validateEmailOrUsernameData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }
 ];
 
-const formatValidationAccessTokenAsParameter = [
+const validateAccessTokenAsParameterFormat = [
     validateAccessTokenParameterData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }
 ];
 
-const formatValidationRefreshTokenAsParameter = [
+const validateRefreshTokenAsParameterFormat = [
     validateRefreshTokenParameterData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }
 ];
 
-const formatValidationRefreshAndAccessToken = [
+const validateRefreshAndAccessTokenFormat = [
     validateAuthorizationHeaderData,
     validateRefreshTokenParameterData,
     (request, response, next) => {
@@ -39,14 +39,14 @@ const formatValidationRefreshAndAccessToken = [
     }
 ];
 
-const formatValidationAuthorizationToken = [
+const validateAuthorizationTokenFormat = [
     validateAuthorizationHeaderData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
     }
 ];
 
-const formatValidationOptionalAccessToken = [
+const validateOptionalAccessTokenFormat = [
     validateOptionalAccessTokenParameterData,
     (request, response, next) => {
         return httpResponseValidation(request, response, next);
@@ -54,7 +54,7 @@ const formatValidationOptionalAccessToken = [
 ];
 
 module.exports = {
-    formatValidationRefreshAndAccessToken, formatValidationAccessTokenAsParameter, formatValidationRefreshTokenAsParameter,
-    formatValidationLogin, formatValidationAuthorizationToken, formatValidationOptionalAccessToken, formatValidationEmailOrUsername,
+    validateRefreshAndAccessTokenFormat, validateAccessTokenAsParameterFormat, validateRefreshTokenAsParameterFormat,
+    validateLoginFormat, validateAuthorizationTokenFormat, validateOptionalAccessTokenFormat, validateEmailOrUsernameFormat,
 }
 
