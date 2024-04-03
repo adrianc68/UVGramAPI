@@ -4,6 +4,10 @@ const { generateRefreshToken: generateRefreshTokenHelper, generateAccessToken: g
     TOKEN_STATE, TOKEN_TYPE, getTokenValueRedis } = require("../helpers/token");
 const { Session } = require("../models/Session");
 
+// The module is storing JWT tokens in redis server
+// This is not secure so instead we need to store JTI instead refresh token
+
+
 const saveSessionTokenInDatabase = async (id_user, jti, device_info) => {
     let isSaved = false;
     const t = await sequelize.transaction();
