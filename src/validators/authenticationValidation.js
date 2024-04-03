@@ -59,6 +59,7 @@ const validationRefreshTokenDataAsAuthorization = async (request, response, next
 	try {
 		await getTokenExist(refreshToken, TOKEN_TYPE.REFRESH);
 	} catch (error) {
+		console.log(error);
 		return UNAUTHORIZED(response, MessageType.USER.UNAUTHORIZED, apiVersionType.V1);
 	}
 	return next();

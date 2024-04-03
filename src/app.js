@@ -4,12 +4,12 @@ const app = express();
 const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
-const { logger } = require("./helpers/logger");
-const { redisClient, REDIS_PORT_CONNECTED_TO } = require("./database/connectionRedis");
-const { sequelize } = require("./database/connectionDatabaseSequelize");
-const { mailer } = require("./database/connetionEmail");
-const { handleJSON } = require("./middleware/jsonValidation");
-const { connectToFtpServer, FTP_PORT_CONNECTION } = require("./database/connetionFtpServer");
+const {logger} = require("./helpers/logger");
+const {redisClient, REDIS_PORT_CONNECTED_TO} = require("./database/connectionRedis");
+const {sequelize} = require("./database/connectionDatabaseSequelize");
+const {mailer} = require("./database/connetionEmail");
+const {handleJSON} = require("./middleware/jsonValidation");
+const {connectToFtpServer, FTP_PORT_CONNECTION} = require("./database/connetionFtpServer");
 const fileUpload = require("express-fileupload");
 
 app.set("port", process.env.SV_PORT);
@@ -20,12 +20,12 @@ app.use(helmet());
 app.use(cors());
 app.disable("etag");
 app.use(morgan("dev"));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: false}));
 app.use(express.json())
 app.use(handleJSON);
 app.use(fileUpload({
-    useTempFiles: true,
-    tempFileDir: "./tmp/"
+	useTempFiles: true,
+	tempFileDir: "./tmp/"
 }));
 
 // routers
@@ -50,24 +50,24 @@ app.use(require("./v1/routers/comment"));
 app.use(require("./v1/routers/resource"));
 
 const connetionToServers = async () => {
-    await sequelize.authenticate().then(async () => {
-        await sequelize.sync({ force: false });
-        logger.info(`PostgreSQL Client initialized on port ${sequelize.config.port}`)
-    }).then(async () => {
-        await redisClient.connect().then(() => {
-            logger.info(`Redis Client initialized on port ${REDIS_PORT_CONNECTED_TO}`);
-        });
-    }).then(async () => {
-        await mailer.verify().then(() => {
-            logger.info(`Nodemailer initialized on port ${mailer.options.port}`);
-        });
-    }).then(async () => {
-        await connectToFtpServer().then(() => {
-            logger.info(`FTPClient initialized on port ${FTP_PORT_CONNECTION}`);
-        });
-    }).catch(error => {
-        logger.fatal(error);
-    });
+	await sequelize.authenticate().then(async () => {
+		await sequelize.sync({force: false});
+		logger.info(`PostgreSQL Client initialized on port ${sequelize.config.port}`)
+	}).then(async () => {
+		await redisClient.connect().then(() => {
+			logger.info(`Redis Client initialized on port ${REDIS_PORT_CONNECTED_TO}`);
+		});
+	}).then(async () => {
+		await mailer.verify().then(() => {
+			logger.info(`Nodemailer initialized on port ${mailer.options.port}`);
+		});
+	}).then(async () => {
+		await connectToFtpServer().then(() => {
+			logger.info(`FTPClient initialized on port ${FTP_PORT_CONNECTION}`);
+		});
+	}).catch(error => {
+		logger.fatal(error);
+	});
 }
 
-module.exports = { app, connetionToServers };
+module.exports = {app, connetionToServers};
