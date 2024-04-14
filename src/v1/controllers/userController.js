@@ -6,6 +6,9 @@ const {followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfo
 const {logger} = require("../../helpers/logger");
 const {verifyToken} = require("../../helpers/token");
 const {PrivacyType} = require("../../models/enum/PrivacyType");
+const {OK, INTERNAL_SERVER_ERROR, CONFLICT} = require("../../services/httpResponsesService");
+const {apiVersionType} = require("../../types/apiVersionType");
+const UserErrorException = require("../../types/exception/UserErrorException");
 
 const followUser = async (request, response) => {
 	const token = (request.headers.authorization).split(" ")[1];
@@ -18,22 +21,27 @@ const followUser = async (request, response) => {
 		if (userStateType == PrivacyType.PRIVATE) {
 			let resultData = await sendRequestFollowToUser(idUserFollower, idUserFollowed);
 			if (resultData) {
-				message = MessageType.USER.FOLLOWER_REQUEST_SENT_TO.replace("$", username);
+				message = MessageType.USER.FOLLOWER_REQUEST_SENT_TO;
+				message.message.replace("$", username);
 
 			} else {
-				message = MessageType.USER.CANNOT_SEND_FOLLOWER_REQUEST_TO.replace("$", username);
+				message = MessageType.USER.CANNOT_SEND_FOLLOWER_REQUEST_TO;
+				message.message.replace("$", username);
 			}
 		} else {
 			let resultData = await followUserUserDataAccess(idUserFollower, idUserFollowed);
 			if (resultData) {
-				message = MessageType.USER.FOLLOWING_TO.replace("$", username);
+				message = MessageType.USER.FOLLOWING_TO;
+				message.message.replace("$", username);
 			} else {
-				message = MessageType.USER.UNABLE_TO_FOLLOW_TO.replace("$", username);
+				message = MessageType.USER.UNABLE_TO_FOLLOW_TO;
+				message.message.replace("$", username);
 			}
 		}
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
+	message = {...message, boolValue: true};
 	return OK(response, message, apiVersionType.V1);
 };
 
@@ -46,11 +54,13 @@ const unfollowUser = async (request, response) => {
 	try {
 		message = await unfollowUserUserDataAccess(idUserFollower, idUserFollowed);
 		if (message) {
-			message = MessageType.USER.UNFOLLOWED_TO.replace("$", username);
+			message = MessageType.USER.UNFOLLOWED_TO;
+			message.message.replace("$", username);
 		}
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
+	message = {...message, boolValue: true};
 	return OK(response, message, apiVersionType.V1);
 };
 
@@ -74,24 +84,26 @@ const deleteFollower = async (request, response) => {
 const getFollowedByUser = async (request, response) => {
 	let username = request.params.username;
 	const idUser = await getIdByUsername(username).then(id => {return id});
-	let message;
+	let users = [];
 	try {
-		message = await getFollowedUsersOfUserUserDataAccess(idUser);
+		users = await getFollowedUsersOfUserUserDataAccess(idUser);
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
+	let message = {...MessageType.USER.OK, users: users};
 	return OK(response, message, apiVersionType.V1);
 };
 
 const getFollowersOfUser = async (request, response) => {
 	let username = request.params.username;
 	const idUser = await getIdByUsername(username).then(id => {return id});
-	let message;
+	let users = [];
 	try {
-		message = await getFollowersOfUserUserDataAccess(idUser);
+		users = await getFollowersOfUserUserDataAccess(idUser);
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
+	let message = {...MessageType.USER.OK, users: users};
 	return OK(response, message, apiVersionType.V1);
 };
 
@@ -166,7 +178,8 @@ const blockUser = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, MessageType.USER.BLOCKED_TO.replace("$", username), apiVersionType.V1);
+	let message = {boolValue: true, ...MessageType.USER.BLOCKED_TO}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const unblockUser = async (request, response) => {
@@ -177,13 +190,14 @@ const unblockUser = async (request, response) => {
 	let message;
 	try {
 		message = await unblockUserUserDataAccess(idUserBlocker, idUserToUnblock);
-		if (message) {
-			message = MessageType.USER.UNBLOCKED_TO.replace("$", username);
+		if (!message) {
+			throw new UserErrorException(MessageType.USER.CANNOT);
 		}
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, message, apiVersionType.V1);
+	let payload = {boolValue: true, ...message}
+	return OK(response, payload, apiVersionType.V1);
 };
 
 const getPendingFollowRequest = async (request, response) => {
@@ -214,14 +228,23 @@ const checkIfUserLoggedIsBlockedByUser = async (request, response) => {
 	const token = (request.headers.authorization).split(" ")[1];
 	let username = request.params.username;
 	let isBlocked = false;
+	let isBlocker = false;
 	try {
 		const userDataId = await verifyToken(token).then(data => {return data.id});
 		const idUserBlocker = await getIdByUsername(username).then(id => {return id});
 		isBlocked = await isUserBlockingToUser(idUserBlocker, userDataId);
+		isBlocker = await isUserBlockingToUser(userDataId, idUserBlocker);
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, isBlocked, apiVersionType.V1);
+	let message = MessageType.USER.USER_IS_NOT_BLOCKING_YOU;
+	if(isBlocker) {
+		message = {boolValue: isBlocker, ...MessageType.USER.USER_HAS_BLOCKED_YOU}
+	}
+	if(isBlocked) {
+		message = {boolValue: isBlocked, ...MessageType.USER.USER_BLOCKED}
+	}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const findByFilter = async (request, response) => {
@@ -232,7 +255,9 @@ const findByFilter = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, users, apiVersionType.V1);
+	let messageTypes = (users) ? MessageType.USER.USERS_FOUND : MessageType.USER.NOT_FOUND;
+	let message = {...messageTypes, users: users};
+	return OK(response, message, apiVersionType.V1);
 };
 
 module.exports = {

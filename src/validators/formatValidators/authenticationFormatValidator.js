@@ -1,60 +1,61 @@
-const { httpResponseValidation } = require('../../helpers/httpResponses');
-const { validatePasswordFormatData, validateEmailOrUsernameData, validateAuthorizationHeaderData,
-    validateRefreshTokenParameterData, validateAccessTokenParameterData, validateOptionalAccessTokenParameterData } = require('./formatValidator');
+const {httpResponseValidation} = require('../../helpers/httpResponses');
+const {validateError} = require('../../middleware/validationFormatMiddleware');
+const {validatePasswordFormatData, validateEmailOrUsernameData, validateAuthorizationHeaderData,
+	validateRefreshTokenParameterData, validateAccessTokenParameterData, validateOptionalAccessTokenParameterData} = require('./formatValidator');
 
 const validateLoginFormat = [
-    validateEmailOrUsernameData,
-    validatePasswordFormatData,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+	validateEmailOrUsernameData,
+	validatePasswordFormatData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
 const validateEmailOrUsernameFormat = [
-    validateEmailOrUsernameData,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+	validateEmailOrUsernameData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
 const validateAccessTokenAsParameterFormat = [
-    validateAccessTokenParameterData,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+	validateAccessTokenParameterData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
 const validateRefreshTokenAsParameterFormat = [
-    validateRefreshTokenParameterData,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+	validateRefreshTokenParameterData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
 const validateRefreshAndAccessTokenFormat = [
-    validateAuthorizationHeaderData,
-    validateRefreshTokenParameterData,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+	validateAuthorizationHeaderData,
+	validateRefreshTokenParameterData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
 const validateAuthorizationTokenFormat = [
-    validateAuthorizationHeaderData,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+	validateAuthorizationHeaderData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
 const validateOptionalAccessTokenFormat = [
-    validateOptionalAccessTokenParameterData,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+	validateOptionalAccessTokenParameterData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
 module.exports = {
-    validateRefreshAndAccessTokenFormat, validateAccessTokenAsParameterFormat, validateRefreshTokenAsParameterFormat,
-    validateLoginFormat, validateAuthorizationTokenFormat, validateOptionalAccessTokenFormat, validateEmailOrUsernameFormat,
+	validateRefreshAndAccessTokenFormat, validateAccessTokenAsParameterFormat, validateRefreshTokenAsParameterFormat,
+	validateLoginFormat, validateAuthorizationTokenFormat, validateOptionalAccessTokenFormat, validateEmailOrUsernameFormat,
 }
 

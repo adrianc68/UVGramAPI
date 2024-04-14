@@ -5,7 +5,7 @@ const {isEmailRegistered, isUsernameRegistered, isVerificationCodeGenerated, doe
 const {decryptAES} = require("../helpers/aes-encryption");
 const {CategoryType} = require("../models/enum/CategoryType");
 const {GenderType} = require("../models/enum/GenderType");
-const {INTERNAL_SERVER_ERROR, CONFLICT, NOT_FOUND, TOO_MANY_REQUESTS, BAD_REQUEST, UNAUTHORIZED} = require("../services/httpResponsesService");
+const {INTERNAL_SERVER_ERROR, CONFLICT, NOT_FOUND, TOO_MANY_REQUESTS, BAD_REQUEST, UNAUTHORIZED, OK} = require("../services/httpResponsesService");
 const {apiVersionType} = require("../types/apiVersionType");
 const MessageType = require("../types/MessageType");
 
@@ -18,7 +18,7 @@ const validationisEmailRegisteredWithNext = async (request, response, next) => {
 		return INTERNAL_SERVER_ERROR(response, err, apiVersionType.V1);
 	}
 	if (isRegistered) {
-		return CONFLICT(response, {isRegistered, message: MessageType.USER.EMAIL_ALREADY_REGISTERED}, apiVersionType.V1);
+		return CONFLICT(response, {boolValue: isRegistered, ...MessageType.USER.EMAIL_ALREADY_REGISTERED}, apiVersionType.V1);
 	} else {
 		return next();
 	}
@@ -33,7 +33,7 @@ const validationIsUsernameRegisteredWithNext = async (request, response, next) =
 		return INTERNAL_SERVER_ERROR(response, err, apiVersionType.V1);
 	}
 	if (isRegistered) {
-		return CONFLICT(response, {isRegistered, message: MessageType.USER.USER_ALREADY_REGISTERED}, apiVersionType.V1);
+		return CONFLICT(response, {boolValue: isRegistered, ...MessageType.USER.USER_ALREADY_REGISTERED}, apiVersionType.V1);
 	} else {
 		return next();
 	}
@@ -57,7 +57,7 @@ const validationIsEmailRegistered = async (request, response) => {
 	} else {
 		message = MessageType.USER.EMAIL_NOT_REGISTERED;
 	}
-	return OK(response, {isRegistered, message}, apiVersionType.V1);
+	return OK(response, {boolValue: isRegistered, ...message}, apiVersionType.V1);
 };
 
 const validationIsUsernameRegistered = async (request, response) => {
@@ -69,13 +69,14 @@ const validationIsUsernameRegistered = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	let message;
+	let messageData;
 	if (isRegistered) {
-		message = MessageType.USER.USER_ALREADY_REGISTERED;
+		messageData = MessageType.USER.USER_ALREADY_REGISTERED;
 	} else {
-		message = MessageType.USER.USER_NOT_REGISTERED;
+		messageData = MessageType.USER.USER_NOT_REGISTERED;
 	}
-	return OK(response, {isRegistered, message}, apiVersionType.V1);
+	let message = {boolValue: isRegistered, ...messageData}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const validationNotGeneratedVerificationCode = async (request, response, next) => {
@@ -87,7 +88,7 @@ const validationNotGeneratedVerificationCode = async (request, response, next) =
 		return INTERNAL_SERVER_ERROR(response, err, apiVersionType.V1);
 	}
 	if (isGenerated) {
-		return TOO_MANY_REQUESTS(response, {message: MessageType.USER.WAITFOR_GENERATE_VERIFICATION_CODE}, apiVersionType.V1);
+		return TOO_MANY_REQUESTS(response, MessageType.USER.WAITFOR_GENERATE_VERIFICATION_CODE, apiVersionType.V1);
 	}
 	return next();
 };
@@ -101,7 +102,7 @@ const validationVerificationCodeMatches = async (request, response, next) => {
 		return INTERNAL_SERVER_ERROR(response, err, apiVersionType.V1);
 	}
 	if (!isValid) {
-		return NOT_FOUND(response, {message: MessageType.USER.INVALID_VERIFICATION_CODE}, apiVersionType.V1);
+		return NOT_FOUND(response, MessageType.USER.INVALID_VERIFICATION_CODE, apiVersionType.V1);
 	}
 	return next();
 };
@@ -129,7 +130,7 @@ const validationEmailOrUsernameRejectOnNotExist = async (request, response, next
 	try {
 		userData = await getAccountLoginData(emailOrUsername);
 		if (!userData) {
-			return NOT_FOUND(response, {message: MessageType.USER.USERNAME_NOT_FOUND}, apiVersionType.V1);
+			return CONFLICT(response, MessageType.USER.USERNAME_NOT_FOUND, apiVersionType.V1);
 		}
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);

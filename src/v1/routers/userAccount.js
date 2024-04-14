@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const {addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, updateUser, createURLVerification, changeUserRoleByEmailOrUsername, changePrivacyType, getUserAccountData} = require('../../controllers/userAccountController');
+const {addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, updateUser, createURLVerification, changeUserRoleByEmailOrUsername, changePrivacyType, getUserAccountData} = require('../controllers/userAccountController');
 const {checkAccessTokenAndAuthRoleMiddleware} = require('../../middleware/authentication');
 const {UserRoleType} = require('../../models/enum/UserRoleType');
 const {apiVersionType} = require('../../types/apiVersionType');
@@ -7,15 +7,6 @@ const {validateEmailOrUsernameFormat} = require('../../validators/formatValidato
 const {validateUserAccountDataFormat, validateAccountEmailFormat, validateAccountUsernameFormat, validateVerificationCodeFormat, validatePasswordFormat, validateOldPasswordFormat, validateBasicUserAccountDataFormat, validatePersonalDataFormat, validateBusinessDataFormat, validateAdminDataFormat, validateModeratorDataFormat, validateNewRoleTypeFormat, validatePrivacyDataFormat} = require('../../validators/formatValidators/userAccountFormatValidator');
 const {validationIsURLRecoverAlreadyGeneratedByEmailOrUsername} = require('../../validators/urlRecoverValidation');
 const {validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist, validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationModeratorRoleData, validationAdminRoleData, validationBusinessRoleData, validationSecretKey, validationUserPrivacy} = require('../../validators/userAccountValidation');
-
-router.post("/accounts/create",
-    validateUserAccountDataFormat,
-    validateVerificationCodeFormat,
-    validationIsUsernameRegisteredWithNext,
-    validationisEmailRegisteredWithNext,
-    validationVerificationCodeMatches,
-    addUser
-);
 
 router.post("/accounts/create",
 	validateUserAccountDataFormat,

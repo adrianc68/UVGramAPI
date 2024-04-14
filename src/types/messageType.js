@@ -1,5 +1,6 @@
 const MessageType = {
 	USER: {
+		USER_REGISTERED: {code:  "USER_REGISTERED", message: "User is registered"},
 		BAD_PASSWORD: {code: "BAD_PASSWORD", message: "Password does not match"},
 		EMAIL_ALREADY_REGISTERED: {code: "EMAIL_ALREADY_REGISTERED", message: "The email is already registered"},
 		EMAIL_NOT_REGISTERED: {code: "EMAIL_NOT_REGISTERED", message: "The email is not registered"},
@@ -53,20 +54,32 @@ const MessageType = {
 		USER_HAS_BLOCKED_YOU: {code: "USER_HAS_BLOCKED_YOU", message: "User has blocked you"},
 		NO_FOLLOWER_REQUEST_FROM_USER: {code: "NO_FOLLOWER_REQUEST_FROM_USER", message: "There is no follower request from $"},
 		USER_IS_NOT_FOLLOWING_YOU: {code: "USER_IS_NOT_FOLLOWING_YOU", message: "$ is not following you"},
-		FOLLOWER_REQUEST_ALREADY_SENT: {code: "FOLLOWER_REQUEST_ALREADY_SENT", message: "Follower request is already sent to user"}
+		FOLLOWER_REQUEST_ALREADY_SENT: {code: "FOLLOWER_REQUEST_ALREADY_SENT", message: "Follower request is already sent to user"},
+		OK: {code: "OK", message: "Successfull request"},
+		ERROR_CANNOT_GENERATE_VERIFICATION_CODE: {code: "ERROR_CANNOT_GENERATE_VERIFICATION_CODE", message: "Error generating the verification code"},
+		USER_IS_NOT_BLOCKING_YOU: {code: "USER_IS_NOT_BLOCKING_YOU", message: "The user is not blocking you"},
+		PASSWORD_CHANGED: {code: "PASSWORD_CHANGED", message: "The password has been changed"},
+		CANNOT_BLOCK_USER: {code: "CANNOT_BLOCK_USER", message: "Cannot block the user"},
+		CANNOT_UNBLOCK_USER: {code: "CANNOT_UNBLOCK_USER", message: "Cannot unblock the user"},
+		USERS_FOUND: {code: "USERS_FOUND", message: "Users found"},
+		USERS_NOT_FOUND: {code: "USERS_NOT_FOUND", message: "User(s) not found"},
+		DATA_FOUND: {code: "DATA_FOUND", message: "Data found"},
+		DATA_NOT_FOUND: {code: "DATA_NOT_FOUND", message: "Data not found"}
 	},
 	SERVICES: {
 		API_ERROR: {code: "API_ERROR", message: "Error al comunicarse con un servicio externo"},
 		CONNECTION_ERROR: {code: "CONNECTION_ERROR", message: "Error de conexión con un servicio externo"},
 		TIMEOUT_ERROR: {code: "TIMEOUT_ERROR", message: "Tiempo de espera agotado al comunicarse con un servicio externo"},
 		AUTHENTICATION_ERROR: {code: "AUTHENTICATION_ERROR", message: "Error de autenticación al acceder a un servicio externo"},
-		INTERNAL_ERROR: {code: "INTERNAL_ERROR", message: "Error desconocido al intenter realizar una acción en el servidor externo"}
+		INTERNAL_ERROR: {code: "INTERNAL_ERROR", message: "Error desconocido al intenter realizar una acción en el servidor externo"},
+		INVALID_TOKEN_TYPE: {code: "INVALID_TOKEN_TYPE", message: "You must provide a token of type $"},
+		NONE: {code: "NONE", message: "NONE"}
 	},
 	SYSTEM: {
 		CONFIGURATION_ERROR: {code: "CONFIGURATION_ERROR", message: "Error de configuración del sistema"},
 		DATABASE_ERROR: {code: "DATABASE_ERROR", message: "Error en la base de datos"},
 		DISK_FULL: {code: "DISK_FULL", message: "El disco está lleno, no se pueden realizar más operaciones"},
-		INTERNAL_ERROR: {code: "INTERNAL_ERROR", message: "Error interno del sistema"}
+		INTERNAL_ERROR: {code: "INTERNAL_ERROR", message: "Error interno del sistema"},
 	}
 };
 

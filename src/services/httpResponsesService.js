@@ -193,8 +193,9 @@ const INTERNAL_SERVER_ERROR = (response, error, version) => {
 	let payload = {
 		status: StatusCodes.INTERNAL_SERVER_ERROR,
 		error: "Internal Server Error",
-		identifier,
 		message: "Please contact an administrator and provide the identifier.",
+		data: MessageType.SERVICES.INTERNAL_ERROR,
+		identifier,
 		version,
 	};
 	sendResponse(response, payload);

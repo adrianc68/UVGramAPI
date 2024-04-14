@@ -1,9 +1,10 @@
-const {INTERNAL_SERVER_ERROR} = require("../../services/httpResponsesService");
+const {INTERNAL_SERVER_ERROR, OK} = require("../../services/httpResponsesService");
 const {getAllCommentsByIdPost, getCommentsCountById, isCommentLikedByUser} = require("../../dataaccess/commentDataAccess");
 const {saveFiles} = require("../../dataaccess/fileServerDataAccess");
 const {getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById, getPostFilenamesById, isPostLikedByUser, deletePost} = require("../../dataaccess/postDataAccess");
 const {verifyToken} = require("../../dataaccess/tokenDataAccess");
 const {getAccountLoginData, isUserFollowedByUser, getUserProfile} = require("../../dataaccess/userDataAccess");
+const {apiVersionType} = require("../../types/apiVersionType");
 
 const getPostsByUsername = async (request, response) => {
 	const username = request.params.username;

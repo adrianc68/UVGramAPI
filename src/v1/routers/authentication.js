@@ -19,7 +19,7 @@ router.post("/authentication/refresh",
 );
 
 router.post("/authentication/logout",
-	checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.PERSONAL]),
+	checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
 	logoutSession
 );
 

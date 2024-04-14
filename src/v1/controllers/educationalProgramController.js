@@ -1,5 +1,7 @@
-const {OK} = require("../../services/httpResponsesService");
+const {OK, INTERNAL_SERVER_ERROR} = require("../../services/httpResponsesService");
 const {getAllFacultyAvailables: getAllFacultyAvailablesDataAccess, getAllEducationalProgram: getAllEducationalProgramDataAccess, getAllRegion: getAllRegionDataAccess, addRegion, addFacultyToRegion, addEducationalProgramToFaculty} = require("../../dataaccess/educationalProgramDataAccess");
+const {apiVersionType} = require("../../types/apiVersionType");
+const MessageType = require("../../types/MessageType");
 
 const getAllEducationalProgram = async (request, response) => {
 	let data = [];
@@ -8,7 +10,14 @@ const getAllEducationalProgram = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, data, apiVersionType.V1);
+	let messageType;
+	if(!data) {
+		messageType = MessageType.USER.DATA_NOT_FOUND;
+	} else {
+		messageType = MessageType.USER.DATA_FOUND;
+	}
+	let message = {...messageType, faculties: data}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const getAllFacultyAvailables = async (request, response) => {
@@ -18,7 +27,14 @@ const getAllFacultyAvailables = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, data, apiVersionType.V1);
+	let messageType;
+	if(!data) {
+		messageType = MessageType.USER.DATA_NOT_FOUND;
+	} else {
+		messageType = MessageType.USER.DATA_FOUND;
+	}
+	let message = {...messageType, faculties: data}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const getAllRegion = async (request, response) => {
@@ -28,7 +44,8 @@ const getAllRegion = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, data, apiVersionType.V1);
+	let message = {...MessageType.USER.DATA_FOUND, regions: data}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const addNewRegion = async (request, response) => {

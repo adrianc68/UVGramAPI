@@ -1,21 +1,21 @@
 const jwt = require('jsonwebtoken')
-const { redisClient } = require("../database/connectionRedis");
-const { v4: uuidv4 } = require("uuid");
+const {redisClient} = require("../database/connectionRedis");
+const {v4: uuidv4} = require("uuid");
 
 const EXPIRATION_TIME = {
-    INSTANT: process.env.EXPIRATION_TIME_INSTANT,
-    LONG: process.env.EXPIRATION_TIME_LONG_TIME
+	INSTANT: process.env.EXPIRATION_TIME_INSTANT,
+	LONG: process.env.EXPIRATION_TIME_LONG_TIME
 };
 
 const TOKEN_STATE = {
-    INVALID: "INVALID",
-    VALID: "VALID",
-    NIL: "NIL"
+	INVALID: "INVALID",
+	VALID: "VALID",
+	NIL: "NIL"
 };
 
 const TOKEN_TYPE = {
-    REFRESH: "refreshToken",
-    ACCESS: "accessToken"
+	REFRESH: "refreshToken",
+	ACCESS: "accessToken"
 };
 
 /**
@@ -24,18 +24,18 @@ const TOKEN_TYPE = {
  * @returns the token generated with jti uuidv4 identifier.
  */
 const generateRefreshToken = async (payload) => {
-    const jti = uuidv4();
-    const refreshTokenPayload = {
-        id: payload.id,
-        tokenType: TOKEN_TYPE.REFRESH
-    }
-    let refreshToken = jwt.sign(
-        refreshTokenPayload,
-        process.env.TOKEN_SECRET, {
-        expiresIn: EXPIRATION_TIME.LONG,
-        jwtid: jti
-    });
-    return { token: refreshToken, jti }
+	const jti = uuidv4();
+	const refreshTokenPayload = {
+		id: payload.id,
+		tokenType: TOKEN_TYPE.REFRESH
+	}
+	let refreshToken = jwt.sign(
+		refreshTokenPayload,
+		process.env.TOKEN_SECRET, {
+		expiresIn: EXPIRATION_TIME.LONG,
+		jwtid: jti
+	});
+	return {token: refreshToken, jti}
 };
 
 /**
@@ -46,19 +46,19 @@ const generateRefreshToken = async (payload) => {
  * @returns the token generated with jti uuidv4 identifier.
  */
 const generateAccessToken = async (payload, refreshTokenJti) => {
-    const jti = uuidv4();
-    const accessTokenPayload = {
-        ...payload,
-        refreshTokenJti,
-        tokenType: TOKEN_TYPE.ACCESS,
-    };
-    const accessToken = jwt.sign(
-        accessTokenPayload,
-        process.env.TOKEN_SECRET, {
-        expiresIn: EXPIRATION_TIME.INSTANT,
-        jwtid: jti
-    });
-    return { token: accessToken, jti }
+	const jti = uuidv4();
+	const accessTokenPayload = {
+		...payload,
+		refreshTokenJti,
+		tokenType: TOKEN_TYPE.ACCESS,
+	};
+	const accessToken = jwt.sign(
+		accessTokenPayload,
+		process.env.TOKEN_SECRET, {
+		expiresIn: EXPIRATION_TIME.INSTANT,
+		jwtid: jti
+	});
+	return {token: accessToken, jti}
 };
 
 /**
@@ -67,8 +67,8 @@ const generateAccessToken = async (payload, refreshTokenJti) => {
  * @returns the JTW decoded data.
  */
 const verifyToken = async (token) => {
-    const tokenVerified = jwt.verify(token, process.env.TOKEN_SECRET);
-    return tokenVerified;
+	const tokenVerified = jwt.verify(token, process.env.TOKEN_SECRET);
+	return tokenVerified;
 };
 
 /**
@@ -77,15 +77,15 @@ const verifyToken = async (token) => {
  * @param {*} jti that will act as the key.
  */
 const addToken = async (token, jti) => {
-    const check = await redisClient.EXISTS(jti);
-    if (check === 1) {
-        return;
-    }
-    const value = `${TOKEN_STATE.VALID} ${token}`
-    await redisClient.SET(jti, value);
-    const payload = await verifyToken(token);
-    await redisClient.EXPIREAT(jti, +payload.exp);
-    return;
+	const check = await redisClient.EXISTS(jti);
+	if (check === 1) {
+		return;
+	}
+	const value = `${TOKEN_STATE.VALID} ${token}`
+	await redisClient.SET(jti, value);
+	const payload = await verifyToken(token);
+	await redisClient.EXPIREAT(jti, +payload.exp);
+	return;
 };
 
 /**
@@ -94,8 +94,8 @@ const addToken = async (token, jti) => {
  * @returns value of key in redis
  */
 const getTokenValueRedis = async (jti) => {
-    const status = await redisClient.GET(jti);
-    return status;
+	const status = await redisClient.GET(jti);
+	return status;
 };
 
 /**
@@ -104,12 +104,12 @@ const getTokenValueRedis = async (jti) => {
  * @param {*} jti the token jti value.
  */
 const blacklistToken = async (token, jti) => {
-    const value = `${TOKEN_STATE.INVALID} ${token}`
-    const status = await redisClient.SET(jti, value);
-    if (status == "nil") return;
-    const payload = await verifyToken(token);
-    await redisClient.EXPIREAT(jti, +payload.exp);
-    return;
+	const value = `${TOKEN_STATE.INVALID} ${token}`
+	const status = await redisClient.SET(jti, value);
+	if (status == "nil") return;
+	const payload = await verifyToken(token);
+	await redisClient.EXPIREAT(jti, +payload.exp);
+	return;
 };
 
 /**
@@ -117,11 +117,11 @@ const blacklistToken = async (token, jti) => {
  * @param {*} jti that will act as a key.
  */
 const removeTokenByJTI = async (jti) => {
-    return await redisClient.del(jti);
+	return await redisClient.del(jti);
 };
 
 module.exports = {
-    generateRefreshToken, generateAccessToken, verifyToken,
-    addToken, getTokenValueRedis, blacklistToken,
-    removeTokenByJTI, TOKEN_STATE, TOKEN_TYPE
+	generateRefreshToken, generateAccessToken, verifyToken,
+	addToken, getTokenValueRedis, blacklistToken,
+	removeTokenByJTI, TOKEN_STATE, TOKEN_TYPE
 }

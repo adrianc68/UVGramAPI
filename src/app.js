@@ -28,18 +28,6 @@ app.use(fileUpload({
 	tempFileDir: "./tmp/"
 }));
 
-// routers
-// app.use(require("./routers/userAccount"));
-// app.use(require("./routers/authentication"));
-// app.use(require("./routers/user"));
-// app.use(require("./routers/data"));
-// app.use(require("./routers/urlVerification"));
-// app.use(require("./routers/post"));
-// app.use(require("./routers/comment"));
-// app.use(require("./routers/resource"));
-//
-//
-
 app.use(require("./v1/routers/userAccount"));
 app.use(require("./v1/routers/authentication"));
 app.use(require("./v1/routers/user"));

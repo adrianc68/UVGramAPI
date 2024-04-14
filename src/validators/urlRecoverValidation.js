@@ -25,7 +25,7 @@ const validationIsURLRecoverAlreadyGeneratedByEmailOrUsername = async (request, 
 		let userData = await getAccountLoginData(emailOrUsername);
 		let isAlreadyURLGenerated = await doesURLVerificationAlreadyGenerated(userData.id);
 		if (isAlreadyURLGenerated) {
-			return TOO_MANY_REQUESTS(response, {message: MessageType.USER.WAITFOR_GENERATE_URL}, apiVersionType.V1);
+			return TOO_MANY_REQUESTS(response, MessageType.USER.WAITFOR_GENERATE_URL, apiVersionType.V1);
 		}
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);

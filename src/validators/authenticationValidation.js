@@ -2,9 +2,16 @@ const {encondePassword} = require("../helpers/cipher");
 const {getAccountLoginData} = require("../dataaccess/userDataAccess");
 const {getTokenExist, TOKEN_TYPE} = require("../dataaccess/tokenDataAccess");
 const {AccountStatusType} = require("../models/enum/AccountStatusType");
-const {UNAUTHORIZED, FORBIDDEN, NOT_FOUND, INTERNAL_SERVER_ERROR} = require("../services/httpResponsesService");
+const {UNAUTHORIZED, FORBIDDEN, NOT_FOUND, INTERNAL_SERVER_ERROR, CONFLICT} = require("../services/httpResponsesService");
 const MessageType = require("../types/MessageType");
 const {apiVersionType} = require("../types/apiVersionType");
+
+async function delay(milliseconds) {
+    return new Promise(resolve => {
+        setTimeout(resolve, milliseconds);
+    });
+}
+
 
 const doesExistUser = (user) => {
 	let doesExistUser = false;
@@ -28,7 +35,7 @@ const validationLoginData = async (request, response, next) => {
 		await getAccountLoginData(emailOrUsername).then(userData => {
 			if (doesExistUser(userData)) {
 				if (userData.account_status == AccountStatusType.BLOCKED) {
-					return FORBIDDEN(response, MessageType.USER.USER_BLOCKED, apiVersionType.V1);
+					return UNAUTHORIZED(response, MessageType.USER.USER_BLOCKED, apiVersionType.V1);
 				}
 				if (doesPasswordMatch(encondePassword(password), userData.password)) {
 					return next();
@@ -36,7 +43,7 @@ const validationLoginData = async (request, response, next) => {
 					return UNAUTHORIZED(response, MessageType.USER.BAD_PASSWORD, apiVersionType.V1);
 				}
 			} else {
-				return NOT_FOUND(response, MessageType.USER.USER_NOT_FOUND, apiVersionType.V1);
+				return UNAUTHORIZED(response, MessageType.USER.USER_NOT_FOUND, apiVersionType.V1);
 			}
 		});
 	} catch (error) {

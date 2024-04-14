@@ -1,4 +1,4 @@
-const {CREATED, UNAUTHORIZED} = require("../../services/httpResponsesService");
+const {CREATED, UNAUTHORIZED, OK, INTERNAL_SERVER_ERROR} = require("../../services/httpResponsesService");
 const {apiVersionType} = require("../../types/apiVersionType");
 const MessageType = require("../../types/MessageType");
 const {generateTokens, deleteAllSessionByAccessToken, verifyToken, removeToken, refreshAccessToken} = require("../../dataaccess/tokenDataAccess");
@@ -14,7 +14,7 @@ const createTokens = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return CREATED(response, tokens, apiVersionType.V1);
+	return OK(response, tokens, apiVersionType.V1);
 };
 
 const refreshTokens = async (request, response) => {
@@ -25,7 +25,6 @@ const refreshTokens = async (request, response) => {
 		let refreshTokenData = await verifyToken(refreshToken);
 		let userData = await getAccountLoginDataById(refreshTokenData.id);
 		newAccessToken = await refreshAccessToken(userData.id, userData.role, refreshTokenData.jti);
-
 		if (request.headers.accesstoken) {
 			let optionalAccessToken = (request.headers.accesstoken).split(" ")[1];
 			let optionalTokenData = await verifyToken(optionalAccessToken);
