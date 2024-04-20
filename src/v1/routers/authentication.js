@@ -24,7 +24,7 @@ router.post("/authentication/logout",
 );
 
 router.post("/authentication/testing",
-	checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.PERSONAL]),
+	// checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.PERSONAL]),
 	sayHello,
 );
 

@@ -69,6 +69,16 @@ services:
       dev_network:
         aliases:
           - ftp_dev_host
+  sftpserver:
+    build:
+      context: ./dev
+      dockerfile: "./dkfs/DockerfileSFTP"
+    container_name: "dev_uvgram_sftp"
+    restart: always
+    ports:
+      - "2222:22"
+    volumes:
+      - ./dev/files/:/home/sftpuser/sftp/upload
 volumes:
   dev: {}
 networks:

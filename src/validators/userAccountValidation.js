@@ -163,10 +163,10 @@ const validationPersonalRoleData = async (request, response, next) => {
 	if (!Object.values(GenderType).includes(gender)) {
 		return BAD_REQUEST(response, MessageType.USER.INVALID_GENDER_TYPE_PROVIDED, apiVersionType.V1);
 	}
-	let doesExistCareer = await isEducationalProgramRegistered(idCareer);
-	if (!doesExistCareer) {
-		return BAD_REQUEST(response, MessageType.USER.INVALID_IDCAREER_TYPE_PROVIDED, apiVersionType.V1);
-	}
+// let doesExistCareer = await isEducationalProgramRegistered(idCareer);
+	// if (!doesExistCareer) {
+	// 	return BAD_REQUEST(response, MessageType.USER.INVALID_IDCAREER_TYPE_PROVIDED, apiVersionType.V1);
+	// }
 	return next();
 };
 
@@ -207,7 +207,9 @@ const validationUserPrivacy = async (request, response, next) => {
 		let userDataId = await verifyToken(token).then(data => {return data.id});
 		let result = await getActualPrivacyType(userDataId);
 		if (result == privacy) {
-			return CONFLICT(response, MessageType.USER.ACCOUNT_PRIVACY_IS_ALREADY_TAKEN.replace("$", privacy), apiVersionType.V1);
+			let message = MessageType.USER.ACCOUNT_PRIVACY_IS_ALREADY_TAKEN.message.replace("$", privacy);
+			let code = MessageType.USER.ACCOUNT_PRIVACY_IS_ALREADY_TAKEN.code;
+			return CONFLICT(response, {message, code}, apiVersionType.V1);
 		}
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);

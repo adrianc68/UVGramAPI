@@ -131,7 +131,7 @@ const getProfileOfUser = async (request, response) => {
 			user.isBlocked = await isUserBlockingToUser(userLoggedId, idUser);
 			user.isBlocker = await isUserBlockingToUser(idUser, userLoggedId);
 			user.isFollower = await isUserFollowedByUser(idUser, userLoggedId);
-			user.hasSubmittedFollowerRequest = await isUserFollowedByUser(idUser, userLoggedId);
+			user.hasSubmittedFollowerRequest = await isRequestFollowerSent(idUser, userLoggedId);
 		} catch (error) {
 			// Probably has any bug or maybe we need something more to do here
 			logger.info(error);

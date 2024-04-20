@@ -3,6 +3,7 @@ const {apiVersionType} = require("../../types/apiVersionType");
 const MessageType = require("../../types/MessageType");
 const {generateTokens, deleteAllSessionByAccessToken, verifyToken, removeToken, refreshAccessToken} = require("../../dataaccess/tokenDataAccess");
 const {getAccountLoginData, getAccountLoginDataById} = require("../../dataaccess/userDataAccess");
+const {uploadFile, uploadFiles, downloadFile, downloadFilePassThrough, deleteFile} = require("../../dataaccess/storageDataAccess");
 
 const createTokens = async (request, response) => {
 	let {emailOrUsername} = request.body;
@@ -70,7 +71,67 @@ const checkRolesAuth = (roles) => async (request, response, next) => {
 };
 
 const sayHello = async (request, response) => {
-	return response.send("Welcome! This is just for testing purposes");
+	let file = require('fs').readFileSync("./tmp/subirlo.txt");
+	let file2 = require('fs').readFileSync("./tmp/subirlo2.txt");
+	let file3 = require('fs').readFileSync("./tmp/subirlo3.txt");
+	let file4 = require('fs').readFileSync("./tmp/subirlo4.txt");
+	let file5 = require('fs').readFileSync("./tmp/subirlo5.txt");
+	let result = false;
+	try {
+		// result = await uploadFile(file, "subirlo.txt");
+		//
+		//
+		//
+		//
+		//
+		// Upload array files
+		// let files = [file, file2, file3, file4, file5];
+		// let i = 0;
+		// let promises = Promise.all(files.map(fileData => {
+		// 	i++;
+		// 	return uploadFile(fileData, `${i}.txt`);
+		// }));
+
+		// await promises.then(results => {
+		// 	console.log(results);
+		// 	console.log("Archivos arriba");
+		// 	result = true;
+		// }).catch(error => {
+		// 	console.log(error);
+		// })
+
+
+		// download file
+		const filename = "adrianc68.txt";
+		// let result = await downloadFile(filename);
+		// response.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+		// response.setHeader('Content-Type', 'application/octet-stream');
+		// response.send(result);
+
+
+		// download file passthrough
+		// await downloadFilePassThrough(filename, response);
+
+
+		// delete file
+		// result = await deleteFile("adrianc68.txt");
+
+
+
+		// response.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+		// response.setHeader('Content-Type', 'application/octect-stream');
+		// response.status(200).send(fileContent);
+		// let result = new Promise((resolve, reject) => {
+		// 	let promises = [];
+
+		// });
+
+		// result = await uploadFiles(files, "adrianc68.txt");
+	} catch (error) {
+		console.log(error);
+		return response.send("error");
+	}
+	return response.status(200).send(result);
 };
 
 module.exports = {createTokens, refreshTokens, logoutSession, checkRolesAuth, sayHello}

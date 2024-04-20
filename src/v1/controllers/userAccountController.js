@@ -42,11 +42,12 @@ const addUser = async (request, response) => {
 const updateUser = async (request, response) => {
 	let isUpdated = false;
 	let newAccessToken;
-	let emailMessage;
 	const {email, name, presentation, username, phoneNumber, birthdate} = request.body;
 	const accessToken = (request.headers.authorization).split(" ")[1];
 	let accessTokenData;
 	let oldUserData;
+	let userDataUpdateMessage;
+	let emailChangeMessage;
 	try {
 		accessTokenData = await verifyToken(accessToken);
 		let basicData = {name, presentation, username, phoneNumber, email, birthdate};
@@ -83,20 +84,26 @@ const updateUser = async (request, response) => {
 					if (!result) {
 						throw new Error("can not send email");
 					}
-					emailMessage = "a confirmation address has been sent to the new email";
+					emailChangeMessage = {boolValue: true, ...MessageType.USER.URL_VERIFICATION_SENT}
 				} else {
 					throw new Error("can not generate a new url");
 				}
 			} else {
-				emailMessage = "please wait 5 minutes to generate another confirmation address";
+				emailChangeMessage = {boolValue: false, ...MessageType.USER.WAITFOR_GENERATE_URL}
 			}
 		}
 	} catch (error) {
 		await removeURLVerification(oldUserData.id);
 		logger.warn(error);
-		emailMessage = "cannot change email, try later";
+		emailChangeMessage = {boolValue: false, ...MessageType.USER.UNAVAILABLE}
 	}
-	const payload = {isUpdated, newAccessToken, emailMessage}
+
+	if(isUpdated) {
+		userDataUpdateMessage = {boolValue: isUpdated, ...MessageType.USER.DATA_UPDATED}
+	} else {
+		userDataUpdateMessage = {boolValue: isUpdated, ...MessageType.UNAVAILABLE}
+	}
+const payload = {userDataUpdateMessage:userDataUpdateMessage, emailChangeUpdateMessage: emailChangeMessage, newAccessToken}
 	return OK(response, payload, apiVersionType.V1);
 };
 
@@ -221,7 +228,8 @@ const changePrivacyType = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, result, apiVersionType.V1);
+	let payload = {boolValue: result, ...MessageType.USER.DATA_UPDATED}
+	return OK(response, payload, apiVersionType.V1);
 };
 
 const acceptFollowerRequest = async (request, response) => {
@@ -235,7 +243,8 @@ const acceptFollowerRequest = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, result, apiVersionType.V1);
+	let payload = {boolValue: result, ...MessageType.USER.DATA_UPDATED};
+	return OK(response, payload, apiVersionType.V1);
 };
 
 const denyFollowerRequest = async (request, response) => {
@@ -249,7 +258,8 @@ const denyFollowerRequest = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, result, apiVersionType.V1);
+	let payload = {boolValue: result, ...MessageType.USER.DATA_UPDATED};
+	return OK(response, payload, apiVersionType.V1);
 };
 
 const getUserAccountData = async (request, response) => {

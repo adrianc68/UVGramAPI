@@ -15,7 +15,7 @@ const changeEmailDataOnURLConfirmation = async (request, response) => {
 			return UNAVAILABLE(response, apiVersionType.V1);
 		}
 		await removeURLVerification(resultData.idUser);
-		message = {boolValue: true, ...MessageType.USER.PASSWORD_CHANGED}
+		message = {boolValue: true, ...MessageType.USER.EMAIL_UPDATED}
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}

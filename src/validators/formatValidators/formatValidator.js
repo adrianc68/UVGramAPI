@@ -233,10 +233,7 @@ const validateGenderData = [
 
 const validateIdCareer = [
     check("idCareer")
-        .not()
-        .isEmpty()
-        .withMessage("idCareer is required")
-        .bail()
+				.optional()
         .matches(/^[\d]*$/)
         .withMessage("phoneNumber must have the allowed characters: digits")
 ];

@@ -11,6 +11,7 @@ const {mailer} = require("./database/connetionEmail");
 const {handleJSON} = require("./middleware/jsonValidation");
 const {connectToFtpServer, FTP_PORT_CONNECTION} = require("./database/connetionFtpServer");
 const fileUpload = require("express-fileupload");
+const {connectToSftpServer} = require("./database/connectionSftpServer");
 
 app.set("port", process.env.SV_PORT);
 app.set("host", process.env.SV_HOST);
@@ -53,9 +54,16 @@ const connetionToServers = async () => {
 		await connectToFtpServer().then(() => {
 			logger.info(`FTPClient initialized on port ${FTP_PORT_CONNECTION}`);
 		});
+
+	}).then(async () => {
+		await connectToSftpServer().then(async (sftpClient) => {
+			// await sftpClient.end();
+			logger.info('SFTP Client is OK');
+		})
 	}).catch(error => {
-		logger.fatal(error);
-	});
+			logger.error(error);
+	})
+
 }
 
 module.exports = {app, connetionToServers};

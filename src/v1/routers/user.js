@@ -39,7 +39,7 @@ router.post("/user/followers/accept/",
     acceptFollowerRequest
 );
 
-router.delete("/user/followers/deny/",
+router.post("/user/followers/deny/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     validateAccountUsernameFormat,
     validationRejectOnUsernameNotRegistered,

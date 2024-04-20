@@ -1,7 +1,7 @@
 const {verifyToken} = require("../dataaccess/tokenDataAccess");
 const {isUserFollowedByUser, getIdByUsername, isUserBlockingToUser, isUsernameRegistered, getActualPrivacyType, isRequestFollowerSent} = require("../dataaccess/userDataAccess");
 const {PrivacyType} = require("../models/enum/PrivacyType");
-const {NOT_FOUND, BAD_REQUEST, CONFLICT} = require("../services/httpResponsesService");
+const {NOT_FOUND, BAD_REQUEST, CONFLICT, INTERNAL_SERVER_ERROR} = require("../services/httpResponsesService");
 const {apiVersionType} = require("../types/apiVersionType");
 const MessageType = require("../types/MessageType");
 
@@ -160,7 +160,10 @@ const validationAcceptOrDenyFollowerRequest = async (request, response, next) =>
 		}
 		let isRequestSent = await isRequestFollowerSent(idFollower, userDataId);
 		if (!isRequestSent) {
-			return CONFLICT(response, MessageType.USER.NO_FOLLOWER_REQUEST_FROM_USER.replace("$", username), apiVersionType.V1);
+			let message = MessageType.USER.NO_FOLLOWER_REQUEST_FROM_USER.message.replace("$", username);
+			let code = MessageType.USER.NO_FOLLOWER_REQUEST_FROM_USER.code;
+			let payload = {message, code};
+			return CONFLICT(response, payload, apiVersionType.V1);
 		}
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);

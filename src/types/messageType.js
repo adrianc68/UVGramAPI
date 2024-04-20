@@ -64,7 +64,10 @@ const MessageType = {
 		USERS_FOUND: {code: "USERS_FOUND", message: "Users found"},
 		USERS_NOT_FOUND: {code: "USERS_NOT_FOUND", message: "User(s) not found"},
 		DATA_FOUND: {code: "DATA_FOUND", message: "Data found"},
-		DATA_NOT_FOUND: {code: "DATA_NOT_FOUND", message: "Data not found"}
+		DATA_NOT_FOUND: {code: "DATA_NOT_FOUND", message: "Data not found"},
+		URL_VERIFICATION_SENT: {code: "URL_VERIFICATION_SENT", message: "a confirmation address has been sent to the new email"},
+		DATA_UPDATED: {code: "DATA_UPDATED", message: "Data was updated"},
+		EMAIL_UPDATED: {code: "EMAIL_UPDATED", message: "Email was updated"},
 	},
 	SERVICES: {
 		API_ERROR: {code: "API_ERROR", message: "Error al comunicarse con un servicio externo"},
