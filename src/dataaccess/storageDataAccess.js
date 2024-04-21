@@ -3,24 +3,31 @@ const MessageType = require("../types/MessageType");
 
 const mkdir = async (path, recursive) => {
 	return sftpClient.exists(path)
-		.then(type => type.error ? Promise.reject(type.error) : type)
-		.then(type => type === "d" ? true : sftpClient.mkdir(path, recursive))
-		.then(dirCreated => dirCreated.error ? Promise.reject(dirCreated.error) : dirCreated)
-		.then(dirCreated => dirCreated === `${path} directory created`)
-		.catch(error => {throw error});
+			.then(type => type === "d" ? true : sftpClient.mkdir(path, recursive))
+			.then(dirCreated => dirCreated === `${path} directory created`)
+			.catch(error => {throw error});
+		// .then(type => type.error ? Promise.reject(type.error) : type)
+		// .then(type => type === "d" ? true : sftpClient.mkdir(path, recursive))
+		// .then(dirCreated => dirCreated.error ? Promise.reject(dirCreated.error) : dirCreated)
+		// .then(dirCreated => dirCreated === `${path} directory created`)
+		// .catch(error => {throw error});
 }
 
 const uploadFile = async (file, path) => {
 	return sftpClient.put(file, path)
-		.then(upload => upload.error ? Promise.reject(upload.error) : upload)
 		.then(upload => upload === `Uploaded data stream to ${path}`)
 		.catch(error => {throw error});
+		// .then(upload => upload.error ? Promise.reject(upload.error) : upload)
+		// .then(upload => upload === `Uploaded data stream to ${path}`)
+		// .catch(error => {throw error});
 }
 
 const downloadFile = async (path) => {
 	return sftpClient.get(path)
-		.then(file => file.error ? Promise.reject(file.error) : file)
+		.then(file)
 		.catch(error => {throw error});
+		// .then(file => file.error ? Promise.reject(file.error) : file)
+		// .catch(error => {throw error});
 }
 
 const downloadFilePassThrough = async (path, response) => {
@@ -37,9 +44,11 @@ const downloadFilePassThrough = async (path, response) => {
 
 const deleteFile = async (path) => {
 	return sftpClient.delete(path, true)
-		.then(deleteFile => deleteFile.error ? Promise.reject(deleteFile.error) : deleteFile)
 		.then(deleteFile => deleteFile === `Successfully deleted ${path}`)
 		.catch(error => {throw error});
+		// .then(deleteFile => deleteFile.error ? Promise.reject(deleteFile.error) : deleteFile)
+		// .then(deleteFile => deleteFile === `Successfully deleted ${path}`)
+		// .catch(error => {throw error});
 }
 
 const listFiles = async (pathname) => {

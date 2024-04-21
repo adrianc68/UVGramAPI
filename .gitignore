@@ -4,7 +4,7 @@
 /dist
 /tmp
 /out-tsc
-
+/dev/files
 # Runtime data
 pids
 *.pid

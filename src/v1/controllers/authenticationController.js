@@ -78,7 +78,7 @@ const sayHello = async (request, response) => {
 	let file5 = require('fs').readFileSync("./tmp/subirlo5.txt");
 	let result = false;
 	try {
-		// result = await uploadFile(file, "subirlo.txt");
+		result = await uploadFile(file, "subirlo.txt");
 		//
 		//
 		//
@@ -102,7 +102,7 @@ const sayHello = async (request, response) => {
 
 
 		// download file
-		const filename = "adrianc68.txt";
+		// const filename = "adrianc68.txt";
 		// let result = await downloadFile(filename);
 		// response.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 		// response.setHeader('Content-Type', 'application/octet-stream');
