@@ -68,6 +68,7 @@ const MessageType = {
 		URL_VERIFICATION_SENT: {code: "URL_VERIFICATION_SENT", message: "a confirmation address has been sent to the new email"},
 		DATA_UPDATED: {code: "DATA_UPDATED", message: "Data was updated"},
 		EMAIL_UPDATED: {code: "EMAIL_UPDATED", message: "Email was updated"},
+		DATA_CREATED: {code: "DATA_CREATED", message: "Data was created"}
 	},
 	SERVICES: {
 		API_ERROR: {code: "API_ERROR", message: "Error al comunicarse con un servicio externo"},

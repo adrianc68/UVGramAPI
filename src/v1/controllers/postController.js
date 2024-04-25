@@ -1,10 +1,13 @@
-const {INTERNAL_SERVER_ERROR, OK} = require("../../services/httpResponsesService");
+const {INTERNAL_SERVER_ERROR, OK, UNAVAILABLE} = require("../../services/httpResponsesService");
 const {getAllCommentsByIdPost, getCommentsCountById, isCommentLikedByUser} = require("../../dataaccess/commentDataAccess");
 const {saveFiles} = require("../../dataaccess/fileServerDataAccess");
 const {getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById, getPostFilenamesById, isPostLikedByUser, deletePost} = require("../../dataaccess/postDataAccess");
 const {verifyToken} = require("../../dataaccess/tokenDataAccess");
 const {getAccountLoginData, isUserFollowedByUser, getUserProfile} = require("../../dataaccess/userDataAccess");
 const {apiVersionType} = require("../../types/apiVersionType");
+const {uploadPostfile, uploadPostFiles} = require("../../dataaccess/storageDataAccess");
+const File = require("../../models/File");
+const MessageType = require("../../types/MessageType");
 
 const getPostsByUsername = async (request, response) => {
 	const username = request.params.username;
@@ -70,29 +73,24 @@ const getPostDataByUUID = async (request, response) => {
 
 const createPost = async (request, response) => {
 	const {description, commentsAllowed, likesAllowed} = request.body;
-	const files = [].concat(request.files["file[]"]);
-	console.log(files);
+	const files = [].concat(request.files["files[]"]);
 	const token = (request.headers.authorization).split(" ")[1];
 	let isCreated = false;
 	let postInfo;
-
-	
-
-
-	// try {
-	// 	const userDataId = await verifyToken(token).then(data => {return data.id});
-	// 	let postDataCreated = await createPostByUserId(userDataId, description, commentsAllowed, likesAllowed, files);
-	// 	if (postDataCreated != null) {
-	// 		postInfo = postDataCreated;
-	// 		let resultFiles = postDataCreated.files;
-	// 		await saveFiles(resultFiles, userDataId, postDataCreated.id);
-	// 	}
-	// 	delete postInfo["id"];
-	// 	delete postInfo["id_user"]
-	// } catch (error) {
-	// 	return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
-	// }
-	return OK(response, {isCreated, postInfo}, apiVersionType.V1);
+	try {
+		const userDataId = await verifyToken(token).then(data => data.id);
+		let filepaths = await uploadPostFiles(files, userDataId, "1");
+		let postDataCreated = await createPostByUserId(userDataId, description, commentsAllowed, likesAllowed, filepaths);
+		if (!postDataCreated) {
+			return UNAVAILABLE(response, apiVersionType.V1);
+		}
+			postInfo = postDataCreated;
+		delete postInfo["id"];
+		delete postInfo["id_user"];
+	} catch (error) {
+		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
+	}
+	return OK(response, {isCreated, ...MessageType.USER.DATA_CREATED, postInfo}, apiVersionType.V1);
 };
 
 const likePost = async (request, response) => {

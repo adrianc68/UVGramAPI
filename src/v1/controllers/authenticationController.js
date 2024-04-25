@@ -3,7 +3,11 @@ const {apiVersionType} = require("../../types/apiVersionType");
 const MessageType = require("../../types/MessageType");
 const {generateTokens, deleteAllSessionByAccessToken, verifyToken, removeToken, refreshAccessToken} = require("../../dataaccess/tokenDataAccess");
 const {getAccountLoginData, getAccountLoginDataById} = require("../../dataaccess/userDataAccess");
-const {uploadFile, uploadFiles, downloadFile, downloadFilePassThrough, deleteFile} = require("../../dataaccess/storageDataAccess");
+const {uploadFile, uploadFiles, downloadFile, downloadFilePassThrough, deleteFile, rmdir, rmFilesDir} = require("../../dataaccess/sftpClient");
+
+const {uploadPostfile, uploadPostFiles, deleteFilesFromStorage, getFilesFromStorage} = require("../../dataaccess/storageDataAccess");
+const File = require("../../models/File");
+const {getMimeTypeFromFilename, getFilenameFromPath} = require("../../helpers/fileHelper");
 
 const createTokens = async (request, response) => {
 	let {emailOrUsername} = request.body;
@@ -78,31 +82,60 @@ const sayHello = async (request, response) => {
 	let file5 = require('fs').readFileSync("./tmp/subirlo5.txt");
 	let result = false;
 	try {
-		result = await uploadFile(file, "subirlo.txt");
-		//
-		//
-		//
-		//
-		//
-		// Upload array files
-		// let files = [file, file2, file3, file4, file5];
-		// let i = 0;
-		// let promises = Promise.all(files.map(fileData => {
-		// 	i++;
-		// 	return uploadFile(fileData, `${i}.txt`);
-		// }));
+		let fileData = new File(file, {filename: "subirlo.txt"});
+		result = await uploadPostfile(fileData, "1", "1");
 
-		// await promises.then(results => {
-		// 	console.log(results);
-		// 	console.log("Archivos arriba");
-		// 	result = true;
-		// }).catch(error => {
-		// 	console.log(error);
-		// })
+
+		// let fileDat1 = new File(file, {filename: "archivo1.txt"});
+		// let fileDat2 = new File(file, {filename: "archivo2.txt"});
+		// let fileDat3 = new File(file, {filename: "archivo3.txt"});
+		// let fileDat4 = new File(file, {filename: "archivo4.txt"});
+		// let fileDat5 = new File(file, {filename: "archivo5.txt"});
+		// let filesData = [fileDat1, fileDat2, fileDat3, fileDat4, fileDat5];
+
+
+		// let promises = uploadPostFiles(filesData, 3, 1);
+		// let allPromises = [promises];
+
+
+
+
+		// // let promises = uploadPostFiles(filesData, 3, 1);
+		// // let promises2 = uploadPostFiles(filesData, 3, 2);
+		// // let promises3 = uploadPostFiles(filesData, 3, 3);
+		// // let promises4 = uploadPostFiles(filesData, 3, 4);
+
+		// // // let allPromises = [promises, promises2, promises3, promises4];
+		// // let allPromises = [promises, promises2, promises3, promises4]
+
+		// await Promise.all(allPromises)
+		// 	.then(data => {
+		// 		console.log(data); // Aquí obtendrás un array con los resultados de todas las promesas
+		// 	})
+		// 	.catch(error => {
+		// 		console.error(error); // Maneja los errores si alguna de las promesas falla
+		// 	});
+
+
+
+		// result = await getFilesFromStorage("3/1");
+		// console.log(result);
+
+		// result = await deleteFilesFromStorage("3/1");
+		// console.log(result);
+		//
+		//
+		//
+		//
+
+		// result = await rmFilesDir("3/4");
+		// result = await deleteFilesFromStorage("1/1");
+		// result = await getFilesFromStorage("1/1");
+		// console.log(result);
 
 
 		// download file
-		// const filename = "adrianc68.txt";
+		// const filename = "5.txt";
 		// let result = await downloadFile(filename);
 		// response.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
 		// response.setHeader('Content-Type', 'application/octet-stream');
@@ -110,8 +143,8 @@ const sayHello = async (request, response) => {
 
 
 		// download file passthrough
+		// const filename = "5.txt";
 		// await downloadFilePassThrough(filename, response);
-
 
 		// delete file
 		// result = await deleteFile("adrianc68.txt");

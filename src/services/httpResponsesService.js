@@ -263,12 +263,17 @@ const UNAVAILABLE = (response, version) => {
  * @param {string} file.metadata.filename - The filename of the file.
  * @throws {Error} Throws an error if there is any issue during the response.
  */
-const SEND_SINGLE_FILE = (response, file) => {
+const SEND_SINGLE_FILE = (response, file, inLineDisposition = true) => {
 	if (file === null) {
 		throw new Error(MessageType.NO_FILE_PROVIDED);
 	}
 	response.setHeader('Content-Type', file.metadata.mimetype);
-	response.setHeader('Content-Disposition', 'attachment; filename=' + file.metadata.filename);
+	if (inLineDisposition) {
+		response.setHeader('Content-Disposition', 'inline; filename=' + file.metadata.filename);
+	} else {
+		response.setHeader('Content-Disposition', 'attachment; filename=' + file.metadata.filename);
+	}
+
 	response.write(file.content);
 	return response.end();
 };

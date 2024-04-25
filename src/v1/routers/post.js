@@ -5,11 +5,13 @@ const { validatePostDataFormat, validateUUIDPostDataFormat } = require('../../va
 const { validateAccountUsernameFormat } = require('../../validators/formatValidators/userAccountFormatValidator');
 const { validationDoesExistPostUUID, validationIsPostAlreadyLikedByUser, validationIsPostAlreadyDislikedByUser, validationIsUserOwnerOfPost } = require('../../validators/postValidation');
 const { validationRejectOnUsernameNotRegistered, validationDoesUserBlocked, validationDoesUserIsPrivateAndUnfollowedByActualUser } = require('../../validators/userValidation');
+const {mapFilesIntoFileModel} = require('../controllers/fileController');
 const router = require('express').Router();
 
 router.post("/post/create/",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
     validatePostDataFormat,
+		mapFilesIntoFileModel,
     createPost
 );
 

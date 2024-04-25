@@ -11,21 +11,11 @@ const uploadPostfile = async (file, idUser, idPost) => {
 	if (!dirCreated) {
 		return false;
 	}
-
-	let readStream = fs.createReadStream(file.metadata.filepath);
-
-	readStream.on("end", () => {
-		readStream.close();
-		fs.unlink(file.metadata.filepath, (error) => {
-			if (error) throw error;
-		});
-	})
-
-	readStream.on("error", (error) => {
-		throw error;
-	});
-
-	return uploadFile(readStream, filename)
+	file.content = fs.createReadStream(file.metadata.filepath);
+	console.log(file.content);
+	console.log("****************");
+	console.log(file.content);
+	return uploadFile(file.content, filename)
 		.then(fileResult => fileResult ? filename : false)
 		.catch(error => {throw error});
 }
@@ -37,18 +27,8 @@ const uploadPostFiles = async (files, idUser, idPost) => {
 		return false;
 	}
 	return Promise.all(files.map(async file => {
-		let readStream = fs.createReadStream(file.metadata.filepath);
-		readStream.on("end", () => {
-			readStream.close();
-			fs.unlink(file.metadata.filepath, (error) => {
-				if (error) throw error;
-			});
-		});
-		readStream.on("error", (error) => {
-			throw error;
-		});
 		let filePath = `${path}/${file.metadata.filename}`;
-		return uploadFile(readStream, filePath)
+		return uploadFile(file.content, filePath)
 			.then(fileResult => fileResult ? filePath : false)
 			.catch(error => {throw error});
 	}));
@@ -62,9 +42,9 @@ const getFileFromStorage = async (path) => {
 		.catch(error => {throw error});
 }
 
-const getFilesFromStorage = async (path) => {
+const getFilesFromStorage = async(path) => {
 	let isValidPath = await exists(path);
-	if (!isValidPath) {
+	if(!isValidPath) {
 		return false;
 	}
 	let files = await listFiles(path);
@@ -72,21 +52,21 @@ const getFilesFromStorage = async (path) => {
 		let pathFile = `${path}/${file.name}`;
 		let mimeType = getMimeTypeFromFilename(file.name)
 		return downloadFile(pathFile)
-			.then(buffer => new File(buffer, {filename: file.name, mimetype: mimeType, filepath: pathFile}))
-			.catch(error => {throw error});
+		.then(buffer => new File(buffer, {filename: file.name, mimetype: mimeType, filepath: pathFile}))
+		.catch(error => {throw error});
 	}));
 	return promises;
 }
 
-const deleteFileFromStorage = async (path) => {
+const deleteFileFromStorage = async(path) => {
 	return await deleteFile(path)
 		.then(deleteResult => deleteResult)
 		.catch(error => {throw error});
 }
 
-const deleteFilesFromStorage = async (path) => {
+const deleteFilesFromStorage = async(path) => {
 	let isValidPath = await exists(path);
-	if (!isValidPath) {
+	if(!isValidPath) {
 		return false;
 	}
 	let files = await listFiles(path);
@@ -94,7 +74,7 @@ const deleteFilesFromStorage = async (path) => {
 		let pathFile = `${path}/${file.name}`;
 		return deleteFile(pathFile);
 	}));
-	if (promises.every(result => result === true)) {
+	if(promises.every(result => result === true)) {
 		return await rmdir(path, false);
 	}
 	return false;
@@ -107,7 +87,5 @@ const ensureDirCreated = async (path) => {
 		.catch(error => {throw error});
 }
 
-module.exports = {
-	uploadPostfile, getFileFromStorage, uploadPostFiles,
-	deleteFileFromStorage, deleteFilesFromStorage, getFilesFromStorage
-}
+module.exports = {uploadPostfile, getFileFromStorage, uploadPostFiles, 
+	deleteFileFromStorage, deleteFilesFromStorage, getFilesFromStorage}
