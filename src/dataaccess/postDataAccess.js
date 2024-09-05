@@ -14,26 +14,19 @@ const {createURLResource, getServerURLAddress} = require("./urlRecoverDataAccess
  */
 const getAllPostFromUserId = async (id_user) => {
 	let posts = [];
-	try {
-		posts = await Post.findAll({
-			where: {id_user},
-			attributes: {
-				include: [[Sequelize.fn('COUNT', Sequelize.col("PostLikes.id_post")), 'likes'], "postfile.filename"],
-			},
-			include: [{
-				model: PostLike,
-				attributes: []
-			}, {
-				model: PostFile,
-				as: "postfile",
-				attributes: []
-			}],
-			group: ["description", "comments_allowed", "likes_allowed", "uuid", "Post.id", "filename"],
-			raw: true,
-		});
-	} catch (error) {
-		throw error;
-	}
+	posts = Post.findAll({
+		where: {id_user},
+		attributes: {
+			include: [[Sequelize.fn('COUNT', Sequelize.col("PostLikes.id_post")), 'likes']],
+		},
+		raw: true,
+		group: ["description", "comments_allowed", "likes_allowed", "uuid", "Post.id"],
+		include: [{
+			model: PostLike,
+			attributes: []
+		}]
+	});
+
 	return posts;
 };
 
@@ -44,15 +37,11 @@ const getAllPostFromUserId = async (id_user) => {
  */
 const getPostByUUID = async (uuid) => {
 	let post;
-	try {
-		post = await Post.findOne({
-			where: {uuid},
-			attributes: ["description", "comments_allowed", "likes_allowed", "uuid", "id_user", "id"],
-			raw: true
-		});
-	} catch (error) {
-		throw error;
-	}
+	post = Post.findOne({
+		where: {uuid},
+		attributes: ["description", "comments_allowed", "likes_allowed", "uuid", "id_user", "id"],
+		raw: true
+	});
 	return post;
 };
 
@@ -61,26 +50,33 @@ const getPostByUUID = async (uuid) => {
  * @param {*} id_post the post id
  * @returns [filenames] or empty array []
  */
-const getPostFilenamesById = async (id_user, id_post) => {
+const getPostFilenamesById = async (id_post) => {
 	let filename;
-	try {
-		filename = await PostFile.findAll({
-			where: {id_post},
-			attributes: ["filename"],
-			raw: true,
-		});
-		filename.forEach(name => {
-			createURLResource(name.filename).then(result => {
-				name.url = result;
-				delete name.filename;
-			})
-		});
-
-	} catch (error) {
-		throw error;
-	}
+	filename = await PostFile.findAll({
+		where: {id_post},
+		attributes: ["filename"],
+		raw: true,
+	});
+	filename.forEach(name => {
+		createURLResource(name.filename).then(result => {
+			name.url = result;
+			delete name.filename;
+		})
+	});
 	return filename;
 }
+
+const getPostFilenameById = async (id_post) => {
+	return filename = PostFile.findOne({
+		where: {id_post},
+		attributes: ["filename"],
+		raw: true,
+	}).then(async value => {
+		let result = await createURLResource(value.filename);
+		return [].concat({url: result})
+	})
+}
+
 
 /**
  * Get all post data by id
@@ -356,15 +352,11 @@ const deletePost = async (id_user, id_post) => {
  */
 const countPost = async (id_user) => {
 	let count = 0;
-	try {
-		count = await Post.count({
-			where: {
-				id_user
-			}
-		});
-	} catch (error) {
-		throw error;
-	}
+	count = Post.count({
+		where: {
+			id_user
+		}
+	});
 	return count;
 }
 
@@ -373,5 +365,5 @@ module.exports = {
 	getIdPostByPostUUID, likePostByIds, isPostLikedByUser,
 	dislikePostByIds, getPostLikesById, getUsersWhoLikePostById,
 	getPostById, deleteAllLikesOfUserFromAllPost, getPostFilenamesById,
-	isUserOwnerOfPost, deletePost, countPost
+	isUserOwnerOfPost, deletePost, countPost, getPostFilenameById
 }

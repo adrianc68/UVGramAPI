@@ -244,23 +244,19 @@ const removeVerificationCode = async (username) => {
  */
 const getIdByUsername = async (username) => {
 	let id;
-	try {
-		id = await User.findAll({
-			where: {
-				username
-			},
-			attributes: ["id"],
-			raw: true,
-			plain: true
-		}).then(data => {
-			if (data) {
-				return data.id;
-			}
-			return null;
-		});
-	} catch (error) {
-		throw new Error(error);
-	}
+	id = User.findAll({
+		where: {
+			username
+		},
+		attributes: ["id"],
+		raw: true,
+		plain: true
+	}).then(data => {
+		if (data) {
+			return data.id;
+		}
+		return null;
+	});
 	return id;
 };
 
@@ -515,24 +511,20 @@ const isRequestFollowerSent = async (id_user_follower, id_user_followed) => {
  */
 const getFollowedByUser = async (id) => {
 	let followedByUser = [];
-	try {
-		followedByUser = await Follower.findAll({
-			where: {
-				id_user_follower: id,
-				status: FollowRequestStatusType.ACCEPTED
-			},
-			attributes: ["followed.name", "followed.username", "followed.presentation"],
-			include: [{
-				model: User,
-				as: "followed",
-				attributes: []
-			}],
-			nest: true,
-			raw: true
-		});
-	} catch (error) {
-		throw error;
-	}
+	followedByUser = Follower.findAll({
+		where: {
+			id_user_follower: id,
+			status: FollowRequestStatusType.ACCEPTED
+		},
+		attributes: ["followed.name", "followed.username", "followed.presentation"],
+		include: [{
+			model: User,
+			as: "followed",
+			attributes: []
+		}],
+		nest: true,
+		raw: true
+	});
 	return followedByUser;
 };
 
@@ -543,24 +535,20 @@ const getFollowedByUser = async (id) => {
  */
 const getFollowersOfUser = async (id) => {
 	let followers = [];
-	try {
-		followers = await Follower.findAll({
-			where: {
-				id_user_followed: id,
-				status: FollowRequestStatusType.ACCEPTED
-			},
-			attributes: ["follower.name", "follower.username", "follower.presentation"],
-			include: [{
-				model: User,
-				as: "follower",
-				attributes: []
-			}],
-			nest: true,
-			raw: true
-		});
-	} catch (error) {
-		throw error;
-	}
+	followers = Follower.findAll({
+		where: {
+			id_user_followed: id,
+			status: FollowRequestStatusType.ACCEPTED
+		},
+		attributes: ["follower.name", "follower.username", "follower.presentation"],
+		include: [{
+			model: User,
+			as: "follower",
+			attributes: []
+		}],
+		nest: true,
+		raw: true
+	});
 	return followers;
 };
 
@@ -670,16 +658,12 @@ const denyFollowerRequestByUserId = async (id_user_follower, id_user_followed) =
  */
 const getUserProfile = async (id) => {
 	let user
-	try {
-		user = await User.findAll({
-			where: {id},
-			attributes: ["name", "presentation", "username"],
-			raw: true,
-			plain: true,
-		});
-	} catch (error) {
-		throw error;
-	}
+	user = User.findAll({
+		where: {id},
+		attributes: ["name", "presentation", "username", "filepath"],
+		raw: true,
+		plain: true,
+	});
 	return user;
 };
 
@@ -1010,17 +994,12 @@ const changeUserRoleType = async (id_user, userRoleType) => {
  */
 const getActualPrivacyType = async (id_user) => {
 	let privacyType;
-	try {
-		privacyType = await UserConfiguration.findOne({
-			where: {id_user},
-			raw: true
-		}).then(data => {
-			return data.privacy;
-		})
-
-	} catch (error) {
-		throw error;
-	}
+	privacyType = UserConfiguration.findOne({
+		where: {id_user},
+		raw: true
+	}).then(data => {
+		return data.privacy;
+	})
 	return privacyType;
 }
 
@@ -1056,7 +1035,7 @@ const getAllAccountData = async (id) => {
 	try {
 		accountInfo = await User.findOne({
 			where: {id},
-			attributes: ["name", "presentation", "username", "Account.email", "Account.phone_number", "Account.birthday", "UserRole.role", "UserConfiguration.privacy"],
+			attributes: ["name", "presentation", "username", "Account.email", "Account.phone_number", "Account.birthday", "UserRole.role", "UserConfiguration.privacy", "filepath"],
 			include: [{
 				model: Account,
 				as: "Account",
@@ -1136,24 +1115,20 @@ const getAllAccountData = async (id) => {
  */
 const getAllUsersByFilter = async (usernameOrName) => {
 	let users = [];
-	try {
-		users = await User.findAll({
-			attributes: ["name", "username"],
-			where: {
-				[Op.or]:
-					[{username: {[Op.like]: `%${usernameOrName}%`}},
-					{name: {[Op.like]: `%${usernameOrName}%`}}],
-			},
-			raw: true,
-			limit: 55,
-			order: [
-				["username", "ASC"],
-				["name", "ASC"]
-			]
-		});
-	} catch (error) {
-		throw error;
-	}
+	users = User.findAll({
+		attributes: ["name", "username", "filepath"],
+		where: {
+			[Op.or]:
+				[{username: {[Op.like]: `%${usernameOrName}%`}},
+				{name: {[Op.like]: `%${usernameOrName}%`}}],
+		},
+		raw: true,
+		limit: 55,
+		order: [
+			["username", "ASC"],
+			["name", "ASC"]
+		]
+	});
 	return users;
 }
 

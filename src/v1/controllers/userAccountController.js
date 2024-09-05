@@ -1,6 +1,6 @@
 const {sendEmailCodeVerification, sendEmailChangeURLConfirmation, sendEmailPasswordURLConfirmation} = require("../../dataaccess/mailDataAccess");
 const {verifyToken, deleteAllSessionsByUserId} = require("../../dataaccess/tokenDataAccess");
-const {generateURLToChangeEmailOnConfirmation, doesURLVerificationAlreadyGenerated, removeURLVerification, generateURLToUpdatePasswordOnConfirmation} = require("../../dataaccess/urlRecoverDataAccess");
+const {generateURLToChangeEmailOnConfirmation, doesURLVerificationAlreadyGenerated, removeURLVerification, generateURLToUpdatePasswordOnConfirmation, createURLResource} = require("../../dataaccess/urlRecoverDataAccess");
 const {deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode,
 	getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType, changePrivacyTypeUser, acceptAllFollowerRequestById, acceptFollowerRequestByUserId, getIdByUsername, denyFollowerRequestByUserId, getAllAccountData} = require("../../dataaccess/userDataAccess");
 const {logger} = require("../../helpers/logger");
@@ -268,6 +268,8 @@ const getUserAccountData = async (request, response) => {
 	try {
 		let userData = await verifyToken(token);
 		userInfo = await getAllAccountData(userData.id);
+		userInfo.url = await createURLResource(userInfo.filepath);
+		delete userInfo["filepath"];
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}

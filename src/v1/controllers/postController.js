@@ -1,11 +1,10 @@
 const {INTERNAL_SERVER_ERROR, OK, UNAVAILABLE} = require("../../services/httpResponsesService");
 const {getAllCommentsByIdPost, getCommentsCountById, isCommentLikedByUser} = require("../../dataaccess/commentDataAccess");
-const {saveFiles} = require("../../dataaccess/fileServerDataAccess");
 const {getAllPostFromUserId, createPostByUserId, getPostByUUID, getIdPostByPostUUID, likePostByIds, dislikePostByIds, getPostLikesById, getUsersWhoLikePostById, getPostFilenamesById, isPostLikedByUser, deletePost} = require("../../dataaccess/postDataAccess");
 const {verifyToken} = require("../../dataaccess/tokenDataAccess");
 const {getAccountLoginData, isUserFollowedByUser, getUserProfile} = require("../../dataaccess/userDataAccess");
 const {apiVersionType} = require("../../types/apiVersionType");
-const {uploadPostfile, uploadPostFiles} = require("../../dataaccess/storageDataAccess");
+const {uploadPostFiles} = require("../../dataaccess/storageDataAccess");
 const File = require("../../models/File");
 const MessageType = require("../../types/MessageType");
 
@@ -23,7 +22,7 @@ const getPostsByUsername = async (request, response) => {
 			}
 			post.comments = await getCommentsCountById(postId);
 			post.isLiked = await isPostLikedByUser(userData.id, postId);
-			post.files = await getPostFilenamesById(post.id_user, post.id);
+			post.files = await getPostFilenamesById(post.id);
 			delete post["id_user"];
 			delete post["id"];
 		}));
@@ -55,7 +54,7 @@ const getPostDataByUUID = async (request, response) => {
 		let ownerOfPost = await getUserProfile(postData.id_user);
 		delete ownerOfPost["presentation"];
 		let countLikes = await getPostLikesById(postData.id);
-		let files = await getPostFilenamesById(postData.id_user, postData.id);
+		let files = await getPostFilenamesById(postData.id);
 		delete postData["id_user"];
 		delete postData["id"];
 		postDetails = {

@@ -1,6 +1,6 @@
 const MessageType = require("../../types/MessageType");
 const {deleteAllCommentsOfUserFromAllUserPost, deleteAllUserLikesFromUserComments, getCommentsCountById} = require("../../dataaccess/commentDataAccess");
-const {getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID, getPostFilenamesById, countPost} = require("../../dataaccess/postDataAccess");
+const {getAllPostFromUserId, deleteAllLikesOfUserFromAllPost, getIdPostByPostUUID, getPostFilenamesById, countPost, getPostFilenameById} = require("../../dataaccess/postDataAccess");
 const {followUser: followUserUserDataAccess, getIdByUsername, unfollowUser: unfollowUserUserDataAccess, getFollowedByUser: getFollowedUsersOfUserUserDataAccess, getFollowersOfUser: getFollowersOfUserUserDataAccess, getUserProfile: getUserProfileUserDataAccess
 	, blockUser: blockUserUserDataAccess, unblockUser: unblockUserUserDataAccess, deleteFollowerAndFollowing, getActualPrivacyType, sendRequestFollowToUser, getAllFollowerRequestByUserId, getAllBlockedUsers, isUserFollowedByUser, isRequestFollowerSent, isUserBlockingToUser, getAllUsersByFilter} = require("../../dataaccess/userDataAccess");
 const {logger} = require("../../helpers/logger");
@@ -9,6 +9,7 @@ const {PrivacyType} = require("../../models/enum/PrivacyType");
 const {OK, INTERNAL_SERVER_ERROR, CONFLICT} = require("../../services/httpResponsesService");
 const {apiVersionType} = require("../../types/apiVersionType");
 const UserErrorException = require("../../types/exception/UserErrorException");
+const {createURLResource} = require("../../dataaccess/urlRecoverDataAccess");
 
 const followUser = async (request, response) => {
 	const token = (request.headers.authorization).split(" ")[1];
@@ -113,11 +114,17 @@ const getProfileOfUser = async (request, response) => {
 	let idUser;
 	try {
 		idUser = await getIdByUsername(username).then(id => {return id});
-		user = await getUserProfileUserDataAccess(idUser);
-		user.followed = (await getFollowedUsersOfUserUserDataAccess(idUser)).length;
-		user.followers = (await getFollowersOfUserUserDataAccess(idUser)).length;
-		user.privacyType = await getActualPrivacyType(idUser);
-		user.postsCreated = await countPost(idUser);
+		user = await getUserProfileUserDataAccess(idUser)
+		await Promise.all([
+			getFollowedUsersOfUserUserDataAccess(idUser).then(value => user.followed = value.length),
+			getFollowersOfUserUserDataAccess(idUser).then(value => user.followers = value.length),
+			getActualPrivacyType(idUser).then(value => user.privacyType = value),
+			countPost(idUser).then(value => user.postsCreated = value),
+			createURLResource(user.filepath).then(value => {
+				delete user["filepath"];
+				user.url = value;
+			})
+		]);
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
@@ -126,29 +133,29 @@ const getProfileOfUser = async (request, response) => {
 	if (accessToken != null) {
 		try {
 			userLoggedId = await verifyToken(accessToken.split(" ")[1]).then(data => {return data.id});
-			user.isFollowed = await isUserFollowedByUser(userLoggedId, idUser);
-			user.isFollowerRequestSent = await isRequestFollowerSent(userLoggedId, idUser);
-			user.isBlocked = await isUserBlockingToUser(userLoggedId, idUser);
-			user.isBlocker = await isUserBlockingToUser(idUser, userLoggedId);
-			user.isFollower = await isUserFollowedByUser(idUser, userLoggedId);
-			user.hasSubmittedFollowerRequest = await isRequestFollowerSent(idUser, userLoggedId);
+			await Promise.all([
+				isUserFollowedByUser(userLoggedId, idUser).then(value => user.isFollowed = value),
+				isRequestFollowerSent(idUser, userLoggedId).then(value => user.hasSubmittedFollowerRequest = value),
+				isRequestFollowerSent(userLoggedId, idUser).then(value => user.isFollowerRequestSent = value),
+				isUserBlockingToUser(userLoggedId, idUser).then(value => user.isBlocked = value),
+				isUserBlockingToUser(idUser, userLoggedId).then(value => user.isBlocker = value),
+				isUserFollowedByUser(idUser, userLoggedId).then(value => user.isFollower = value)
+			]);
 		} catch (error) {
 			// Probably has any bug or maybe we need something more to do here
 			logger.info(error);
 		}
 	}
+
 	try {
 		if (!user.isBlocked) {
 			if (PrivacyType.PUBLIC === user.privacyType || user.isFollowed || idUser == userLoggedId) {
 				user.posts = await getAllPostFromUserId(idUser);
-				await Promise.all(user.posts.map(async function (post) {
-					let postId = await getIdPostByPostUUID(post.uuid);
-					if (!postId) {
-						post.comments = 0;
-						return;
-					}
-					post.comments = await getCommentsCountById(postId);
-					post.files = await getPostFilenamesById(post.id_user, post.id);
+				await Promise.all(user.posts.map(async post => {
+					await Promise.all([
+						getCommentsCountById(post.id).then(value => post.comments = value),
+						getPostFilenameById(post.id).then(value => post.files = value)
+					])
 					delete post["id_user"];
 					delete post["id"];
 				}));
@@ -238,10 +245,10 @@ const checkIfUserLoggedIsBlockedByUser = async (request, response) => {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
 	let message = MessageType.USER.USER_IS_NOT_BLOCKING_YOU;
-	if(isBlocker) {
+	if (isBlocker) {
 		message = {boolValue: isBlocker, ...MessageType.USER.USER_HAS_BLOCKED_YOU}
 	}
-	if(isBlocked) {
+	if (isBlocked) {
 		message = {boolValue: isBlocked, ...MessageType.USER.USER_BLOCKED}
 	}
 	return OK(response, message, apiVersionType.V1);
@@ -251,7 +258,18 @@ const findByFilter = async (request, response) => {
 	const filter = request.params.filter;
 	let users = [];
 	try {
-		users = await getAllUsersByFilter(filter);
+		users = await getAllUsersByFilter(filter)
+			.then(async usersData => {
+				await Promise.all(usersData.map(async user => {
+					return createURLResource(user.filepath)
+						.then(urlResult => {
+							user.url = urlResult;
+							delete user["filepath"];
+						});
+				}));
+				return usersData;
+			})
+
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}

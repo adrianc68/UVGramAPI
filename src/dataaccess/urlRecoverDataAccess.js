@@ -194,12 +194,17 @@ const doesURLVerificationAlreadyGenerated = async (id_user) => {
 
 
 const createURLResource = async (filename) => {
-	let url;
+	let url = null
+	if (!filename) {
+		return null;
+	}
+
 	let payload = {
 		filename: filename,
 	}
 	try {
-		url = `${getServerURLAddress()}/resources/post-files?data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+		// url = `${getServerURLAddress()}/resources/post-files?data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+		url = `/resources/post-files?data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
 	} catch (error) {
 		throw error;
 	}

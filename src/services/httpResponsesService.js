@@ -278,6 +278,25 @@ const SEND_SINGLE_FILE = (response, file, inLineDisposition = true) => {
 	return response.end();
 };
 
+const SEND_SINGLE_FILE_AS_JSON = (response, file, inLineDisposition = true) => {
+ if (file === null) {
+        throw new Error(MessageType.NO_FILE_PROVIDED);
+    }
+    response.setHeader('Content-Type', 'application/json');
+    const imageData = {
+        filename: file.metadata.filename,
+        mimetype: file.metadata.mimetype,
+        content: file.content.toString('base64') // Convert binary data to Base64 string
+    };
+    if (inLineDisposition) {
+        response.setHeader('Content-Disposition', 'inline; filename=' + file.metadata.filename);
+    } else {
+        response.setHeader('Content-Disposition', 'attachment; filename=' + file.metadata.filename);
+    }
+    response.write(JSON.stringify(imageData));
+    return response.end();
+};
+
 /**
  * Sends multiple files as a zip archive in the response.
  *
@@ -335,5 +354,5 @@ module.exports = {
 	INTERNAL_SERVER_ERROR, UNAUTHORIZED, NOT_FOUND, OK, BAD_REQUEST,
 	CREATED, FORBIDDEN, NOT_IMPLEMENTED, BAD_GATEWAY, UNAVAILABLE,
 	NO_CONTENT, METHOD_NOT_ALLOWED, buildMessageData, SEND_SINGLE_FILE,
-	SEND_MULTIPLE_FILES, CONFLICT, TOO_MANY_REQUESTS
+	SEND_MULTIPLE_FILES, CONFLICT, TOO_MANY_REQUESTS, SEND_SINGLE_FILE_AS_JSON
 }

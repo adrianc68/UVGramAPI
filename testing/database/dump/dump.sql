@@ -528,6 +528,7 @@ CREATE TABLE public."User" (
     name character varying(64) NOT NULL,
     presentation character varying(150),
     username character varying(30) NOT NULL,
+		filepath character varying(120),
     id bigint DEFAULT nextval(('"user_id_seq"'::text)::regclass) NOT NULL
 );
 
