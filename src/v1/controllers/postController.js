@@ -104,7 +104,8 @@ const likePost = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, isLiked, apiVersionType.V1);
+	let message = {boolValue: isLiked, ...MessageType.USER.DATA_UPDATED}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const dislikePost = async (request, response) => {
@@ -119,7 +120,8 @@ const dislikePost = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, isUnliked, apiVersionType.V1);
+	let message = {boolValue: isUnliked, ...MessageType.USER.DATA_UPDATED}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const getUsersWhoLikesPost = async (request, response) => {

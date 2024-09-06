@@ -1,6 +1,7 @@
 const { getPostByUUID, isPostLikedByUser, getIdPostByPostUUID, isUserOwnerOfPost } = require("../dataaccess/postDataAccess");
 const { verifyToken } = require("../dataaccess/tokenDataAccess");
 const { httpResponseInternalServerError, httpResponseForbidden } = require("../helpers/httpResponses");
+const MessageType = require("../types/MessageType");
 
 const validationDoesExistPostUUID = async (request, response, next) => {
     let uuid = request.params.uuid;
@@ -30,7 +31,8 @@ const validationIsPostAlreadyLikedByUser = async (request, response, next) => {
         return httpResponseInternalServerError(response, error);
     }
     if (isAlreadyLikedByUser) {
-        return httpResponseForbidden(response, "post is already liked");
+				let message = {boolValue: false, ...MessageType.USER.POST_ALREADY_LIKED}
+        return httpResponseForbidden(response, message);
     }
     return next();
 };
@@ -38,16 +40,18 @@ const validationIsPostAlreadyLikedByUser = async (request, response, next) => {
 const validationIsPostAlreadyDislikedByUser = async (request, response, next) => {
     const token = (request.headers.authorization).split(" ")[1];
     const { uuid } = request.body;
-    let isAlreadyUnlikedByUser;
+    let isAlreadyDisliked;
     try {
         const userDataId = await verifyToken(token).then(data => { return data.id });
         const postDataId = await getIdPostByPostUUID(uuid);
-        isAlreadyUnlikedByUser = !(await isPostLikedByUser(userDataId, postDataId));
+        isAlreadyDisliked = await isPostLikedByUser(userDataId, postDataId);
+        isAlreadyDisliked = !isAlreadyDisliked;
     } catch (error) {
         return httpResponseInternalServerError(response, error);
     }
-    if (isAlreadyUnlikedByUser) {
-        return httpResponseForbidden(response, "post is already disliked");
+    if (isAlreadyDisliked) {
+				let message = {boolValue: false, ...MessageType.USER.POST_ALREADY_DISLIKED}
+        return httpResponseForbidden(response, message);
     }
     return next();
 };

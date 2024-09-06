@@ -1,8 +1,10 @@
-const {INTERNAL_SERVER_ERROR} = require("../../services/httpResponsesService");
+const {INTERNAL_SERVER_ERROR, OK} = require("../../services/httpResponsesService");
 const {createCommentInPost, getAllCommentsByIdPost, getIdCommentByUUID, likeCommentByIds, dislikeCommentByIds, getUsersWhoLikeCommentById, getCommentByUUID, deleteCommentById, createAnswerComment, getCommentParentById} = require("../../dataaccess/commentDataAccess");
 const {getIdPostByPostUUID} = require("../../dataaccess/postDataAccess");
 const {verifyToken} = require("../../dataaccess/tokenDataAccess");
 const {isUserFollowedByUser} = require("../../dataaccess/userDataAccess");
+const MessageType = require("../../types/MessageType");
+const {apiVersionType} = require("../../types/apiVersionType");
 
 const createCommentPost = async (request, response) => {
 	const token = (request.headers.authorization).split(" ")[1];
@@ -19,7 +21,8 @@ const createCommentPost = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, {isCreated, commentDetails}, apiVersionType.V1);
+	let message = {boolValue: isCreated, ...MessageType.USER.DATA_CREATED, commentDetails: commentDetails};
+	return OK(response, message, apiVersionType.V1);
 };
 
 const createAnswerToComment = async (request, response) => {
@@ -33,13 +36,15 @@ const createAnswerToComment = async (request, response) => {
 		let commentRootParentData = await getCommentParentById(commentReplyId);
 		commentDetails = await createAnswerComment(commentRootParentData.id, comment, commentRootParentData.id_post, userDataId);
 		commentDetails.isReplyInnerComment = commentRootParentData.isParent;
+		commentDetails.rootCommentUUID = commentRootParentData.uuid;
 		if (commentDetails) {
 			isCreated = true;
 		}
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, {isCreated, commentDetails}, apiVersionType.V1);
+	let message = {boolValue: isCreated, ...MessageType.USER.DATA_CREATED, commentDetails}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const getAllCommentsOfUUIDPost = async (request, response) => {
@@ -65,7 +70,8 @@ const likeComment = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, isLiked, apiVersionType.V1);
+	let message = {boolValue: isLiked, ...MessageType.USER.DATA_UPDATED}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const dislikeComment = async (request, response) => {
@@ -79,7 +85,8 @@ const dislikeComment = async (request, response) => {
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
-	return OK(response, isDisliked, apiVersionType.V1);
+	let message = {boolValue: isDisliked, ...MessageType.USER.DATA_UPDATED}
+	return OK(response, message, apiVersionType.V1);
 };
 
 const getUsersWhoLikesComment = async (request, response) => {
