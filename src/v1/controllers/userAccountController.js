@@ -1,4 +1,5 @@
 const {sendEmailCodeVerification, sendEmailChangeURLConfirmation, sendEmailPasswordURLConfirmation} = require("../../dataaccess/mailDataAccess");
+const {deleteFileFromStorage, uploadFileImageProfile} = require("../../dataaccess/storageDataAccess");
 const {verifyToken, deleteAllSessionsByUserId} = require("../../dataaccess/tokenDataAccess");
 const {generateURLToChangeEmailOnConfirmation, doesURLVerificationAlreadyGenerated, removeURLVerification, generateURLToUpdatePasswordOnConfirmation, createURLResource} = require("../../dataaccess/urlRecoverDataAccess");
 const {deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode,
@@ -28,7 +29,7 @@ const addUser = async (request, response) => {
 	try {
 		result = await createUser(user);
 		await removeVerificationCode(username);
-		if(!result){
+		if (!result) {
 			return UNAVAILABLE(response, apiVersionType.V1);
 		}
 	} catch (error) {
@@ -54,6 +55,25 @@ const updateUser = async (request, response) => {
 		let idUser = accessTokenData.id;
 		let userRole = accessTokenData.userRole;
 		oldUserData = await getAccountLoginDataById(idUser);
+		
+		if (request.files != null) {
+			console.log("------------------");
+			console.log("------------------");
+			console.log("------------------");
+			console.log("------------------");
+			console.log("------------------");
+			console.log("------------------");
+			console.log("------------------");
+			console.log("------------------");
+			console.log("------------------");
+			console.log(request.files);
+			let file = request.files["file"];
+			if (file != null) {
+				await deleteFileFromStorage(oldUserData.filepath);
+				let filepath = await uploadFileImageProfile(file, idUser);
+				basicData.filepath = filepath;
+			}
+		}
 		if (userRole == UserRoleType.PERSONAL) {
 			const {gender, idCareer} = request.body;
 			let personalData = {gender, idCareer}
@@ -71,6 +91,9 @@ const updateUser = async (request, response) => {
 			let adminData = {createdTime}
 			isUpdated = await updateAdministratorData(basicData, adminData, idUser);
 		}
+
+
+
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
@@ -98,12 +121,12 @@ const updateUser = async (request, response) => {
 		emailChangeMessage = {boolValue: false, ...MessageType.USER.UNAVAILABLE}
 	}
 
-	if(isUpdated) {
+	if (isUpdated) {
 		userDataUpdateMessage = {boolValue: isUpdated, ...MessageType.USER.DATA_UPDATED}
 	} else {
 		userDataUpdateMessage = {boolValue: isUpdated, ...MessageType.UNAVAILABLE}
 	}
-const payload = {userDataUpdateMessage:userDataUpdateMessage, emailChangeUpdateMessage: emailChangeMessage, newAccessToken}
+	const payload = {userDataUpdateMessage: userDataUpdateMessage, emailChangeUpdateMessage: emailChangeMessage, newAccessToken}
 	return OK(response, payload, apiVersionType.V1);
 };
 

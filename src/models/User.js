@@ -15,7 +15,10 @@ const User = sequelize.define("User", {
     },
     username: {
         type: DataTypes.STRING
-    }
+    },
+		filepath: {
+				type: DataTypes.STRING
+		}
 }, {
     timestamps: false,
     freezeTableName: true

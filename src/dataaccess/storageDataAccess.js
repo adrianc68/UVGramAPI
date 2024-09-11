@@ -3,6 +3,21 @@ const File = require("../models/File");
 const {mkdir, uploadFile, exists, downloadFile, deleteFile, listFiles, rmdir} = require("./sftpClient");
 const fs = require('fs');
 
+const uploadFileImageProfile = async(file, idUser) => {
+	let path = `${idUser}`;
+	let filename = `${path}/${file.metadata.filename}`;
+	let dirCreated =  await ensureDirCreated(path);
+	if(!dirCreated) {
+		return false;
+	}
+	let readStream = fs.createReadStream(file.metadata.filepath);
+	readStream.on("error", (error) => {
+		throw error;
+	});
+	return uploadFile(readStream, filename)
+		.then(fileResult => fileResult ? filename : false)
+		.catch(error => {throw error});
+}
 
 const uploadPostfile = async (file, idUser, idPost) => {
 	let path = `${idUser}/${idPost}`;
@@ -11,9 +26,7 @@ const uploadPostfile = async (file, idUser, idPost) => {
 	if (!dirCreated) {
 		return false;
 	}
-
 	let readStream = fs.createReadStream(file.metadata.filepath);
-
 	readStream.on("end", () => {
 		readStream.close();
 		fs.unlink(file.metadata.filepath, (error) => {
@@ -109,5 +122,6 @@ const ensureDirCreated = async (path) => {
 
 module.exports = {
 	uploadPostfile, getFileFromStorage, uploadPostFiles,
-	deleteFileFromStorage, deleteFilesFromStorage, getFilesFromStorage
+	deleteFileFromStorage, deleteFilesFromStorage, getFilesFromStorage,
+	uploadFileImageProfile
 }

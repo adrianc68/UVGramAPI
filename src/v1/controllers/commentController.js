@@ -5,6 +5,7 @@ const {verifyToken} = require("../../dataaccess/tokenDataAccess");
 const {isUserFollowedByUser} = require("../../dataaccess/userDataAccess");
 const MessageType = require("../../types/MessageType");
 const {apiVersionType} = require("../../types/apiVersionType");
+const {createURLResource} = require("../../dataaccess/urlRecoverDataAccess");
 
 const createCommentPost = async (request, response) => {
 	const token = (request.headers.authorization).split(" ")[1];
@@ -100,6 +101,8 @@ const getUsersWhoLikesComment = async (request, response) => {
 		await Promise.all(usersResult.map(async function (data) {
 			try {
 				data.isFollowed = await isUserFollowedByUser(userDataId, data.id);
+				data.url = await createURLResource(data.filepath);
+				delete data["filepath"];
 				delete data["id"];
 				delete data["presentation"]
 			} catch (error) {

@@ -30,7 +30,7 @@ const getAccountLoginData = async (emailOrUsername) => {
 		where: {
 			[Op.or]: [{username: emailOrUsername}, {'$Account.email$': emailOrUsername}]
 		},
-		attributes: ["id", "username", "Account.password", "Account.email", "UserRole.role", "Account.AccountVerification.account_status"],
+		attributes: ["id", "username", "filepath", "Account.password", "Account.email", "UserRole.role", "Account.AccountVerification.account_status"],
 		include: [{
 			model: Account,
 			attributes: [],
@@ -60,7 +60,7 @@ const getAccountLoginDataById = async (id) => {
 		where: {
 			id
 		},
-		attributes: ["id", "username", "Account.password", "Account.email", "UserRole.role"],
+		attributes: ["id", "username", "filepath", "Account.password", "Account.email", "UserRole.role"],
 		include: [{
 			model: Account,
 			as: "Account",
@@ -797,9 +797,9 @@ const updateUserEmail = async (newEmail, id_user) => {
  * @issue #6977 Model update not return affectedRows
  */
 const updateUserBasicData = async (newUserData, id_user, transaction) => {
-	const {name, presentation, username, phoneNumber, birthdate} = newUserData;
+	const {name, presentation, username, phoneNumber, birthdate, filepath} = newUserData;
 	try {
-		await User.update({name, presentation, username, }, {
+		await User.update({name, presentation, username, filepath}, {
 			where: {id: id_user},
 			transaction
 		});

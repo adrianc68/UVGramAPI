@@ -1,4 +1,3 @@
-const {httpResponseValidation} = require('../../helpers/httpResponses');
 const {validateError} = require('../../middleware/validationFormatMiddleware');
 const {validateNameData, validatePresentationData, validateUsernameData, validatePasswordFormatData,
 	validatePhoneNumberData, validateEmailData, validateBirthdateData, validateVerificationCodeFormatData, validateOldPasswordFormatData, validateEmailAsOptional, validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode, validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName, validateNewRoleTypeFormatData, validateUserPrivacyData} = require('./formatValidator');

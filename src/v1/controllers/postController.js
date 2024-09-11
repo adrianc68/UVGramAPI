@@ -7,6 +7,7 @@ const {apiVersionType} = require("../../types/apiVersionType");
 const {uploadPostFiles} = require("../../dataaccess/storageDataAccess");
 const File = require("../../models/File");
 const MessageType = require("../../types/MessageType");
+const {createURLResource} = require("../../dataaccess/urlRecoverDataAccess");
 
 const getPostsByUsername = async (request, response) => {
 	const username = request.params.username;
@@ -41,17 +42,24 @@ const getPostDataByUUID = async (request, response) => {
 		let postData = await getPostByUUID(uuid);
 		postData.isLiked = await isPostLikedByUser(userDataId, postData.id);
 		let commentData = await getAllCommentsByIdPost(postData.id);
+
+
 		await Promise.all(commentData.map(async function (comment) {
 			comment.isLiked = await isCommentLikedByUser(userDataId, comment.id);
+			comment.url = await createURLResource(comment.filepath);
 			await Promise.all(comment.replies.map(async function (reply) {
+				reply.url = await createURLResource(reply.filepath);
 				reply.isLiked = await isCommentLikedByUser(userDataId, reply.id);
 				delete reply["id"];
+				delete reply["filepath"];
 			}));
-
+			delete comment["filepath"];
 			delete comment["id"];
 		}));
 
 		let ownerOfPost = await getUserProfile(postData.id_user);
+		ownerOfPost.url = await createURLResource(ownerOfPost.filepath);
+		delete ownerOfPost["filepath"];
 		delete ownerOfPost["presentation"];
 		let countLikes = await getPostLikesById(postData.id);
 		let files = await getPostFilenamesById(postData.id);
@@ -83,7 +91,7 @@ const createPost = async (request, response) => {
 		if (!postDataCreated) {
 			return UNAVAILABLE(response, apiVersionType.V1);
 		}
-			postInfo = postDataCreated;
+		postInfo = postDataCreated;
 		delete postInfo["id"];
 		delete postInfo["id_user"];
 	} catch (error) {
@@ -135,6 +143,8 @@ const getUsersWhoLikesPost = async (request, response) => {
 		await Promise.all(usersResult.map(async function (data) {
 			try {
 				data.isFollowed = await isUserFollowedByUser(userDataId, data.id);
+				data.url = await createURLResource(data.filepath);
+				delete data["filepath"];
 				delete data["id"];
 				delete data["presentation"];
 			} catch (error) {

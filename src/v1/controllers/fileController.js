@@ -22,6 +22,26 @@ const mapFilesIntoFileModel = (request, response, next) => {
 	return next();
 }
 
+const mapFileIntoFileModel = (request, response, next) => {
+	const fileData = request.files["file"];
+	let extension = getExtensionFromMimeType(fileData.mimetype);
+	let file = new File(null, {filepath: fileData.tempFilePath, filename: `${generateRandomCode(16)}.${extension}`, size: fileData.size, mimetype: fileData.mimetype});
+	request.files["file"] = file;
+	return next();
+}
+
+const mapFileIfExistIntoFileModel = (request, response, next) => {
+	if (request.files != null) {
+		const fileData = request.files["file"];
+		if (fileData != null) {
+			let extension = getExtensionFromMimeType(fileData.mimetype);
+			let file = new File(null, {filepath: fileData.tempFilePath, filename: `${generateRandomCode(16)}.${extension}`, size: fileData.size, mimetype: fileData.mimetype});
+			request.files["file"] = file;
+		}
+	}
+	return next();
+}
+
 const getFileFromURL = async (request, response, _) => {
 	let url = request.query;
 	let file;
@@ -36,4 +56,4 @@ const getFileFromURL = async (request, response, _) => {
 	return SEND_SINGLE_FILE(response, file);
 }
 
-module.exports = {mapFilesIntoFileModel, getFileFromURL}
+module.exports = {mapFilesIntoFileModel, getFileFromURL, mapFileIntoFileModel, mapFileIfExistIntoFileModel}

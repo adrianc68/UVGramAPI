@@ -13,7 +13,7 @@ const filesWhiteList = {
 	'video/quicktime': "1600000000"
 }
 
-const validateFileData = [
+const validateFilesData = [
 	check("files")
 		.custom((value, {req}) => {
 			let files = [].concat(req.files["files[]"]);
@@ -38,6 +38,58 @@ const validateFileData = [
 			return true;
 		})
 		.bail()
+];
+
+const validateFileData = [
+	check("file")
+		.custom((_, {req}) => {
+			let file = req.files["file"];
+			if (filesWhiteList[file.mimetype] == null) {
+				throw new Error(`${file.name} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+			}
+			return true;
+		})
+		.withMessage(`file must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+	.bail()
+	.custom((_, {req}) => {
+		let file = req.files["file"];
+		if(filesWhiteList[file.mimetype] == null ) {
+			throw new Error(`${file.name} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')} `)
+		}
+		return true;
+	})
+];
+
+const validateOptionalFileData = [
+	check("file")
+		.optional()
+		.custom((_, { req}) => {
+			let file = req.files && req.files['file'];
+			if(file) {
+				if(Array.isArray(file)) {
+					throw new Error("Only one file is allowed.");
+				}
+			}
+			return true;
+		})
+		.withMessage("file must be only 1 file")
+		.bail()
+		.custom((_, {req}) => {
+			let file = req.files["file"];
+			if (filesWhiteList[file.mimetype] == null) {
+				throw new Error(`${file.name} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+			}
+			return true;
+		})
+		.withMessage(`file must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+	.bail()
+	.custom((_, {req}) => {
+		let file = req.files["file"];
+		if(filesWhiteList[file.mimetype] == null ) {
+			throw new Error(`${file.name} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')} `)
+		}
+		return true;
+	})
 ];
 
 const validateEmailData = [
@@ -142,7 +194,7 @@ const validateUserPrivacyData = [
 		.custom((value, {req}) => {
 			return valueExistInEnumType(value, PrivacyType)
 		})
-		.withMessage(`privacy must be ${Object.values(PrivacyType)}`)
+		.withMessage(`privacy must be ${Object.values(PrivacyType)} `)
 ];
 
 const validateEmailOrUsernameData = [
@@ -225,7 +277,7 @@ const validateGenderData = [
 		.custom((value, {req}) => {
 			return valueExistInEnumType(value, GenderType)
 		})
-		.withMessage(`gender must be one this: ${Object.values(GenderType)}`)
+		.withMessage(`gender must be one this: ${Object.values(GenderType)} `)
 		.bail()
 		.matches(/^[A-Z]+(\_([A-Z]+))*$/)
 		.withMessage("gender must have the allowed characters: upper letters and separated by underscore if more than 2 words")
@@ -247,7 +299,7 @@ const validateCategory = [
 		.custom((value, {req}) => {
 			return valueExistInEnumType(value, CategoryType)
 		})
-		.withMessage(`category must be one this: ${Object.values(CategoryType)}`)
+		.withMessage(`category must be one this: ${Object.values(CategoryType)} `)
 		.bail()
 		.matches(/^[A-Z]+(\_([A-Z]+))*$/)
 		.withMessage("category must have the allowed characters: upper letters and separated by underscore if more than 2 words")
@@ -346,7 +398,7 @@ const validateNewRoleTypeFormatData = [
 		.custom((value, {req}) => {
 			return valueExistInEnumType(value, UserRoleType)
 		})
-		.withMessage(`newRoleType must be one this: ${Object.values(UserRoleType)}`)
+		.withMessage(`newRoleType must be one this: ${Object.values(UserRoleType)} `)
 ];
 
 const validatePostDescriptionData = [
@@ -443,7 +495,8 @@ module.exports = {
 	validateOptionalAccessTokenParameterData, validateOldPasswordFormatData, validateEmailAsOptional,
 	validateIdCareer, validateGenderData, validateCategory, validateCity, validatePostalCode,
 	validatePostalAddress, validateContactEmail, validatePhoneContact, validateOrganizationName,
-	validateUUIDTemporalToken, validateNewRoleTypeFormatData, validateFileData,
+	validateUUIDTemporalToken, validateNewRoleTypeFormatData, validateFilesData,
 	validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed,
-	validatePostUUID, validateCommentUUID, validateCommentData, validateUserPrivacyData
+	validatePostUUID, validateCommentUUID, validateCommentData, validateUserPrivacyData,
+	validateFileData, validateOptionalFileData
 }

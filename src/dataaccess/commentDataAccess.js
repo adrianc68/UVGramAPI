@@ -52,7 +52,7 @@ const getAllCommentsByIdPost = async (id_post) => {
 				'$NestedCommentParent.child_id_comment$': {[Op.eq]: null}
 			},
 			attributes: {
-				include: ["User.username", "comment", "created_time", "uuid", "id",
+				include: ["User.username", "User.filepath", "comment", "created_time", "uuid", "id",
 					[Sequelize.fn('COUNT', Sequelize.col("id_comment")), 'likes']
 				],
 				exclude: ["id_post", "id_user"]
@@ -73,7 +73,7 @@ const getAllCommentsByIdPost = async (id_post) => {
 			order: [
 				["created_time", "ASC"]
 			],
-			group: ["username", "Comment.comment", "Comment.created_time", "Comment.uuid", "Comment.id",],
+			group: ["username", "filepath", "Comment.comment", "Comment.created_time", "Comment.uuid", "Comment.id",],
 			raw: true,
 		});
 		await Promise.all(parentComments.map(async function (parentComment) {
@@ -83,7 +83,7 @@ const getAllCommentsByIdPost = async (id_post) => {
 						'$NestedCommentParent.parent_id_comment$': parentComment.id
 					},
 					attributes: {
-						include: ["User.username", "comment", "created_time", "uuid", "id",
+						include: ["User.username", "User.filepath" , "comment", "created_time", "uuid", "id",
 							[Sequelize.fn('COUNT', Sequelize.col("id_comment")), 'likes']
 						],
 						exclude: ["id_post", "id_user"]
@@ -102,7 +102,7 @@ const getAllCommentsByIdPost = async (id_post) => {
 					order: [
 						["created_time", "ASC"]
 					],
-					group: ["username", "Comment.comment", "Comment.created_time", "Comment.uuid", "Comment.id",],
+					group: ["username", "filepath","Comment.comment", "Comment.created_time", "Comment.uuid", "Comment.id",],
 					raw: true,
 				});
 				parentComment.replies = childComments;

@@ -7,6 +7,8 @@ const {validateEmailOrUsernameFormat} = require('../../validators/formatValidato
 const {validateUserAccountDataFormat, validateAccountEmailFormat, validateAccountUsernameFormat, validateVerificationCodeFormat, validatePasswordFormat, validateOldPasswordFormat, validateBasicUserAccountDataFormat, validatePersonalDataFormat, validateBusinessDataFormat, validateAdminDataFormat, validateModeratorDataFormat, validateNewRoleTypeFormat, validatePrivacyDataFormat} = require('../../validators/formatValidators/userAccountFormatValidator');
 const {validationIsURLRecoverAlreadyGeneratedByEmailOrUsername} = require('../../validators/urlRecoverValidation');
 const {validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist, validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationModeratorRoleData, validationAdminRoleData, validationBusinessRoleData, validationSecretKey, validationUserPrivacy} = require('../../validators/userAccountValidation');
+const {validateOptionalFileDataFormat} = require('../../validators/formatValidators/postFormatValidator');
+const {mapFileIntoFileModel, mapFileIfExistIntoFileModel} = require('../controllers/fileController');
 
 router.post("/accounts/create",
 	validateUserAccountDataFormat,
@@ -59,6 +61,8 @@ router.patch("/accounts/edit/personal",
     checkAccessTokenAndAuthRoleMiddleware([UserRoleType.PERSONAL]),
     validateBasicUserAccountDataFormat,
     validatePersonalDataFormat,
+		validateOptionalFileDataFormat,
+		mapFileIfExistIntoFileModel,
     validationUpdateEmailAndUsernameData,
     validationPersonalRoleData,
     updateUser

@@ -11,6 +11,8 @@ const {mailer} = require("./database/connetionEmail");
 const {handleJSON} = require("./middleware/jsonValidation");
 const fileUpload = require("express-fileupload");
 const {connectToSftpServer} = require("./database/connectionSftpServer");
+const os = require("os");
+const path = require("path");
 
 app.set("port", process.env.SV_PORT);
 app.set("host", process.env.SV_HOST);
@@ -26,6 +28,7 @@ app.use(handleJSON);
 app.use(fileUpload({
 	useTempFiles: true,
 	tempFileDir: "./tmp/"
+	// tempFileDir: path.join(os.tmpdir(), 'app_uploads') Use this is better than other
 }));
 
 app.use(require("./v1/routers/userAccount"));
