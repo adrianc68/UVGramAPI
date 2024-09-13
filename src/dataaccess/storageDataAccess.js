@@ -72,7 +72,9 @@ const getFileFromStorage = async (path) => {
 	let mimeType = getMimeTypeFromFilename(filename);
 	return downloadFile(path)
 		.then(buffer => new File(buffer, {filename: filename, mimetype: mimeType, filepath: path}))
-		.catch(error => {throw error});
+		.catch(error => {
+			throw error;
+	});
 }
 
 const getFilesFromStorage = async (path) => {

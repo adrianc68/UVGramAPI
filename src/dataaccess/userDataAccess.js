@@ -811,7 +811,6 @@ const updateUserBasicData = async (newUserData, id_user, transaction) => {
 			where: {id_user},
 			transaction
 		});
-		await t.commit();
 		isUpdated = true;
 	} catch (error) {
 		throw error;
@@ -865,6 +864,7 @@ const updateUserPersonalData = async (basicData, personalData, id_user) => {
 		await t.commit();
 		isUpdated = true;
 	} catch (error) {
+		console.log(error);
 		await t.rollback();
 		throw new Error(error);
 	}

@@ -2,14 +2,12 @@ const router = require('express').Router();
 const {addUser, removeUserByUsername, createVerificationCode, getAllUsers, changePasswordOnLoggedUser, updateUser, createURLVerification, changeUserRoleByEmailOrUsername, changePrivacyType, getUserAccountData, updateUserImage} = require('../controllers/userAccountController');
 const {checkAccessTokenAndAuthRoleMiddleware} = require('../../middleware/authentication');
 const {UserRoleType} = require('../../models/enum/UserRoleType');
-const {apiVersionType} = require('../../types/apiVersionType');
 const {validateEmailOrUsernameFormat} = require('../../validators/formatValidators/authenticationFormatValidator');
 const {validateUserAccountDataFormat, validateAccountEmailFormat, validateAccountUsernameFormat, validateVerificationCodeFormat, validatePasswordFormat, validateOldPasswordFormat, validateBasicUserAccountDataFormat, validatePersonalDataFormat, validateBusinessDataFormat, validateAdminDataFormat, validateModeratorDataFormat, validateNewRoleTypeFormat, validatePrivacyDataFormat} = require('../../validators/formatValidators/userAccountFormatValidator');
 const {validationIsURLRecoverAlreadyGeneratedByEmailOrUsername} = require('../../validators/urlRecoverValidation');
 const {validationIsUsernameRegisteredWithNext, validationisEmailRegisteredWithNext, validationIsEmailRegistered, validationIsUsernameRegistered, validationNotGeneratedVerificationCode, validationVerificationCodeMatches, validationChangePasswordLoggedUser, validationEmailOrUsernameRejectOnNotExist, validationUpdateEmailAndUsernameData, validationPersonalRoleData, validationModeratorRoleData, validationAdminRoleData, validationBusinessRoleData, validationSecretKey, validationUserPrivacy} = require('../../validators/userAccountValidation');
-const {validateOptionalFileDataFormat} = require('../../validators/formatValidators/postFormatValidator');
+const {validateOptionalFileDataFormat, validateFileDataFormat} = require('../../validators/formatValidators/postFormatValidator');
 const {mapFileIntoFileModel, mapFileIfExistIntoFileModel} = require('../controllers/fileController');
-const {validateFileData} = require('../../validators/formatValidators/formatValidator');
 
 router.post("/accounts/create",
 	validateUserAccountDataFormat,
@@ -60,7 +58,7 @@ router.delete("/accounts/username/delete",
 
 router.patch("/accounts/edit/image",
 	checkAccessTokenAndAuthRoleMiddleware([UserRoleType.ADMINISTRATOR, UserRoleType.BUSINESS, UserRoleType.MODERATOR, UserRoleType.PERSONAL]),
-	validateFileData,
+	validateFileDataFormat,
 	mapFileIntoFileModel,
 	updateUserImage
 );

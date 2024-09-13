@@ -53,7 +53,9 @@ const updateUserImage = async (request, response) => {
 		if (request.files != null) {
 			let file = request.files["file"];
 			if (file != null) {
-				await deleteFileFromStorage(oldUserData.filepath);
+				if (oldUserData.filepath != null) {
+					await deleteFileFromStorage(oldUserData.filepath);
+				}
 				let filepath = await uploadFileImageProfile(file, idUser);
 				isUpdated = await updateUserProfileImage(filepath, idUser);
 				url = await createURLResource(filepath);

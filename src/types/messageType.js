@@ -73,11 +73,13 @@ const MessageType = {
 		POST_ALREADY_DISLIKED: {code: "POST_ALREADY_DISLIKED", message: "Post is already disliked"}
 	},
 	SERVICES: {
+		CANNOT_GET_FILE: {code:"CANNOT_GET_FILE", message: "Cannot get file from system"},
+		FILE_CORRUPTED_OR_NOT_FOUND: {code:"FILE_CORRUPTED_OR_NOT_FOUND", message: "File not found or it is corrupted"},
 		API_ERROR: {code: "API_ERROR", message: "Error al comunicarse con un servicio externo"},
 		CONNECTION_ERROR: {code: "CONNECTION_ERROR", message: "Error de conexión con un servicio externo"},
 		TIMEOUT_ERROR: {code: "TIMEOUT_ERROR", message: "Tiempo de espera agotado al comunicarse con un servicio externo"},
 		AUTHENTICATION_ERROR: {code: "AUTHENTICATION_ERROR", message: "Error de autenticación al acceder a un servicio externo"},
-		INTERNAL_ERROR: {code: "INTERNAL_ERROR", message: "Error desconocido al intenter realizar una acción en el servidor externo"},
+		INTERNAL_ERROR: {code: "INTERNAL_ERROR", message: "An error has ocurred on the internal server"},
 		INVALID_TOKEN_TYPE: {code: "INVALID_TOKEN_TYPE", message: "You must provide a token of type $"},
 		NONE: {code: "NONE", message: "NONE"}
 	},

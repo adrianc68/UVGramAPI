@@ -13,83 +13,72 @@ const filesWhiteList = {
 	'video/quicktime': "1600000000"
 }
 
+const filesArrayLengthAllowed = 8;
+
 const validateFilesData = [
 	check("files")
 		.custom((value, {req}) => {
+			if (!req.files) {
+				throw new Error("No file provided");
+			}
 			let files = [].concat(req.files["files[]"]);
+			if (!files || files.length > filesArrayLengthAllowed) {
+				throw new Error(`file parameter has ${files.length} files. Only up to ${filesArrayLengthAllowed} files allowed`);
+			}
 			files.forEach(file => {
 				if (filesWhiteList[file.mimetype] == null) {
 					throw new Error(`${file.name} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
 				}
-				return true;
 			});
-			return true
-		})
-		.withMessage(`file must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
-		.bail()
-		.custom((value, {req}) => {
-			let files = [].concat(req.files["files[]"]);
+
 			files.forEach(file => {
 				if (file.size > filesWhiteList[file.mimetype]) {
 					throw new Error(`size of file ${file.name} can not be more than ${filesWhiteList[file.mimetype]} bytes`);
 				}
-				return true;
 			})
 			return true;
 		})
-		.bail()
 ];
 
 const validateFileData = [
 	check("file")
 		.custom((_, {req}) => {
+			if (!req.files) {
+				throw new Error("No file provided");
+			}
 			let file = req.files["file"];
-			if (filesWhiteList[file.mimetype] == null) {
-				throw new Error(`${file.name} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+			if (!file || file.length > 1) {
+				throw new Error(`file parameter has ${file.length} files. Only 1 file allowed`);
+			}
+			if (!filesWhiteList[file.mimetype]) {
+				throw new Error(`file ${file.name.slice(0, 40)} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+			}
+			if (file.size > filesWhiteList[file.mimetype]) {
+				throw new Error(`size of file ${file.name} can not be more than ${filesWhiteList[file.mimetype]} bytes`);
 			}
 			return true;
 		})
-		.withMessage(`file must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
-	.bail()
-	.custom((_, {req}) => {
-		let file = req.files["file"];
-		if(filesWhiteList[file.mimetype] == null ) {
-			throw new Error(`${file.name} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')} `)
-		}
-		return true;
-	})
 ];
 
 const validateOptionalFileData = [
 	check("file")
 		.optional()
-		.custom((_, { req}) => {
-			let file = req.files && req.files['file'];
-			if(file) {
-				if(Array.isArray(file)) {
-					throw new Error("Only one file is allowed.");
-				}
-			}
-			return true;
-		})
-		.withMessage("file must be only 1 file")
-		.bail()
 		.custom((_, {req}) => {
+			if (!req.files) {
+				throw new Error("No file provided");
+			}
 			let file = req.files["file"];
-			if (filesWhiteList[file.mimetype] == null) {
-				throw new Error(`${file.name} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+			if (!file || file.length > 1) {
+				throw new Error(`file parameter has ${file.length} files. Only 1 file allowed`);
+			}
+			if (!filesWhiteList[file.mimetype]) {
+				throw new Error(`file ${file.name.slice(0, 40)} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+			}
+			if (file.size > filesWhiteList[file.mimetype]) {
+				throw new Error(`size of file ${file.name} can not be more than ${filesWhiteList[file.mimetype]} bytes`);
 			}
 			return true;
 		})
-		.withMessage(`file must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
-	.bail()
-	.custom((_, {req}) => {
-		let file = req.files["file"];
-		if(filesWhiteList[file.mimetype] == null ) {
-			throw new Error(`${file.name} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')} `)
-		}
-		return true;
-	})
 ];
 
 const validateEmailData = [

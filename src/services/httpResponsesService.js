@@ -185,8 +185,9 @@ const METHOD_NOT_ALLOWED = (response, version) => {
  * @param {object} response represents the HTTP response.
  * @param {object} error message to log.
  * @param {apiVersionType} version API's version.
+ * @param {customMessage} Provide not technical details to clients if required.
  */
-const INTERNAL_SERVER_ERROR = (response, error, version) => {
+const INTERNAL_SERVER_ERROR = (response, error, version, customMessage=null) => {
 	let identifier = generateUUIDv4();
 	error.identifier = identifier;
 	logger.fatal(error);
@@ -198,6 +199,9 @@ const INTERNAL_SERVER_ERROR = (response, error, version) => {
 		identifier,
 		version,
 	};
+	if(customMessage) {
+		payload.data.details = customMessage;
+	}
 	sendResponse(response, payload);
 };
 

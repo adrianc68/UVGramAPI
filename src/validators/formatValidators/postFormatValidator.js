@@ -1,5 +1,5 @@
 const {validateError} = require('../../middleware/validationFormatMiddleware');
-const {validateFilesData, validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed, validatePostUUID, validateOptionalFileData} = require('./formatValidator');
+const {validateFilesData, validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed, validatePostUUID, validateOptionalFileData, validateFileData} = require('./formatValidator');
 
 const validatePostDataFormat = [
 	validateFilesData,
@@ -13,6 +13,13 @@ const validatePostDataFormat = [
 
 const validateFilesDataFormat = [
 	validateFilesData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
+]
+
+const validateFileDataFormat = [
+	validateFileData,
 	(request, response, next) => {
 		validateError(request, response, next);
 	}
@@ -33,5 +40,6 @@ const validateUUIDPostDataFormat = [
 ];
 
 module.exports = {
-	validatePostDataFormat, validateUUIDPostDataFormat, validateFilesDataFormat, validateOptionalFileDataFormat
+	validatePostDataFormat, validateUUIDPostDataFormat, validateFilesDataFormat, 
+	validateOptionalFileDataFormat, validateFileDataFormat
 }
