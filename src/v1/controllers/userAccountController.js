@@ -3,7 +3,8 @@ const {deleteFileFromStorage, uploadFileImageProfile} = require("../../dataacces
 const {verifyToken, deleteAllSessionsByUserId} = require("../../dataaccess/tokenDataAccess");
 const {generateURLToChangeEmailOnConfirmation, doesURLVerificationAlreadyGenerated, removeURLVerification, generateURLToUpdatePasswordOnConfirmation, createURLResource} = require("../../dataaccess/urlRecoverDataAccess");
 const {deleteUserByUsername, createUser, generateCodeVerification, removeVerificationCode,
-	getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType, changePrivacyTypeUser, acceptAllFollowerRequestById, acceptFollowerRequestByUserId, getIdByUsername, denyFollowerRequestByUserId, getAllAccountData} = require("../../dataaccess/userDataAccess");
+	getAllUsers: getAllUsersDataAccess, changePassword: changePasswordUserDataAccess, updateUserPersonalData, updateAdministratorData, updateModeratorData, getAccountLoginDataById, updateBusinessData, getAccountLoginData, changeUserRoleType, changePrivacyTypeUser, acceptAllFollowerRequestById, acceptFollowerRequestByUserId, getIdByUsername, denyFollowerRequestByUserId, getAllAccountData,
+	updateUserProfileImage} = require("../../dataaccess/userDataAccess");
 const {logger} = require("../../helpers/logger");
 const {PrivacyType} = require("../../models/enum/PrivacyType");
 const {UserRoleType} = require("../../models/enum/UserRoleType");
@@ -40,6 +41,31 @@ const addUser = async (request, response) => {
 	return CREATED(response, message, apiVersionType.V1);
 };
 
+const updateUserImage = async (request, response) => {
+	let isUpdated = false;
+	const accessToken = (request.headers.authorization).split(" ")[1];
+	let accessTokenData;
+	let url;
+	try {
+		accessTokenData = await verifyToken(accessToken);
+		let idUser = accessTokenData.id;
+		oldUserData = await getAccountLoginDataById(idUser);
+		if (request.files != null) {
+			let file = request.files["file"];
+			if (file != null) {
+				await deleteFileFromStorage(oldUserData.filepath);
+				let filepath = await uploadFileImageProfile(file, idUser);
+				isUpdated = await updateUserProfileImage(filepath, idUser);
+				url = await createURLResource(filepath);
+			}
+		}
+	} catch (error) {
+		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
+	}
+	let message = {boolValue: isUpdated, url: url, ...MessageType.USER.DATA_UPDATED}
+	return OK(response, message, apiVersionType.V1);
+}
+
 const updateUser = async (request, response) => {
 	let isUpdated = false;
 	let newAccessToken;
@@ -55,18 +81,8 @@ const updateUser = async (request, response) => {
 		let idUser = accessTokenData.id;
 		let userRole = accessTokenData.userRole;
 		oldUserData = await getAccountLoginDataById(idUser);
-		
+		// It needs validation for file parameter
 		if (request.files != null) {
-			console.log("------------------");
-			console.log("------------------");
-			console.log("------------------");
-			console.log("------------------");
-			console.log("------------------");
-			console.log("------------------");
-			console.log("------------------");
-			console.log("------------------");
-			console.log("------------------");
-			console.log(request.files);
 			let file = request.files["file"];
 			if (file != null) {
 				await deleteFileFromStorage(oldUserData.filepath);
@@ -74,6 +90,7 @@ const updateUser = async (request, response) => {
 				basicData.filepath = filepath;
 			}
 		}
+
 		if (userRole == UserRoleType.PERSONAL) {
 			const {gender, idCareer} = request.body;
 			let personalData = {gender, idCareer}
@@ -126,7 +143,7 @@ const updateUser = async (request, response) => {
 	} else {
 		userDataUpdateMessage = {boolValue: isUpdated, ...MessageType.UNAVAILABLE}
 	}
-	const payload = {userDataUpdateMessage: userDataUpdateMessage, emailChangeUpdateMessage: emailChangeMessage, newAccessToken}
+	const payload = {userDataUpdateMessage: userDataUpdateMessage, emailChangeUpdateMessage: emailChangeMessage, newAccessToken, ...MessageType.USER.DATA_UPDATED}
 	return OK(response, payload, apiVersionType.V1);
 };
 
@@ -304,5 +321,5 @@ module.exports = {
 	getAllUsers, changePasswordOnLoggedUser, updateUser,
 	createURLVerification, changeUserRoleByEmailOrUsername,
 	changePrivacyType, acceptFollowerRequest, denyFollowerRequest,
-	getUserAccountData
+	getUserAccountData, updateUserImage
 }

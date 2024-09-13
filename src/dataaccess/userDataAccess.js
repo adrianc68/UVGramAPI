@@ -797,6 +797,7 @@ const updateUserEmail = async (newEmail, id_user) => {
  * @issue #6977 Model update not return affectedRows
  */
 const updateUserBasicData = async (newUserData, id_user, transaction) => {
+	let isUpdated = false;
 	const {name, presentation, username, phoneNumber, birthdate, filepath} = newUserData;
 	try {
 		await User.update({name, presentation, username, filepath}, {
@@ -810,9 +811,32 @@ const updateUserBasicData = async (newUserData, id_user, transaction) => {
 			where: {id_user},
 			transaction
 		});
+		await t.commit();
+		isUpdated = true;
 	} catch (error) {
 		throw error;
 	}
+	return isUpdated;
+};
+
+/**
+ * Update user profile path
+ * @param {*} filepath the new location path
+ */
+const updateUserProfileImage = async(filepath, id_user) => {
+	let isUpdated = false;
+	const t = await sequelize.transaction();
+	try {
+		await User.update({filepath}, {
+			where: {id: id_user},
+			transaction: t
+		});
+		await t.commit();
+		isUpdated = true;
+	} catch (error) {
+		throw error;
+	}
+	return isUpdated;
 };
 
 /**
@@ -1144,5 +1168,5 @@ module.exports = {
 	deleteFollowerAndFollowing, changePrivacyTypeUser, getActualPrivacyType,
 	sendRequestFollowToUser, isRequestFollowerSent, acceptAllFollowerRequestById,
 	getAllFollowerRequestByUserId, acceptFollowerRequestByUserId, denyFollowerRequestByUserId,
-	getAllBlockedUsers, getAllAccountData, getAllUsersByFilter
+	getAllBlockedUsers, getAllAccountData, getAllUsersByFilter, updateUserProfileImage
 }
