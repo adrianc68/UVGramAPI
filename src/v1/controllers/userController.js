@@ -88,6 +88,10 @@ const getFollowedByUser = async (request, response) => {
 	let users = [];
 	try {
 		users = await getFollowedUsersOfUserUserDataAccess(idUser);
+		await Promise.all(users.map(async function (user) {
+			user.url = await createURLResource(user.filepath);
+			delete user["filepath"];
+		}));
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
@@ -101,6 +105,10 @@ const getFollowersOfUser = async (request, response) => {
 	let users = [];
 	try {
 		users = await getFollowersOfUserUserDataAccess(idUser);
+		await Promise.all(users.map(async function (user) {
+			user.url = await createURLResource(user.filepath);
+			delete user["filepath"];
+		}));
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}

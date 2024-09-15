@@ -516,7 +516,7 @@ const getFollowedByUser = async (id) => {
 			id_user_follower: id,
 			status: FollowRequestStatusType.ACCEPTED
 		},
-		attributes: ["followed.name", "followed.username", "followed.presentation"],
+		attributes: ["followed.name", "followed.username", "followed.presentation", "followed.filepath"],
 		include: [{
 			model: User,
 			as: "followed",
@@ -540,7 +540,7 @@ const getFollowersOfUser = async (id) => {
 			id_user_followed: id,
 			status: FollowRequestStatusType.ACCEPTED
 		},
-		attributes: ["follower.name", "follower.username", "follower.presentation"],
+		attributes: ["follower.name", "follower.username", "follower.presentation", "follower.filepath"],
 		include: [{
 			model: User,
 			as: "follower",
@@ -587,7 +587,7 @@ const getAllFollowerRequestByUserId = async (id_user_followed) => {
 		followerRequest = await Follower.findAll({
 			where: {id_user_followed, status: FollowRequestStatusType.PENDING},
 			attributes: {
-				include: ["status", "follower.name", "follower.username"],
+				include: ["status", "follower.name", "follower.username", "follower.filepath"],
 				exclude: ["follower.id", "id_user_followed", "id_user_follower", "follower.presentation"]
 			},
 			include: [{
