@@ -14,12 +14,19 @@ const {connectToSftpServer} = require("./database/connectionSftpServer");
 const os = require("os");
 const path = require("path");
 
+
+const corsOptions = {
+    origin: '*',  // Permite todas las solicitudes desde cualquier origen
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],  // Permite métodos específicos
+    allowedHeaders: ['Content-Type', 'Authorization']  // Permite headers específicos
+};
+
 app.set("port", process.env.SV_PORT);
 app.set("host", process.env.SV_HOST);
 // middlewares
 app.disable("x-powered-by");
-app.use(helmet());
-app.use(cors());
+app.use(helmet({crossOriginResourcePolicy: false,}));
+app.use(cors(corsOptions));
 app.disable("etag");
 app.use(morgan("dev"));
 app.use(express.urlencoded({extended: false}));
