@@ -92,6 +92,12 @@ const createPost = async (request, response) => {
 			return UNAVAILABLE(response, apiVersionType.V1);
 		}
 		postInfo = postDataCreated;
+
+
+		postInfo.urls = await Promise.all(postInfo.filepaths.map(async function (filepath) {
+			return await createURLResource(filepath);
+		}));
+		delete postInfo["filepaths"];
 		delete postInfo["id"];
 		delete postInfo["id_user"];
 	} catch (error) {
