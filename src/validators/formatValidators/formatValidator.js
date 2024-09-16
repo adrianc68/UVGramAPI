@@ -9,8 +9,8 @@ const filesWhiteList = {
 	'image/jpeg': "10490000",
 	'image/jpg': "10490000",
 	'image/webp': "10490000",
-	'video/mp4': "1600000000",
-	'video/quicktime': "1600000000"
+	'video/mp4': "10490000",
+	'video/quicktime': "10490000"
 }
 
 const filesArrayLengthAllowed = 8;

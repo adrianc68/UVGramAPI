@@ -100,6 +100,7 @@ const createPost = async (request, response) => {
 		delete postInfo["filepaths"];
 		delete postInfo["id"];
 		delete postInfo["id_user"];
+		isCreated = true;
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}
