@@ -80,6 +80,7 @@ const getPostDataByUUID = async (request, response) => {
 
 const createPost = async (request, response) => {
 	const {description, commentsAllowed, likesAllowed} = request.body;
+	let normalizedDescription = description.replace(/\r\n/g, '\n').replace(/\n{2,}/g, '\n')
 	const files = [].concat(request.files["files[]"]);
 	const token = (request.headers.authorization).split(" ")[1];
 	let isCreated = false;
@@ -87,7 +88,7 @@ const createPost = async (request, response) => {
 	try {
 		const userDataId = await verifyToken(token).then(data => data.id);
 		let filepaths = await uploadPostFiles(files, userDataId, "1");
-		let postDataCreated = await createPostByUserId(userDataId, description, commentsAllowed, likesAllowed, filepaths);
+		let postDataCreated = await createPostByUserId(userDataId, normalizedDescription, commentsAllowed, likesAllowed, filepaths);
 		if (!postDataCreated) {
 			return UNAVAILABLE(response, apiVersionType.V1);
 		}

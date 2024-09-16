@@ -10,12 +10,13 @@ const {createURLResource} = require("../../dataaccess/urlRecoverDataAccess");
 const createCommentPost = async (request, response) => {
 	const token = (request.headers.authorization).split(" ")[1];
 	const {comment, uuid} = request.body;
+	let normalizedComment = comment.replace(/\r\n/g, '\n').replace(/\n{2,}/g, '\n')
 	let isCreated = false;
 	let commentDetails;
 	try {
 		const userDataId = await verifyToken(token).then(data => {return data.id});
 		let postDataId = await getIdPostByPostUUID(uuid);
-		commentDetails = await createCommentInPost(comment, postDataId, userDataId);
+		commentDetails = await createCommentInPost(normalizedComment, postDataId, userDataId);
 		if (commentDetails) {
 			isCreated = true;
 		}
@@ -29,13 +30,14 @@ const createCommentPost = async (request, response) => {
 const createAnswerToComment = async (request, response) => {
 	const token = (request.headers.authorization).split(" ")[1];
 	const {comment, uuid} = request.body;
+	let normalizedComment = comment.replace(/\r\n/g, '\n').replace(/\n{2,}/g, '\n')
 	let commentDetails;
 	let isCreated;
 	try {
 		const userDataId = await verifyToken(token).then(data => {return data.id});
 		const commentReplyId = await getIdCommentByUUID(uuid);
 		let commentRootParentData = await getCommentParentById(commentReplyId);
-		commentDetails = await createAnswerComment(commentRootParentData.id, comment, commentRootParentData.id_post, userDataId);
+		commentDetails = await createAnswerComment(commentRootParentData.id, normalizedComment, commentRootParentData.id_post, userDataId);
 		commentDetails.isReplyInnerComment = commentRootParentData.isParent;
 		commentDetails.rootCommentUUID = commentRootParentData.uuid;
 		if (commentDetails) {
