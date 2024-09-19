@@ -95,7 +95,6 @@ router.get("/user/blocked/all",
     getBlockedUsers
 );
 
-// Need to get profile image
 router.get("/:username/",
     checkAccessTokenAsOptionalMiddleware(),
     validateAccountUsernameFormat,
