@@ -3,11 +3,11 @@ const File = require("../models/File");
 const {mkdir, uploadFile, exists, downloadFile, deleteFile, listFiles, rmdir} = require("./sftpClient");
 const fs = require('fs');
 
-const uploadFileImageProfile = async(file, idUser) => {
-	let path = `${idUser}`;
+const uploadFileImageProfile = async (file, idUser) => {
+	let path = `${idUser}/acc`;
 	let filename = `${path}/${file.metadata.filename}`;
-	let dirCreated =  await ensureDirCreated(path);
-	if(!dirCreated) {
+	let dirCreated = await ensureDirCreated(path);
+	if (!dirCreated) {
 		return false;
 	}
 	let readStream = fs.createReadStream(file.metadata.filepath);
@@ -20,7 +20,7 @@ const uploadFileImageProfile = async(file, idUser) => {
 }
 
 const uploadPostfile = async (file, idUser, idPost) => {
-	let path = `${idUser}/${idPost}`;
+	let path = `${idUser}/p/${idPost}`;
 	let filename = `${path}/${file.metadata.filename}`;
 	let dirCreated = await ensureDirCreated(path);
 	if (!dirCreated) {
@@ -44,7 +44,7 @@ const uploadPostfile = async (file, idUser, idPost) => {
 }
 
 const uploadPostFiles = async (files, idUser, idPost) => {
-	let path = `${idUser}/${idPost}`;
+	let path = `${idUser}/p/${idPost}`;
 	let dirCreated = await ensureDirCreated(path);
 	if (!dirCreated) {
 		return false;
@@ -67,6 +67,30 @@ const uploadPostFiles = async (files, idUser, idPost) => {
 	}));
 }
 
+const uploadMessageFile = async (file, idUser, idChat) => {
+	let path = `${idUser}/c/${idChat}`;
+	let filename = `${path}/${file.metadata.filename}`;
+	let dirCreated = await ensureDirCreated(path);
+	if (!dirCreated) {
+		return false;
+	}
+	let readStream = fs.createReadStream(file.metadata.filepath);
+	readStream.on("end", () => {
+		readStream.close();
+		fs.unlink(file.metadata.filepath, (error) => {
+			if (error) throw error;
+		});
+	})
+
+	readStream.on("error", (error) => {
+		throw error;
+	});
+
+	return uploadFile(readStream, filename)
+		.then(fileResult => fileResult ? filename : false)
+		.catch(error => {throw error});
+}
+
 const getFileFromStorage = async (path) => {
 	let filename = getFilenameFromPath(path);
 	let mimeType = getMimeTypeFromFilename(filename);
@@ -74,7 +98,7 @@ const getFileFromStorage = async (path) => {
 		.then(buffer => new File(buffer, {filename: filename, mimetype: mimeType, filepath: path}))
 		.catch(error => {
 			throw error;
-	});
+		});
 }
 
 const getFilesFromStorage = async (path) => {
@@ -125,5 +149,5 @@ const ensureDirCreated = async (path) => {
 module.exports = {
 	uploadPostfile, getFileFromStorage, uploadPostFiles,
 	deleteFileFromStorage, deleteFilesFromStorage, getFilesFromStorage,
-	uploadFileImageProfile
+	uploadFileImageProfile, uploadMessageFile
 }

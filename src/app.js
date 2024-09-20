@@ -46,6 +46,7 @@ app.use(require("./v1/routers/urlVerification"));
 app.use(require("./v1/routers/post"));
 app.use(require("./v1/routers/comment"));
 app.use(require("./v1/routers/resource"));
+app.use(require("./v1/routers/chat"));
 
 const connetionToServers = async () => {
 	await sequelize.authenticate().then(async () => {

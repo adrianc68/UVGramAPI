@@ -102,7 +102,9 @@ ALTER TYPE public."MessageStatusType" OWNER TO dev;
 
 CREATE TYPE public."MessageType" AS ENUM (
     'TEXTO',
-    'ARCHIVO'
+    'ARCHIVO',
+    'IMAGEN',
+    'VIDEO'
 );
 
 
@@ -174,6 +176,33 @@ CREATE TYPE public."enum_Follower_status" AS ENUM (
 
 
 ALTER TYPE public."enum_Follower_status" OWNER TO dev;
+
+--
+-- Name: enum_Message_message_status; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_Message_message_status" AS ENUM (
+    'VIOLACION_POLITICAS',
+    'LEIDO',
+    'ELIMINADO',
+    'ENVIADO'
+);
+
+
+ALTER TYPE public."enum_Message_message_status" OWNER TO dev;
+
+--
+-- Name: enum_Message_message_type; Type: TYPE; Schema: public; Owner: dev
+--
+
+CREATE TYPE public."enum_Message_message_type" AS ENUM (
+    'TEXTO',
+    'IMAGEN',
+    'VIDEO'
+);
+
+
+ALTER TYPE public."enum_Message_message_type" OWNER TO dev;
 
 --
 -- Name: enum_Personal_gender; Type: TYPE; Schema: public; Owner: dev
@@ -362,7 +391,8 @@ CREATE TABLE public."Chat" (
     id bigint DEFAULT nextval(('"chat_id_seq"'::text)::regclass) NOT NULL,
     uuid character varying(128) NOT NULL,
     id_sender bigint NOT NULL,
-    id_receiver bigint NOT NULL
+    id_receiver bigint NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -375,7 +405,9 @@ ALTER TABLE public."Chat" OWNER TO dev;
 CREATE TABLE public."ChatGroup" (
     id bigint DEFAULT nextval(('"chatgroup_id_seq"'::text)::regclass) NOT NULL,
     name character varying(120) NOT NULL,
-    uuid character varying(128) NOT NULL
+    uuid character varying(128) NOT NULL,
+    id_administrator bigint NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -387,35 +419,12 @@ ALTER TABLE public."ChatGroup" OWNER TO dev;
 
 CREATE TABLE public."ChatGroupMembership" (
     id_user bigint NOT NULL,
-    id_chatgroup bigint NOT NULL
+    id_chatgroup bigint NOT NULL,
+    added_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
 ALTER TABLE public."ChatGroupMembership" OWNER TO dev;
-
---
--- Name: ChatMessage; Type: TABLE; Schema: public; Owner: dev
---
-
-CREATE TABLE public."ChatMessage" (
-    id_message bigint NOT NULL,
-    id_chat bigint NOT NULL
-);
-
-
-ALTER TABLE public."ChatMessage" OWNER TO dev;
-
---
--- Name: ChatMessageGroup; Type: TABLE; Schema: public; Owner: dev
---
-
-CREATE TABLE public."ChatMessageGroup" (
-    id_message bigint NOT NULL,
-    id_chatgroup bigint NOT NULL
-);
-
-
-ALTER TABLE public."ChatMessageGroup" OWNER TO dev;
 
 --
 -- Name: Comment; Type: TABLE; Schema: public; Owner: dev
@@ -439,7 +448,8 @@ ALTER TABLE public."Comment" OWNER TO dev;
 
 CREATE TABLE public."CommentLike" (
     id_comment bigint NOT NULL,
-    id_user bigint NOT NULL
+    id_user bigint NOT NULL,
+    liked_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -504,12 +514,14 @@ ALTER TABLE public."LoginAttempts" OWNER TO dev;
 CREATE TABLE public."Message" (
     id bigint DEFAULT nextval(('"message_id_seq"'::text)::regclass) NOT NULL,
     uuid character varying(128),
-    content text,
+    content character varying(2200),
     sent_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     message_type public."MessageType",
     id_user bigint NOT NULL,
-    message_status public."MessageStatusType" NOT NULL,
-    delivery_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    message_status public."MessageStatusType" DEFAULT 'ENVIADO'::public."MessageStatusType" NOT NULL,
+    delivery_at timestamp without time zone,
+    id_chat bigint,
+    id_chatgroup bigint
 );
 
 
@@ -533,7 +545,8 @@ ALTER TABLE public."MessageFile" OWNER TO dev;
 
 CREATE TABLE public."MessageLike" (
     id_message bigint NOT NULL,
-    id_user bigint NOT NULL
+    id_user bigint NOT NULL,
+    liked_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -599,7 +612,8 @@ CREATE TABLE public."Post" (
     likes_allowed boolean DEFAULT true NOT NULL,
     id_user bigint NOT NULL,
     id bigint DEFAULT nextval(('"post_id_seq"'::text)::regclass) NOT NULL,
-    uuid character varying(320) NOT NULL
+    uuid character varying(320) NOT NULL,
+    created_time timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -623,7 +637,8 @@ ALTER TABLE public."PostFile" OWNER TO dev;
 
 CREATE TABLE public."PostLike" (
     id_user bigint NOT NULL,
-    id_post bigint NOT NULL
+    id_post bigint NOT NULL,
+    liked_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
@@ -862,6 +877,7 @@ COPY public."Account" (password, email, id_user, phone_number, birthday) FROM st
 3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	angel@uvgram.com	9	238942389	2022-01-31
 3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	hola@uvgram.com	10	20349290	2022-01-31
 0052798e0a085a898c840d57db94b2dd673be8fc25b573063e4617ca42a75ff4	hola23423@uvgram.com	11	42903590	2022-01-31
+3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	mataleon@uvgram.com	18	234890284932	2010-01-31
 3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	ala@ala.com	12	2328942892	2020-09-29
 3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	coca@coca.com	13	23489023498	2022-01-31
 3e6dc62f220c57f4e44e3dd541c175b3a4fd22986bafa16d47ce3d4c2b224ac8	hola@hola.com	14	24389029	2022-01-31
@@ -894,6 +910,7 @@ NO_BLOQUEADO	14
 NO_BLOQUEADO	15
 NO_BLOQUEADO	16
 NO_BLOQUEADO	17
+NO_BLOQUEADO	18
 \.
 
 
@@ -926,7 +943,7 @@ COPY public."Business" (category, city, postal_code, postal_address, contact_ema
 -- Data for Name: Chat; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Chat" (id, uuid, id_sender, id_receiver) FROM stdin;
+COPY public."Chat" (id, uuid, id_sender, id_receiver, created_at) FROM stdin;
 \.
 
 
@@ -934,7 +951,7 @@ COPY public."Chat" (id, uuid, id_sender, id_receiver) FROM stdin;
 -- Data for Name: ChatGroup; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."ChatGroup" (id, name, uuid) FROM stdin;
+COPY public."ChatGroup" (id, name, uuid, id_administrator, created_at) FROM stdin;
 \.
 
 
@@ -942,23 +959,7 @@ COPY public."ChatGroup" (id, name, uuid) FROM stdin;
 -- Data for Name: ChatGroupMembership; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."ChatGroupMembership" (id_user, id_chatgroup) FROM stdin;
-\.
-
-
---
--- Data for Name: ChatMessage; Type: TABLE DATA; Schema: public; Owner: dev
---
-
-COPY public."ChatMessage" (id_message, id_chat) FROM stdin;
-\.
-
-
---
--- Data for Name: ChatMessageGroup; Type: TABLE DATA; Schema: public; Owner: dev
---
-
-COPY public."ChatMessageGroup" (id_message, id_chatgroup) FROM stdin;
+COPY public."ChatGroupMembership" (id_user, id_chatgroup, added_at) FROM stdin;
 \.
 
 
@@ -1119,6 +1120,10 @@ gw	2024-09-16 07:14:58.624314	365	15	14	79dd5e0327c
 wergewrgwe	2024-09-16 07:15:01.85042	367	15	14	6962c3dd174
 asdfff	2024-09-16 07:15:04.830767	368	15	14	7e2c9c4a2c4
 adfdgfsgdgsgdfsgdfsdgfs	2024-09-16 07:15:08.357901	369	15	14	a1786bb68bd
+@mataleon asdfsafasdf	2024-09-19 06:19:26.111822	429	58	18	e0304c0e5fe
+asdfasfs	2024-09-19 06:19:27.862178	430	58	18	91a0e9e5074
+asdfasfsaddfasd	2024-09-19 06:19:30.924444	431	58	18	dabcd5f105b
+@mataleon aaaaaa	2024-09-19 06:19:34.458646	432	58	18	9ce089deb5f
 jajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajaj	2024-09-16 19:02:38.290292	371	27	16	9becf6dc50e
 @memero jajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajaj	2024-09-16 19:02:41.172844	372	27	16	a3646ecf632
 Esto es una preuba\n.\nDe sofwtare	2024-09-16 19:05:04.745725	373	37	16	0d469afe7dc
@@ -1165,6 +1170,29 @@ Holaaa.\n>\nSalto de linea\n>	2024-09-17 02:09:32.694771	412	27	1	cc3767195a6
 @memero <script>alert("Take me on")</script>\n<h1> Testing </h1> \nJeje 	2024-09-17 02:16:02.821859	414	12	16	98f119713c7
 @adrianc68 Ahuevo man	2024-09-17 05:18:32.037623	415	3	16	a4b862b27a5
 @memero La de vicente fernandez\n	2024-09-17 05:18:37.57934	416	3	16	ad83e62612d
+asdfsdadfs	2024-09-19 04:54:24.420697	417	15	16	57419306a92
+adfjadlkfdj	2024-09-19 04:54:28.204899	418	15	16	c1db4ebc6f1
+alkdsjfaslkfdasjk\nasdlfkdsa\n.\naskdfdaslfkjas	2024-09-19 04:54:35.881528	419	15	16	800a78c6a7c
+<script>alert("test")</script>	2024-09-19 04:54:49.194546	420	15	16	6eeb51a30cb
+@memero <script>alert("test")</script>	2024-09-19 04:54:57.699208	421	15	16	49210400ed4
+sdfafdsf	2024-09-19 06:18:58.492481	422	58	18	70f1629e090
+fasdfsadfasfd	2024-09-19 06:19:01.293877	423	58	18	55cde6a11ba
+afsdasdfsaddfasdd	2024-09-19 06:19:02.790442	424	58	18	ec8eb9fb432
+asfdasfadsfas	2024-09-19 06:19:03.945029	425	58	18	f3b98b2e4e8
+@mataleon asdfsafasfas	2024-09-19 06:19:15.057985	426	58	18	3b87d0aa69b
+@mataleon asdfasfs	2024-09-19 06:19:17.143923	427	58	18	4511191fa3c
+@mataleon asdfsafsadf	2024-09-19 06:19:21.166795	428	58	18	1d172855465
+@mataleon bbbbbb	2024-09-19 06:19:36.888635	433	58	18	dc3710056f2
+@mataleon cccccc	2024-09-19 06:19:39.88114	434	58	18	a3bfcfe86ba
+@mataleon dddddd	2024-09-19 06:19:42.407814	435	58	18	7534fd3379f
+@mataleon eeeeee	2024-09-19 06:19:44.560464	436	58	18	7874e258bae
+@mataleon fffff	2024-09-19 06:19:47.235871	437	58	18	1921675a372
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam dignissim semper eros sed vestibulum. Cras eu lorem vitae ex imperdiet sagittis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Morbi semper condimentum convallis. Maecenas malesuada leo elit, vitae rhoncus est dictum malesuada. Mauris id purus mi. Nam venenatis, leo in bibendum molestie, urna enim interdum ex, ut ornare tellus nulla ac purus. Quisque porttitor fermentum eros, quis consequat lorem. Duis eu efficitur nulla, nec pellentesque elit. Duis tincidunt sed orci eget volutpat. Sed vel faucibus mauris, id aliquet sapien. Integer vitae sollicitudin sapien. Curabitur in consectetur eros. Sed vulputate gravida convallis.\nCras porta viverra mauris non euismod. Sed imperdiet nisi in porta pellentesque. Quisque commodo sapien nulla, ut fringilla nibh fringilla vel. Duis ultrices rutrum urna eu hendrerit. Pellentesque sapien nisl, luctus sit amet vulputate eu, porta in massa. Etiam iaculis dui eu scelerisque ultricies. Quisque quis tellus ut elit ultricies ornare. Curabitur ut metus congue, accumsan risus vitae, pellentesque arcu.\nProin id justo vel ex consequat volutpat. In eget erat sit amet lacus finibus feugiat. Curabitur eu ultrices eros, sed hendrerit sapien. Aenean non elementum sapien, ut tristique enim. Cras fermentum convallis sapien non venenatis. Nullam luctus pulvinar odio a convallis. Nullam in bibendum metus. Vestibulum et lacinia ante. Donec massa justo, ornare lobortis consequat ut, fringilla feugiat diam. Sed commodo urna eu ultrices porttitor. Phasellus quis risus convallis, porttitor metus non, luctus risus. Nam mattis, tortor dapibus lobortis porta, ipsum ligula luctus purus, ut dapibus sem tellus vitae dui. Etiam blandit magna at mi consequat posuere. Suspendisse congue consectetur elit, eget suscipit risus convallis quis.	2024-09-19 06:29:04.558377	438	33	14	55fe1a192a6
+asdfasf	2024-09-19 19:20:10.320042	439	42	18	341ac307b1d
+xdddd	2024-09-19 19:20:12.48894	440	42	18	664ef9506eb
+fdfdfdfd	2024-09-19 19:20:25.417083	441	58	18	ab08f645fe8
+&gttest&lg	2024-09-19 19:25:32.82282	442	59	18	040ee95ea7b
+&tghola&lgtest	2024-09-19 19:25:43.146023	443	59	18	2e1508bfa0a
 \.
 
 
@@ -1172,88 +1200,91 @@ Holaaa.\n>\nSalto de linea\n>	2024-09-17 02:09:32.694771	412	27	1	cc3767195a6
 -- Data for Name: CommentLike; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."CommentLike" (id_comment, id_user) FROM stdin;
-241	13
-240	13
-239	13
-242	13
-218	13
-217	13
-217	1
-218	1
-219	1
-220	1
-221	1
-222	1
-248	1
-249	1
-250	1
-256	1
-255	1
-255	13
-257	13
-258	13
-259	13
-260	13
-261	1
-271	1
-270	1
-263	1
-266	1
-265	1
-273	1
-262	1
-257	1
-270	14
-271	14
-255	14
-257	14
-258	14
-259	14
-274	1
-258	1
-259	1
-227	1
-230	1
-232	1
-290	1
-291	1
-260	1
-284	1
-292	1
-295	1
-305	1
-304	1
-308	1
-309	1
-310	1
-313	16
-255	17
-257	17
-258	17
-259	17
-260	17
-312	1
-314	16
-328	1
-329	1
-350	16
-349	16
-351	16
-348	16
-347	16
-263	16
-271	16
-264	16
-337	16
-359	14
-360	14
-395	1
-404	1
-378	1
-392	1
-409	1
-401	16
+COPY public."CommentLike" (id_comment, id_user, liked_at) FROM stdin;
+241	13	2024-09-19 18:24:15.254826
+240	13	2024-09-19 18:24:15.254826
+239	13	2024-09-19 18:24:15.254826
+242	13	2024-09-19 18:24:15.254826
+218	13	2024-09-19 18:24:15.254826
+217	13	2024-09-19 18:24:15.254826
+217	1	2024-09-19 18:24:15.254826
+218	1	2024-09-19 18:24:15.254826
+219	1	2024-09-19 18:24:15.254826
+220	1	2024-09-19 18:24:15.254826
+221	1	2024-09-19 18:24:15.254826
+222	1	2024-09-19 18:24:15.254826
+248	1	2024-09-19 18:24:15.254826
+249	1	2024-09-19 18:24:15.254826
+250	1	2024-09-19 18:24:15.254826
+256	1	2024-09-19 18:24:15.254826
+255	1	2024-09-19 18:24:15.254826
+255	13	2024-09-19 18:24:15.254826
+257	13	2024-09-19 18:24:15.254826
+258	13	2024-09-19 18:24:15.254826
+259	13	2024-09-19 18:24:15.254826
+260	13	2024-09-19 18:24:15.254826
+261	1	2024-09-19 18:24:15.254826
+271	1	2024-09-19 18:24:15.254826
+270	1	2024-09-19 18:24:15.254826
+263	1	2024-09-19 18:24:15.254826
+266	1	2024-09-19 18:24:15.254826
+265	1	2024-09-19 18:24:15.254826
+273	1	2024-09-19 18:24:15.254826
+262	1	2024-09-19 18:24:15.254826
+257	1	2024-09-19 18:24:15.254826
+270	14	2024-09-19 18:24:15.254826
+271	14	2024-09-19 18:24:15.254826
+255	14	2024-09-19 18:24:15.254826
+257	14	2024-09-19 18:24:15.254826
+258	14	2024-09-19 18:24:15.254826
+259	14	2024-09-19 18:24:15.254826
+274	1	2024-09-19 18:24:15.254826
+258	1	2024-09-19 18:24:15.254826
+259	1	2024-09-19 18:24:15.254826
+227	1	2024-09-19 18:24:15.254826
+230	1	2024-09-19 18:24:15.254826
+232	1	2024-09-19 18:24:15.254826
+290	1	2024-09-19 18:24:15.254826
+291	1	2024-09-19 18:24:15.254826
+260	1	2024-09-19 18:24:15.254826
+284	1	2024-09-19 18:24:15.254826
+292	1	2024-09-19 18:24:15.254826
+295	1	2024-09-19 18:24:15.254826
+305	1	2024-09-19 18:24:15.254826
+304	1	2024-09-19 18:24:15.254826
+308	1	2024-09-19 18:24:15.254826
+309	1	2024-09-19 18:24:15.254826
+310	1	2024-09-19 18:24:15.254826
+313	16	2024-09-19 18:24:15.254826
+255	17	2024-09-19 18:24:15.254826
+257	17	2024-09-19 18:24:15.254826
+258	17	2024-09-19 18:24:15.254826
+259	17	2024-09-19 18:24:15.254826
+260	17	2024-09-19 18:24:15.254826
+312	1	2024-09-19 18:24:15.254826
+314	16	2024-09-19 18:24:15.254826
+328	1	2024-09-19 18:24:15.254826
+329	1	2024-09-19 18:24:15.254826
+350	16	2024-09-19 18:24:15.254826
+349	16	2024-09-19 18:24:15.254826
+351	16	2024-09-19 18:24:15.254826
+348	16	2024-09-19 18:24:15.254826
+347	16	2024-09-19 18:24:15.254826
+263	16	2024-09-19 18:24:15.254826
+271	16	2024-09-19 18:24:15.254826
+264	16	2024-09-19 18:24:15.254826
+337	16	2024-09-19 18:24:15.254826
+359	14	2024-09-19 18:24:15.254826
+360	14	2024-09-19 18:24:15.254826
+395	1	2024-09-19 18:24:15.254826
+404	1	2024-09-19 18:24:15.254826
+378	1	2024-09-19 18:24:15.254826
+392	1	2024-09-19 18:24:15.254826
+409	1	2024-09-19 18:24:15.254826
+401	16	2024-09-19 18:24:15.254826
+420	16	2024-09-19 18:24:15.254826
+438	14	2024-09-19 18:24:15.254826
+436	18	2024-09-19 19:20:23.219702
 \.
 
 
@@ -1287,6 +1318,7 @@ COPY public."Follower" (id_user_follower, id_user_followed, status) FROM stdin;
 16	1	ACEPTADO
 1	14	ACEPTADO
 14	2	ACEPTADO
+14	17	ACEPTADO
 \.
 
 
@@ -1302,7 +1334,15 @@ COPY public."LoginAttempts" (attempts, login_state, mac_address) FROM stdin;
 -- Data for Name: Message; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Message" (id, uuid, content, sent_at, message_type, id_user, message_status, delivery_at) FROM stdin;
+COPY public."Message" (id, uuid, content, sent_at, message_type, id_user, message_status, delivery_at, id_chat, id_chatgroup) FROM stdin;
+16	fea7b2a4-8553-4516-b253-affbeb6084d7	test	2024-09-20 00:19:42.329274	TEXTO	1	ENVIADO	\N	\N	\N
+17	3ae1c022-26aa-4890-8f79-a5b2a86ff54c	test	2024-09-20 00:20:50.801995	TEXTO	1	ENVIADO	\N	\N	\N
+18	3d1ca517-d55a-4dc9-970f-128b4890d65c	test	2024-09-20 00:21:46.591157	TEXTO	1	ENVIADO	\N	\N	\N
+19	81c48035-3be2-43aa-9074-7b24090a29c1	test	2024-09-20 00:22:28.967916	TEXTO	1	ENVIADO	\N	\N	\N
+20	49d3d59c-491a-41a1-a778-9ae37db5bb74	test	2024-09-20 00:22:49.504866	TEXTO	1	ENVIADO	\N	\N	\N
+21	e7a78d18-dda2-4f41-b85c-5c51c26df69f	test	2024-09-20 00:27:14.102274	TEXTO	1	ENVIADO	\N	\N	\N
+22	f54eafe5-f8c3-4963-a86f-40ca00847143	test	2024-09-20 00:29:37.48035	TEXTO	1	ENVIADO	\N	\N	\N
+23	ab6fbce6-c477-4427-b75f-81c411701a3f	test	2024-09-20 00:38:05.457258	TEXTO	1	ENVIADO	\N	\N	\N
 \.
 
 
@@ -1318,7 +1358,7 @@ COPY public."MessageFile" (id_message, filepath) FROM stdin;
 -- Data for Name: MessageLike; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."MessageLike" (id_message, id_user) FROM stdin;
+COPY public."MessageLike" (id_message, id_user, liked_at) FROM stdin;
 \.
 
 
@@ -1427,6 +1467,17 @@ COPY public."NestedComment" (parent_id_comment, child_id_comment) FROM stdin;
 413	414
 401	415
 401	416
+420	421
+422	426
+423	427
+422	428
+422	429
+430	432
+430	433
+430	434
+430	435
+430	436
+430	437
 \.
 
 
@@ -1452,6 +1503,7 @@ INDIFERENTE	15	\N
 INDIFERENTE	16	\N
 INDIFERENTE	17	\N
 MASCULINO	1	\N
+INDIFERENTE	18	\N
 \.
 
 
@@ -1459,61 +1511,67 @@ MASCULINO	1	\N
 -- Data for Name: Post; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."Post" (description, comments_allowed, likes_allowed, id_user, id, uuid) FROM stdin;
-Primer post jajaja	t	t	1	1	d126a133f4247359
-Segundo post jajaja	t	t	1	2	44fdc6520f064983
-post jajaja	t	t	1	3	0228a7e9dd8501a1
-post jajaja	t	t	1	4	f8c59d7c24ba0b42
-post jajaja	t	t	1	5	d27f31476921d559
-post jajaja	t	t	1	6	c5cc45e2feeff23a
-post jajaja	t	t	1	7	21daa81d193a962b
-post jajaja	t	t	1	8	cdca6c957136a063
-post jajaja	t	t	1	9	4e2499425bb6a8a6
-Este es un post de otro usuiario	t	t	16	10	23988dd56012310f
-Este es un post de otro usuiario	t	t	16	11	2429d0220750d544
-Este es un post de otro usuiario	t	t	16	12	b18f154795309217
-Este es un post de otro usuiario	t	t	16	13	36c3d4200ffe5277
-Este es un post de otro usuiario	t	t	1	14	ff3209abf38dfb54
-Este es un post de otro usuiario	t	t	14	15	623d5cd93eb7999d
-Este es un post de otro usuiario	t	t	13	16	295985f46c6091d8
-Este es un post de otro usuiario	t	t	1	17	25c753f51c3e823d
-	f	f	1	18	1dc911b61b29ce4c
-asd asd asda das dasdas dasdas	f	f	1	19	1fecf2d92b521657
-asdfasdfasfas	f	f	1	20	3b6ce3c99bdaa8cc
-Inicial mente eran 3 imagenes pero quite dos la del ojo y la del fbi la azul y deje la de Dead by Daylight y tiene 129 caracteres	f	f	1	21	2b7354424ae07132
-eran 4 imagenes pero elimine 3	f	f	16	22	ffd60fa6e33ae8a7
-zazazazaaz	f	f	16	23	74ddef60983234f8
-sfadadfsafsd	f	f	16	24	93fbd060cdf271e6
-adfsdsfasf	f	f	16	25	75b4af4879a17581
-hahahahahahaha hahaha ha ha haha ha ha ha hahahhahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahaa	f	f	1	26	707ff8097eb0caec
-jajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajaj	f	f	1	27	c9d84dd9cab23942
-	f	f	1	28	096f84788fa63b12
-aaaaaaa	f	f	1	29	d8db5c0fdd16c2ba
-	f	f	1	30	fb475fdbeb2063b8
-	f	f	1	31	02c1adcfbee50504
-fb8fb8fb8fb8fb8	f	f	1	32	46d8078757581da7
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce rutrum magna a lorem pretium, in tempus ex accumsan. Ut aliquet volutpat nulla ac hendrerit. Maecenas venenatis, augue sed mollis semper, diam ipsum cursus turpis, ut posuere lectus orci quis justo. Vivamus eget fringilla libero, id commodo dolor. Praesent sit amet risus sed ipsum cursus consectetur. Cras et felis neque. Sed interdum dictum augue, at fringilla dui varius ut. Mauris convallis, turpis quis elementum hendrerit, leo orci sagittis purus, nec ornare nunc nisi in neque.\n\nFusce ultrices mattis bibendum. Vestibulum vel imperdiet turpis. Nullam venenatis, ligula ac dignissim consequat, massa mauris ornare nulla, at molestie dolor leo et risus. Sed ac fermentum erat. Vestibulum rutrum pretium hendrerit. Donec sollicitudin turpis eget sapien consequat volutpat. Donec ut lorem risus. Etiam commodo nisi vitae mi interdum, eget vestibulum mi gravida. Vestibulum interdum varius sapien.\n\nAenean suscipit vitae enim quis ultrices. Aenean aliquam nisi sed lobortis fringilla. Curabitur laoreet egestas lectus id finibus. Etiam cursus orci nec elit pretium, vel ultricies lorem rhoncus. Nam eu ipsum neque. Donec eu turpis pharetra, pellentesque diam pulvinar, feugiat ipsum. Pellentesque augue est, pellentesque ac lacinia id, vestibulum nec odio. Vestibulum non odio at augue ultrices tempus vel non elit. Cras hendrerit mollis ullamcorper. Donec vel condimentum massa. Ut non enim finibus, laoreet tortor non, commodo dui. Proin eu placerat eros, sed viverra libero. Morbi dui risus, vulputate quis dapibus non, ultricies in dui. Pellentesque luctus diam in urna sollicitudin, sit amet suscipit tortor lacinia. Integer placerat velit eget tempus dignissim.\n\nFusce interdum, quam a convallis tristique, nisl sapien viverra nisl, ut bibendum tortor sem sit amet arcu. Proin fermentum ipsum eget gravida fringilla. In vel viverra diam. Ut imperdiet, turpis maximus hendrerit sum, libero in curs	f	f	14	33	c62e0ef6b806fd65
-	f	f	14	34	dcda409ebc582031
-asdasdasdasdas	f	f	16	35	061be86e55ef194e
-dsasdfasddsasdfasddsasdfasddsasdfasddsasdfasddsasdfasddsasdfasddsasdfasddsasdfasddsasdfasd	f	f	16	36	0106755fcf2af703
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dapibus lorem sit amet dolor tristique, tempor molestie sem fringilla. Morbi ullamcorper lorem id ligula congue ultrices. Maecenas venenatis venenatis ante ac aliquet. Pellentesque nisi ligula, facilisis eget ultricies sed, fermentum mollis ipsum. Sed in magna at ex dapibus lacinia at vel quam. Etiam sit amet convallis urna, eget eleifend tortor. Vestibulum metus orci, gravida vitae elementum volutpat, sodales in urna. Duis id tortor tellus. Mauris eu dui laoreet, fermentum ex ut, iaculis turpis. Vestibulum ullamcorper sagittis orci, sit amet pharetra leo sodales ut. Curabitur viverra est diam, at tempus turpis accumsan id. Fusce sed quam in ligula fermentum tristique in quis nibh.\n\nPraesent bibendum nisi eu massa vestibulum, quis condimentum risus tempor. Vivamus egestas in diam in porttitor. Suspendisse tincidunt euismod nisi, vel pellentesque nulla tincidunt ut. Nam vestibulum convallis sagittis. Proin auctor sem non leo sodales, ut porta ex molestie. Proin vel leo non lorem egestas pretium. Donec molestie semper efficitur. Duis aliquet, est a dapibus maximus, enim felis fermentum ante, non consequat arcu nisl sed libero.\n\nCras elit ipsum, ultricies eget odio at, sodales scelerisque diam. Donec placerat accumsan semper. Etiam faucibus turpis magna, et feugiat lectus consequat ut. Nam viverra arcu vitae lectus laoreet, maximus rutrum justo dapibus. Pellentesque hendrerit nulla at eros pulvinar, a aliquet sem accumsan. Suspendisse vitae diam risus. Ut rhoncus nisi sapien, ac ultrices justo gravida eget. Proin eget aliquam libero.\n\nSuspendisse potenti. Integer dictum mauris mattis mauris ornare, sit amet consequat sapien euismod. Maecenas consequat justo eget eros tincidunt, sed viverra ligula vestibulum. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vestibulum sed pellentesque purus. In at nulla eget elit vestibulum consectetur a ac est. 	f	f	16	37	7b438ac3a5548e65
-Este es un post de otro usuiario\nopeasdfkj\nasdfasfasf\n	t	t	1	38	49d678e6eb923ab9
-Lorep Ipsum\n\nTESTING\n\n\nBR\n\nSALTO DE L\nIN\nE\n\n\nAS\n	t	t	1	39	1c86dd00fcba0395
-	f	f	1	40	cf5ab7917a8cd9d3
-	f	f	1	41	797c0203125d0bc1
-Primer parrafo hablar sobre equis cosa\n.\nSegundo parrafo habla sobre equis 2 cosa\n.\nTercer parrafo habla sobre equis 3 cosa\n..\nDoble salto de linea a partir de aqui\n.\nTriple salto de linea a partir de aqui...\n.\n>	t	t	1	42	137e826a4bceb1f1
-fsadf\nSDAF\nASDF\nSADF\n\n\n\nSADFAS\n\n\n\nSADFASDF\nAS\n\nSADFSfas	f	f	1	43	7de7fa15b00937cf
-sASDF \nA\nSDF\nASDFSA\nD\n\n\n\n\nA\n\n\nA\n\n\nASDF\nS\n\n\n\nSADF\nA\nA\n.\n.	f	f	1	44	b804d414f37ec737
-H\nO\nL\nA\n\nE\nS\nT\nO\n\nES\nES\nUNA\nPRUIEBA	f	f	1	45	12a2c7594712a376
-VIEJA\nCONCHE\n\nSU\nMADRE\n\nJAJAJA\n\nARRIBA\nBRAZILEIRO	f	f	1	46	4131fe1993e1426e
-Vieja\n\nCONSESAUMA\nESTO \n\nES BRAZIL\nARRIBA BRAZILL\nLEIRODOOOO	f	f	1	47	6203662ec6ec34d2
-ESTO\nES\nBRAZIL\nARRIBA\nLA\nPORRA\nTE\nSALUDA\nXD\nXDDXC\nASD\nFAS\nFSDF\nAS\nF	f	f	1	48	3d7002b9ab317fb4
-ESTO\n.\nES la mejor ayuda\n.\nQue te puede ofrecer jajaja gracias\n.\nAdios Perros	f	f	1	49	a8bca82e205c7534
-Lo mejor de lo mejor pinches putos	f	f	1	50	25a5ab47dcc40af5
-Primer parrafo hablar sobre equis cosa\n.\nSegundo parrafo habla sobre equis 2 cosa\n.\nTercer parrafo habla sobre equis 3 cosa\n..\nDoble salto de linea a partir de aqui\n.\nTriple salto de linea a partir de aqui...\n.\n>	t	t	1	51	9bd391a353976da0
-LOS COMENTARIOS SON VULNERABLES A XSS POR FAVOR DE VERIFICAR Y VALIDAR ESOS COMENTARIOS	f	f	1	52	9beb1d316608833c
-<script>alert("Take me on")</script>\n<h1> Testing </h1> \nJeje 	f	f	16	53	e335e2b7200c1aec
-Say\nAfter\nme\nBefore I go\n.\nTest\n<script>alert("Take me on")</script>\n<h1> Testing </h1> \nJeje \n.\nSalto de linea	f	f	16	54	83a20ac15a18106c
+COPY public."Post" (description, comments_allowed, likes_allowed, id_user, id, uuid, created_time) FROM stdin;
+Primer post jajaja	t	t	1	1	d126a133f4247359	2024-09-19 04:58:23.303651
+Segundo post jajaja	t	t	1	2	44fdc6520f064983	2024-09-19 04:58:23.303651
+post jajaja	t	t	1	3	0228a7e9dd8501a1	2024-09-19 04:58:23.303651
+post jajaja	t	t	1	4	f8c59d7c24ba0b42	2024-09-19 04:58:23.303651
+post jajaja	t	t	1	5	d27f31476921d559	2024-09-19 04:58:23.303651
+post jajaja	t	t	1	6	c5cc45e2feeff23a	2024-09-19 04:58:23.303651
+post jajaja	t	t	1	7	21daa81d193a962b	2024-09-19 04:58:23.303651
+post jajaja	t	t	1	8	cdca6c957136a063	2024-09-19 04:58:23.303651
+post jajaja	t	t	1	9	4e2499425bb6a8a6	2024-09-19 04:58:23.303651
+Este es un post de otro usuiario	t	t	16	10	23988dd56012310f	2024-09-19 04:58:23.303651
+Este es un post de otro usuiario	t	t	16	11	2429d0220750d544	2024-09-19 04:58:23.303651
+Este es un post de otro usuiario	t	t	16	12	b18f154795309217	2024-09-19 04:58:23.303651
+Este es un post de otro usuiario	t	t	16	13	36c3d4200ffe5277	2024-09-19 04:58:23.303651
+Este es un post de otro usuiario	t	t	1	14	ff3209abf38dfb54	2024-09-19 04:58:23.303651
+Este es un post de otro usuiario	t	t	14	15	623d5cd93eb7999d	2024-09-19 04:58:23.303651
+Este es un post de otro usuiario	t	t	13	16	295985f46c6091d8	2024-09-19 04:58:23.303651
+Este es un post de otro usuiario	t	t	1	17	25c753f51c3e823d	2024-09-19 04:58:23.303651
+	f	f	1	18	1dc911b61b29ce4c	2024-09-19 04:58:23.303651
+asd asd asda das dasdas dasdas	f	f	1	19	1fecf2d92b521657	2024-09-19 04:58:23.303651
+asdfasdfasfas	f	f	1	20	3b6ce3c99bdaa8cc	2024-09-19 04:58:23.303651
+Inicial mente eran 3 imagenes pero quite dos la del ojo y la del fbi la azul y deje la de Dead by Daylight y tiene 129 caracteres	f	f	1	21	2b7354424ae07132	2024-09-19 04:58:23.303651
+eran 4 imagenes pero elimine 3	f	f	16	22	ffd60fa6e33ae8a7	2024-09-19 04:58:23.303651
+zazazazaaz	f	f	16	23	74ddef60983234f8	2024-09-19 04:58:23.303651
+sfadadfsafsd	f	f	16	24	93fbd060cdf271e6	2024-09-19 04:58:23.303651
+adfsdsfasf	f	f	16	25	75b4af4879a17581	2024-09-19 04:58:23.303651
+hahahahahahaha hahaha ha ha haha ha ha ha hahahhahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahahahahahahahaha hahaha ha ha haha ha ha ha hahahaa	f	f	1	26	707ff8097eb0caec	2024-09-19 04:58:23.303651
+jajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajajjajaj	f	f	1	27	c9d84dd9cab23942	2024-09-19 04:58:23.303651
+	f	f	1	28	096f84788fa63b12	2024-09-19 04:58:23.303651
+aaaaaaa	f	f	1	29	d8db5c0fdd16c2ba	2024-09-19 04:58:23.303651
+	f	f	1	30	fb475fdbeb2063b8	2024-09-19 04:58:23.303651
+	f	f	1	31	02c1adcfbee50504	2024-09-19 04:58:23.303651
+fb8fb8fb8fb8fb8	f	f	1	32	46d8078757581da7	2024-09-19 04:58:23.303651
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce rutrum magna a lorem pretium, in tempus ex accumsan. Ut aliquet volutpat nulla ac hendrerit. Maecenas venenatis, augue sed mollis semper, diam ipsum cursus turpis, ut posuere lectus orci quis justo. Vivamus eget fringilla libero, id commodo dolor. Praesent sit amet risus sed ipsum cursus consectetur. Cras et felis neque. Sed interdum dictum augue, at fringilla dui varius ut. Mauris convallis, turpis quis elementum hendrerit, leo orci sagittis purus, nec ornare nunc nisi in neque.\n\nFusce ultrices mattis bibendum. Vestibulum vel imperdiet turpis. Nullam venenatis, ligula ac dignissim consequat, massa mauris ornare nulla, at molestie dolor leo et risus. Sed ac fermentum erat. Vestibulum rutrum pretium hendrerit. Donec sollicitudin turpis eget sapien consequat volutpat. Donec ut lorem risus. Etiam commodo nisi vitae mi interdum, eget vestibulum mi gravida. Vestibulum interdum varius sapien.\n\nAenean suscipit vitae enim quis ultrices. Aenean aliquam nisi sed lobortis fringilla. Curabitur laoreet egestas lectus id finibus. Etiam cursus orci nec elit pretium, vel ultricies lorem rhoncus. Nam eu ipsum neque. Donec eu turpis pharetra, pellentesque diam pulvinar, feugiat ipsum. Pellentesque augue est, pellentesque ac lacinia id, vestibulum nec odio. Vestibulum non odio at augue ultrices tempus vel non elit. Cras hendrerit mollis ullamcorper. Donec vel condimentum massa. Ut non enim finibus, laoreet tortor non, commodo dui. Proin eu placerat eros, sed viverra libero. Morbi dui risus, vulputate quis dapibus non, ultricies in dui. Pellentesque luctus diam in urna sollicitudin, sit amet suscipit tortor lacinia. Integer placerat velit eget tempus dignissim.\n\nFusce interdum, quam a convallis tristique, nisl sapien viverra nisl, ut bibendum tortor sem sit amet arcu. Proin fermentum ipsum eget gravida fringilla. In vel viverra diam. Ut imperdiet, turpis maximus hendrerit sum, libero in curs	f	f	14	33	c62e0ef6b806fd65	2024-09-19 04:58:23.303651
+	f	f	14	34	dcda409ebc582031	2024-09-19 04:58:23.303651
+asdasdasdasdas	f	f	16	35	061be86e55ef194e	2024-09-19 04:58:23.303651
+dsasdfasddsasdfasddsasdfasddsasdfasddsasdfasddsasdfasddsasdfasddsasdfasddsasdfasddsasdfasd	f	f	16	36	0106755fcf2af703	2024-09-19 04:58:23.303651
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed dapibus lorem sit amet dolor tristique, tempor molestie sem fringilla. Morbi ullamcorper lorem id ligula congue ultrices. Maecenas venenatis venenatis ante ac aliquet. Pellentesque nisi ligula, facilisis eget ultricies sed, fermentum mollis ipsum. Sed in magna at ex dapibus lacinia at vel quam. Etiam sit amet convallis urna, eget eleifend tortor. Vestibulum metus orci, gravida vitae elementum volutpat, sodales in urna. Duis id tortor tellus. Mauris eu dui laoreet, fermentum ex ut, iaculis turpis. Vestibulum ullamcorper sagittis orci, sit amet pharetra leo sodales ut. Curabitur viverra est diam, at tempus turpis accumsan id. Fusce sed quam in ligula fermentum tristique in quis nibh.\n\nPraesent bibendum nisi eu massa vestibulum, quis condimentum risus tempor. Vivamus egestas in diam in porttitor. Suspendisse tincidunt euismod nisi, vel pellentesque nulla tincidunt ut. Nam vestibulum convallis sagittis. Proin auctor sem non leo sodales, ut porta ex molestie. Proin vel leo non lorem egestas pretium. Donec molestie semper efficitur. Duis aliquet, est a dapibus maximus, enim felis fermentum ante, non consequat arcu nisl sed libero.\n\nCras elit ipsum, ultricies eget odio at, sodales scelerisque diam. Donec placerat accumsan semper. Etiam faucibus turpis magna, et feugiat lectus consequat ut. Nam viverra arcu vitae lectus laoreet, maximus rutrum justo dapibus. Pellentesque hendrerit nulla at eros pulvinar, a aliquet sem accumsan. Suspendisse vitae diam risus. Ut rhoncus nisi sapien, ac ultrices justo gravida eget. Proin eget aliquam libero.\n\nSuspendisse potenti. Integer dictum mauris mattis mauris ornare, sit amet consequat sapien euismod. Maecenas consequat justo eget eros tincidunt, sed viverra ligula vestibulum. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vestibulum sed pellentesque purus. In at nulla eget elit vestibulum consectetur a ac est. 	f	f	16	37	7b438ac3a5548e65	2024-09-19 04:58:23.303651
+Este es un post de otro usuiario\nopeasdfkj\nasdfasfasf\n	t	t	1	38	49d678e6eb923ab9	2024-09-19 04:58:23.303651
+Lorep Ipsum\n\nTESTING\n\n\nBR\n\nSALTO DE L\nIN\nE\n\n\nAS\n	t	t	1	39	1c86dd00fcba0395	2024-09-19 04:58:23.303651
+	f	f	1	40	cf5ab7917a8cd9d3	2024-09-19 04:58:23.303651
+	f	f	1	41	797c0203125d0bc1	2024-09-19 04:58:23.303651
+Primer parrafo hablar sobre equis cosa\n.\nSegundo parrafo habla sobre equis 2 cosa\n.\nTercer parrafo habla sobre equis 3 cosa\n..\nDoble salto de linea a partir de aqui\n.\nTriple salto de linea a partir de aqui...\n.\n>	t	t	1	42	137e826a4bceb1f1	2024-09-19 04:58:23.303651
+fsadf\nSDAF\nASDF\nSADF\n\n\n\nSADFAS\n\n\n\nSADFASDF\nAS\n\nSADFSfas	f	f	1	43	7de7fa15b00937cf	2024-09-19 04:58:23.303651
+sASDF \nA\nSDF\nASDFSA\nD\n\n\n\n\nA\n\n\nA\n\n\nASDF\nS\n\n\n\nSADF\nA\nA\n.\n.	f	f	1	44	b804d414f37ec737	2024-09-19 04:58:23.303651
+H\nO\nL\nA\n\nE\nS\nT\nO\n\nES\nES\nUNA\nPRUIEBA	f	f	1	45	12a2c7594712a376	2024-09-19 04:58:23.303651
+VIEJA\nCONCHE\n\nSU\nMADRE\n\nJAJAJA\n\nARRIBA\nBRAZILEIRO	f	f	1	46	4131fe1993e1426e	2024-09-19 04:58:23.303651
+Vieja\n\nCONSESAUMA\nESTO \n\nES BRAZIL\nARRIBA BRAZILL\nLEIRODOOOO	f	f	1	47	6203662ec6ec34d2	2024-09-19 04:58:23.303651
+ESTO\nES\nBRAZIL\nARRIBA\nLA\nPORRA\nTE\nSALUDA\nXD\nXDDXC\nASD\nFAS\nFSDF\nAS\nF	f	f	1	48	3d7002b9ab317fb4	2024-09-19 04:58:23.303651
+ESTO\n.\nES la mejor ayuda\n.\nQue te puede ofrecer jajaja gracias\n.\nAdios Perros	f	f	1	49	a8bca82e205c7534	2024-09-19 04:58:23.303651
+Lo mejor de lo mejor pinches putos	f	f	1	50	25a5ab47dcc40af5	2024-09-19 04:58:23.303651
+Primer parrafo hablar sobre equis cosa\n.\nSegundo parrafo habla sobre equis 2 cosa\n.\nTercer parrafo habla sobre equis 3 cosa\n..\nDoble salto de linea a partir de aqui\n.\nTriple salto de linea a partir de aqui...\n.\n>	t	t	1	51	9bd391a353976da0	2024-09-19 04:58:23.303651
+LOS COMENTARIOS SON VULNERABLES A XSS POR FAVOR DE VERIFICAR Y VALIDAR ESOS COMENTARIOS	f	f	1	52	9beb1d316608833c	2024-09-19 04:58:23.303651
+<script>alert("Take me on")</script>\n<h1> Testing </h1> \nJeje 	f	f	16	53	e335e2b7200c1aec	2024-09-19 04:58:23.303651
+Say\nAfter\nme\nBefore I go\n.\nTest\n<script>alert("Take me on")</script>\n<h1> Testing </h1> \nJeje \n.\nSalto de linea	f	f	16	54	83a20ac15a18106c	2024-09-19 04:58:23.303651
+Primera imagen jajaja	f	f	18	55	9894b6e5cfa61552	2024-09-19 05:54:01.36115
+Viendo como matar a la vieja chsm	f	f	18	56	356768b67ff6bfbc	2024-09-19 05:54:21.277547
+tercera foto pesando el alma le llamo yo	f	f	18	57	3b1cb0ccaccc4497	2024-09-19 05:54:47.983549
+cuarta foto jajaja ya quedo invalida	f	f	18	58	db9cc14162815912	2024-09-19 05:58:27.879193
+quinta — la perra es feliz por matar gente	f	f	18	59	2fd3594828543cf2	2024-09-19 05:58:51.269269
+hahahah sexta	f	f	18	60	5276dbe36a15a1dc	2024-09-19 06:10:32.546156
 \.
 
 
@@ -1641,6 +1699,16 @@ COPY public."PostFile" (filename, id_post) FROM stdin;
 1/1/bd0cb4511930fc24.png	52
 16/1/18b1bd99449eb39c.jpg	53
 16/1/e295be10b8eebd4f.jpg	54
+18/1/ece01edaa1ae9e0a.jpg	55
+18/1/4508a36fd45d3c3d.jpg	56
+18/1/0da3ed8e8cb4b565.jpg	57
+18/1/c93c44595841a730.jpg	58
+18/1/b4723de13fd9de1e.jpg	59
+18/1/9aa0b295ec76a306.jpg	60
+18/1/a78114ac872b7a8c.jpg	60
+18/1/d7d6dbd5e918451f.jpg	60
+18/1/09bad0c5ab761878.jpg	60
+18/1/69c07aedb1187bf7.jpg	60
 \.
 
 
@@ -1648,32 +1716,35 @@ COPY public."PostFile" (filename, id_post) FROM stdin;
 -- Data for Name: PostLike; Type: TABLE DATA; Schema: public; Owner: dev
 --
 
-COPY public."PostLike" (id_user, id_post) FROM stdin;
-1	1
-1	6
-13	3
-13	7
-14	7
-1	8
-1	3
-1	7
-16	7
-16	13
-1	15
-16	22
-16	23
-16	25
-1	26
-1	29
-1	27
-1	31
-1	14
-16	1
-16	19
-14	15
-14	33
-16	24
-16	37
+COPY public."PostLike" (id_user, id_post, liked_at) FROM stdin;
+1	1	2024-09-19 18:25:03.741503
+1	6	2024-09-19 18:25:03.741503
+13	3	2024-09-19 18:25:03.741503
+13	7	2024-09-19 18:25:03.741503
+14	7	2024-09-19 18:25:03.741503
+1	8	2024-09-19 18:25:03.741503
+1	3	2024-09-19 18:25:03.741503
+1	7	2024-09-19 18:25:03.741503
+16	7	2024-09-19 18:25:03.741503
+16	13	2024-09-19 18:25:03.741503
+1	15	2024-09-19 18:25:03.741503
+16	22	2024-09-19 18:25:03.741503
+16	23	2024-09-19 18:25:03.741503
+16	25	2024-09-19 18:25:03.741503
+1	26	2024-09-19 18:25:03.741503
+1	29	2024-09-19 18:25:03.741503
+1	27	2024-09-19 18:25:03.741503
+1	31	2024-09-19 18:25:03.741503
+1	14	2024-09-19 18:25:03.741503
+16	1	2024-09-19 18:25:03.741503
+16	19	2024-09-19 18:25:03.741503
+14	15	2024-09-19 18:25:03.741503
+14	33	2024-09-19 18:25:03.741503
+16	24	2024-09-19 18:25:03.741503
+16	37	2024-09-19 18:25:03.741503
+18	58	2024-09-19 18:25:03.741503
+1	60	2024-09-19 18:25:03.741503
+18	42	2024-09-19 19:20:13.08738
 \.
 
 
@@ -1727,6 +1798,8 @@ COPY public."Session" (id_user, token, created_time, device) FROM stdin;
 1	22830b6a-2614-4835-ad27-e0916450a5e5	2024-09-16 00:43:23.398591	localhost:8080
 16	86dc0674-4641-4b17-9b63-a3e609103d3d	2024-09-17 02:00:43.568146	localhost:8080
 16	cbdbdc1e-55b8-447d-a6d8-6a580176010f	2024-09-17 02:12:22.743246	localhost:8080
+1	7921c49b-246b-4fe1-9af5-8fa94e09549a	2024-09-19 05:11:13.428751	localhost:8080
+18	b0f8587c-2268-4637-8ed6-715493c8470a	2024-09-19 06:39:42.169663	localhost:8080
 \.
 
 
@@ -1755,9 +1828,10 @@ holfdsla	\N	hola1234	\N	10
 wefpewokef	\N	wekrwpo	\N	11
 Robert Carlos	\N	roberto	2/9ce38185f50e0540.jpg	2
 bloqueado jajaja	\N	bloqueado	\N	17
-hol	Esta es la cuenta principal de prueba	adrianc68	1/fe1ad5013888ceda.jpg	1
 memero	\N	memero	16/c2032531c100ad0d.jpg	16
 hola	\N	hola	14/11c0aabbc46ba22b.jpg	14
+hol	Esta es la cuenta principal de prueba	adrianc68	1/db7ee3cc57674cb0.jpg	1
+Matador Leonidas Salazar	\N	mataleon	18/1992e2dd92c4d311.jpg	18
 Hola	\N	ala	\N	12
 coca loca	\N	coca	13/fbe70c16a1630b8c.jpg	13
 Federal Bureau International	\N	fbi	15/b5f798e3a316db3f.jpg	15
@@ -1786,6 +1860,7 @@ PRIVADO	13
 PUBLICO	1
 PRIVADO	16
 PRIVADO	2
+PUBLICO	18
 \.
 
 
@@ -1811,6 +1886,7 @@ COPY public."UserRole" (id_user, role) FROM stdin;
 15	PERSONAL
 16	PERSONAL
 17	PERSONAL
+18	PERSONAL
 \.
 
 
@@ -1826,7 +1902,7 @@ COPY public."VerificationCode" (code, username, created_time) FROM stdin;
 -- Name: chat_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.chat_id_seq', 1, false);
+SELECT pg_catalog.setval('public.chat_id_seq', 2, true);
 
 
 --
@@ -1840,7 +1916,7 @@ SELECT pg_catalog.setval('public.chatgroup_id_seq', 1, false);
 -- Name: comment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.comment_id_seq', 416, true);
+SELECT pg_catalog.setval('public.comment_id_seq', 443, true);
 
 
 --
@@ -1861,14 +1937,14 @@ SELECT pg_catalog.setval('public.faculty_id_seq', 1, false);
 -- Name: message_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.message_id_seq', 1, false);
+SELECT pg_catalog.setval('public.message_id_seq', 23, true);
 
 
 --
 -- Name: post_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.post_id_seq', 54, true);
+SELECT pg_catalog.setval('public.post_id_seq', 60, true);
 
 
 --
@@ -1882,7 +1958,7 @@ SELECT pg_catalog.setval('public.region_id_seq', 1, false);
 -- Name: user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('public.user_id_seq', 17, true);
+SELECT pg_catalog.setval('public.user_id_seq', 18, true);
 
 
 --
@@ -2054,31 +2130,10 @@ CREATE INDEX "IXFK_ChatGroupMembership_User" ON public."ChatGroupMembership" USI
 
 
 --
--- Name: IXFK_ChatMessageGroup_ChatGroup; Type: INDEX; Schema: public; Owner: dev
+-- Name: IXFK_ChatGroup_User; Type: INDEX; Schema: public; Owner: dev
 --
 
-CREATE INDEX "IXFK_ChatMessageGroup_ChatGroup" ON public."ChatMessageGroup" USING btree (id_chatgroup);
-
-
---
--- Name: IXFK_ChatMessageGroup_Message; Type: INDEX; Schema: public; Owner: dev
---
-
-CREATE INDEX "IXFK_ChatMessageGroup_Message" ON public."ChatMessageGroup" USING btree (id_message);
-
-
---
--- Name: IXFK_ChatMessage_Chat; Type: INDEX; Schema: public; Owner: dev
---
-
-CREATE INDEX "IXFK_ChatMessage_Chat" ON public."ChatMessage" USING btree (id_chat);
-
-
---
--- Name: IXFK_ChatMessage_Message; Type: INDEX; Schema: public; Owner: dev
---
-
-CREATE INDEX "IXFK_ChatMessage_Message" ON public."ChatMessage" USING btree (id_message);
+CREATE INDEX "IXFK_ChatGroup_User" ON public."ChatGroup" USING btree (id_administrator);
 
 
 --
@@ -2184,6 +2239,20 @@ CREATE INDEX "IXFK_MessageSeen_Message" ON public."MessageSeen" USING btree (id_
 --
 
 CREATE INDEX "IXFK_MessageSeen_User" ON public."MessageSeen" USING btree (id_user);
+
+
+--
+-- Name: IXFK_Message_Chat; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Message_Chat" ON public."Message" USING btree (id_chat);
+
+
+--
+-- Name: IXFK_Message_ChatGroup; Type: INDEX; Schema: public; Owner: dev
+--
+
+CREATE INDEX "IXFK_Message_ChatGroup" ON public."Message" USING btree (id_chatgroup);
 
 
 --
@@ -2349,35 +2418,11 @@ ALTER TABLE ONLY public."ChatGroupMembership"
 
 
 --
--- Name: ChatMessageGroup FK_ChatMessageGroup_ChatGroup; Type: FK CONSTRAINT; Schema: public; Owner: dev
+-- Name: ChatGroup FK_ChatGroup_User; Type: FK CONSTRAINT; Schema: public; Owner: dev
 --
 
-ALTER TABLE ONLY public."ChatMessageGroup"
-    ADD CONSTRAINT "FK_ChatMessageGroup_ChatGroup" FOREIGN KEY (id_chatgroup) REFERENCES public."ChatGroup"(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: ChatMessageGroup FK_ChatMessageGroup_Message; Type: FK CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."ChatMessageGroup"
-    ADD CONSTRAINT "FK_ChatMessageGroup_Message" FOREIGN KEY (id_message) REFERENCES public."Message"(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: ChatMessage FK_ChatMessage_Chat; Type: FK CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."ChatMessage"
-    ADD CONSTRAINT "FK_ChatMessage_Chat" FOREIGN KEY (id_chat) REFERENCES public."Chat"(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-
---
--- Name: ChatMessage FK_ChatMessage_Message; Type: FK CONSTRAINT; Schema: public; Owner: dev
---
-
-ALTER TABLE ONLY public."ChatMessage"
-    ADD CONSTRAINT "FK_ChatMessage_Message" FOREIGN KEY (id_message) REFERENCES public."Message"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+ALTER TABLE ONLY public."ChatGroup"
+    ADD CONSTRAINT "FK_ChatGroup_User" FOREIGN KEY (id_administrator) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --
@@ -2482,6 +2527,22 @@ ALTER TABLE ONLY public."MessageSeen"
 
 ALTER TABLE ONLY public."MessageSeen"
     ADD CONSTRAINT "FK_MessageSeen_User" FOREIGN KEY (id_user) REFERENCES public."User"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Message FK_Message_Chat; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Message"
+    ADD CONSTRAINT "FK_Message_Chat" FOREIGN KEY (id_chat) REFERENCES public."Chat"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Message FK_Message_ChatGroup; Type: FK CONSTRAINT; Schema: public; Owner: dev
+--
+
+ALTER TABLE ONLY public."Message"
+    ADD CONSTRAINT "FK_Message_ChatGroup" FOREIGN KEY (id_chatgroup) REFERENCES public."ChatGroup"(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 
 --

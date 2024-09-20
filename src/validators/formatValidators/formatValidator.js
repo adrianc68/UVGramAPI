@@ -3,6 +3,7 @@ const {CategoryType} = require('../../models/enum/CategoryType');
 const {GenderType} = require('../../models/enum/GenderType');
 const {UserRoleType} = require('../../models/enum/UserRoleType');
 const {PrivacyType} = require('../../models/enum/PrivacyType');
+const {MessageType} = require('../../models/enum/MessageType');
 
 const filesWhiteList = {
 	'image/png': "10490000",
@@ -11,6 +12,17 @@ const filesWhiteList = {
 	'image/webp': "10490000",
 	'video/mp4': "10490000",
 	'video/quicktime': "10490000"
+}
+
+const filesChatWhiteList = {
+	'image/png': "10490000",
+	'image/jpeg': "10490000",
+	'image/jpg': "10490000",
+	'image/webp': "10490000",
+	'video/mp4': "10490000",
+	'video/quicktime': "10490000",
+	'application/pdf': "10490000",
+	'application/zip': "10490000"
 }
 
 const filesArrayLengthAllowed = 8;
@@ -452,6 +464,63 @@ const validateCommentData = [
 		.withMessage("comment must have the allowed length: {min: 1, max: 2200}")
 ];
 
+const validateContentChatData = [
+	check("content")
+		.custom((value, {req}) => {
+			if (req.files) {
+				if (req.body.content) {
+					throw new Error("content is not allowed if file provided");
+				} else if (!req.body.content) {
+					return true;
+				}
+			}
+			if (!req.body.content) {
+				throw new Error("content is required if file not provided");
+			}
+			req.body.content = req.body.content.trim().trimStart();
+			if (req.body.content.length < 1 || req.body.content.length > 2200) {
+				throw new Error("content must have the allowed length: {min: 1, max: 2200}")
+			}
+			req.body.messageType = MessageType.TEXT;
+			return true;
+		})
+]
+
+const validateFileChatData = [
+	check("file")
+		.custom((value, {req}) => {
+			if (!req.files && req.body.content) {
+				return true;
+			}
+
+			if (!req.files) {
+				throw new Error("No file provided");
+			}
+
+			let file = req.files["file"];
+			if (!file || file.length > 1) {
+				throw new Error(`file parameter has ${file.length} files. Only 1 file allowed`);
+			}
+
+			if (file.size > filesWhiteList[file.mimetype]) {
+				throw new Error(`size of file ${file.name} can not be more than ${filesWhiteList[file.mimetype]} bytes`);
+			}
+
+			if (!filesChatWhiteList[file.mimetype]) {
+				throw new Error(`file ${file.name.slice(0, 40)} must be allowed type: ${Object.keys(filesWhiteList).join(" ").replaceAll(/(image\/|video\/)/g, '.')}`)
+			}
+
+			if (file.mimetype.startsWith("image/")) {
+				req.body.messageType = MessageType.IMAGE;
+			} else if (file.mimetype.startsWith("video/")) {
+				req.body.messageType = MessageType.VIDEO;
+			} else {
+				req.body.messageType = MessageType.ARCHIVE;
+			}
+			return true;
+		})
+]
+
 const valueExistInEnumType = (value, enumType) => {
 	if (Object.values(enumType).includes(value)) {
 		return true;
@@ -487,5 +556,6 @@ module.exports = {
 	validateUUIDTemporalToken, validateNewRoleTypeFormatData, validateFilesData,
 	validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed,
 	validatePostUUID, validateCommentUUID, validateCommentData, validateUserPrivacyData,
-	validateFileData, validateOptionalFileData
+	validateFileData, validateOptionalFileData, validateContentChatData,
+	validateFileChatData
 }

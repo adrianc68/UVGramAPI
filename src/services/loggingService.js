@@ -43,9 +43,11 @@ const transportsTypes = {
 
 	production: new winston.transports.Console({
 		format: combine(
+			colorize({all: true}), // Remove 
 			timestamp({format: "YYYY-MM-DD hh:mm:ss A"}),
 			errors({stack: true}),
 			json(),
+			consoleFormat // remove 
 		),
 	}),
 }

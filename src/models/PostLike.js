@@ -12,6 +12,9 @@ const PostLike = sequelize.define("PostLike", {
         type: DataTypes.BIGINT,
         allowNull: false,
     },
+		liked_at: {
+				type: DataTypes.STRING
+		}
 }, {
     timestamps: false,
     freezeTableName: true
