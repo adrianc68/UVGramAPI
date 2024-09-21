@@ -1,4 +1,4 @@
-const {createChatIfNotExists, sendMessage} = require("../../dataaccess/chatDataAccess");
+const {createChatIfNotExists, sendMessage, getAllChats, getAllChatsWithLastMessage, getAllMessagesFromChat} = require("../../dataaccess/chatDataAccess");
 const {uploadMessageFile} = require("../../dataaccess/storageDataAccess");
 const {verifyToken} = require("../../dataaccess/tokenDataAccess");
 const {createURLResource} = require("../../dataaccess/urlRecoverDataAccess");
@@ -45,8 +45,71 @@ const sendMessageController = async (request, response, next) => {
 	return OK(response, payload, apiVersionType.V1);
 }
 
-const getAllMessagesController = async (request, response, next) => {
+const getAllChatsCreated = async (request, response, next) => {
+	const token = (request.headers.authorization).split(" ")[1];
+	let chats = null;
+	try {
+		const idUser = await verifyToken(token).then(data => data.id);
+		chats = await getAllChatsWithLastMessage(idUser);
+		await Promise.all(chats.map(async function (chat) {
+			chat.initiator.url = await createURLResource(chat.initiator.filepath);
+			delete chat["id"];
+			delete chat["id_user1"];
+			delete chat["id_user2"];
+			delete chat.initiator["filepath"];
+			delete chat.initiator["presentation"];
+			delete chat.initiator["id"];
+			chat.receiver.url = await createURLResource(chat.receiver.filepath);
+			delete chat.receiver["filepath"];
+			delete chat.receiver["presentation"];
+			delete chat.receiver["id"];
+			await Promise.all(chat.Messages.map(async function (message) {
+				message.User.url = await createURLResource(message.User.filepath);
+				delete message["id"];
+				delete message["id_user"];
+				delete message["id_chatgroup"];
+				delete message["id_chat"];
+				delete message.User["filepath"];
+				delete message.User["presentation"];
+				delete message.User["id"];
+			}));
+		}));
 
+	} catch (error) {
+		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
+	}
+	let message = {...MessageType.USER.DATA_NOT_FOUND}
+	if (chats) {
+		message = {...MessageType.USER.DATA_FOUND}
+	}
+	let payload = {chats: chats, message}
+	return OK(response, payload, apiVersionType.V1);
 }
 
-module.exports = {sendMessageController}
+const getAllMessagesByChatUuid = async (request, response, next) => {
+	let uuid = request.params.uuid;
+	if (!uuid) uuid = request.body.uuid;
+	let messages = null;
+	try {
+		let chatData = response.locals.chatData;
+		messages = await getAllMessagesFromChat(chatData.id);
+
+		await Promise.all(messages.map(async function (message) {
+			message.User.url = await createURLResource(message.User.filepath);
+			delete message["id"];
+			delete message["id_user"];
+			delete message["id_chatgroup"];
+			delete message["id_chat"];
+			delete message.User["filepath"];
+			delete message.User["presentation"];
+			delete message.User["id"];
+		}));
+
+	} catch (error) {
+		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
+	}
+	let payload = {messages, ...MessageType.USER.DATA_FOUND}
+	return OK(response, payload, apiVersionType.V1);
+}
+
+module.exports = {sendMessageController, getAllChatsCreated, getAllMessagesByChatUuid}
