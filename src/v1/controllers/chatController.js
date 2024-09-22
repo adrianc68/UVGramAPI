@@ -30,6 +30,8 @@ const sendMessageController = async (request, response, next) => {
 		if (messageType !== MessageTypeEnum.TEXT) {
 			messageCreated.content = await createURLResource(messageCreated.content);
 		}
+		messageCreated.User.url = await createURLResource(messageCreated.User.filepath);
+		messageCreated.message_type = messageType;
 		delete chatInfo["id"];
 		delete chatInfo["id_user1"];
 		delete chatInfo["id_user2"];
@@ -37,6 +39,8 @@ const sendMessageController = async (request, response, next) => {
 		delete messageCreated["id_user"];
 		delete messageCreated["id_chat"];
 		delete messageCreated["id_chatgroup"];
+		delete messageCreated.User["id"];
+		delete messageCreated.User["filepath"];
 		isCreated = true;
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
@@ -96,6 +100,10 @@ const getAllMessagesByChatUuid = async (request, response, next) => {
 
 		await Promise.all(messages.map(async function (message) {
 			message.User.url = await createURLResource(message.User.filepath);
+
+			if(message.message_type != MessageTypeEnum.TEXT) {
+				message.content = await createURLResource(message.content);
+			}
 			delete message["id"];
 			delete message["id_user"];
 			delete message["id_chatgroup"];
@@ -104,7 +112,6 @@ const getAllMessagesByChatUuid = async (request, response, next) => {
 			delete message.User["presentation"];
 			delete message.User["id"];
 		}));
-
 	} catch (error) {
 		return INTERNAL_SERVER_ERROR(response, error, apiVersionType.V1);
 	}

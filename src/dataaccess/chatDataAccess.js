@@ -86,8 +86,16 @@ const sendMessage = async (id_sender, id_receiver, id_chat, message) => {
 			uuid,
 			content: message.content,
 			message_type: message.messageType,
-			id_chat: id_chat
+			id_chat: id_chat,
 		}, {transaction: t});
+
+		messageCreated = await Message.findOne({
+			where: {id_user: id_sender, uuid},
+			include: [{
+				model: User,
+			}],
+			transaction: t,
+		});
 		await t.commit();
 	} catch (error) {
 		await t.rollback();
