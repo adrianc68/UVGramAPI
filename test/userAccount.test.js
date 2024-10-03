@@ -38,7 +38,7 @@ describe('On URL and code generation Test', () => {
         }
         response = await request(server).post("/accounts/create").send(newUser);
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
-        accessToken = response.body.message.accessToken;
+        accessToken = response.body.data.accessToken;
         response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
         response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
         response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
@@ -47,7 +47,7 @@ describe('On URL and code generation Test', () => {
     beforeEach(async () => {
         // Don't change username on this test or will fail.
         let response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
-        accessToken = response.body.message.accessToken;
+        accessToken = response.body.data.accessToken;
     })
 
     describe('POST /accounts/password/reset/confirmation/?:data', () => {
@@ -60,7 +60,7 @@ describe('On URL and code generation Test', () => {
             urlDecoded = urlDecoded.substring(urlDecoded.search("/accounts"))
             response = await request(server).post(urlDecoded).send({ "password": "hola1234" });
             expect(response.body.message.refreshToken).not.toBeNull();
-            expect(response.body.message.accessToken).not.toBeNull();
+            expect(response.body.data.accessToken).not.toBeNull();
             expect(response.body.message.isUpdated).toBe(true);
             expect(response.statusCode).toBe(200);
         });
@@ -76,7 +76,7 @@ describe('On URL and code generation Test', () => {
             urlDecoded = urlDecoded.substring(urlDecoded.search("/accounts"))
             response = await request(server).post(urlDecoded).send({ "password": "hola1234" });
             expect(response.body.message.refreshToken).not.toBeNull();
-            expect(response.body.message.accessToken).not.toBeNull();
+            expect(response.body.data.accessToken).not.toBeNull();
             expect(response.statusCode).toBe(200);
         });
     });
@@ -1119,7 +1119,7 @@ describe('POST /accounts/password/change', () => {
         }
         response = await request(server).post("/accounts/create").send(newUser2);
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
-        accessToken = response.body.message.accessToken;
+        accessToken = response.body.data.accessToken;
     });
 
     test('POST /accounts/password/change 404 Resource Not Found', async () => {
@@ -1214,7 +1214,7 @@ describe('POST /accounts/password/reset', () => {
         }
         response = await request(server).post("/accounts/create").send(newUser);
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
-        accessToken = response.body.message.accessToken;
+        accessToken = response.body.data.accessToken;
 
 
         response = await request(server).post("/accounts/create/verification").send({ "username": "uvgram2", "email": "uvgram2@uvgram.com" });
@@ -1231,7 +1231,7 @@ describe('POST /accounts/password/reset', () => {
         }
         response = await request(server).post("/accounts/create").send(newUser2);
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
-        accessToken2 = response.body.message.accessToken;
+        accessToken2 = response.body.data.accessToken;
 
     });
 
@@ -1318,7 +1318,7 @@ describe('PATCH /accounts/edit/admin', () => {
         response = await request(server).post("/accounts/create").send(newUser);
         response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram", "newRoleType": "administrador" });
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram", "password": "hola1234" });
-        accessToken = response.body.message.accessToken;
+        accessToken = response.body.data.accessToken;
     });
 
     test('PATCH /accounts/edit/admins 404 Resource Not Found', async () => {
@@ -1451,7 +1451,7 @@ describe('PATCH /accounts/edit/moderator', () => {
         response = await request(server).post("/accounts/create").send(newUser2);
         response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram2", "newRoleType": "moderador" });
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
-        accessToken = response.body.message.accessToken;
+        accessToken = response.body.data.accessToken;
     });
 
     test('PATCH /accounts/edit/moderator 404 Resource Not Found', async () => {
@@ -1584,7 +1584,7 @@ describe('PATCH /accounts/edit/business', () => {
         response = await request(server).post("/accounts/create").send(newUser3);
         response = await request(server).post("/accounts/users/roles/change").send({ "key": "+jWfhIusDKBwUN6IhnPeAkAFur+5DRzS99GJknMMeS19YpNNCO9Ycfo28tG+XcG4", "emailOrUsername": "uvgram3", "newRoleType": "empresarial" });
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram3", "password": "hola1234" });
-        accessToken = response.body.message.accessToken;
+        accessToken = response.body.data.accessToken;
 
     });
 
@@ -1898,7 +1898,7 @@ describe('PATCH /accounts/edit/personal', () => {
         }
         response = await request(server).post("/accounts/create").send(newUser2);
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
-        accessToken = response.body.message.accessToken;
+        accessToken = response.body.data.accessToken;
         response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
         response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
         response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
@@ -2080,7 +2080,7 @@ describe('POST /accounts/users/roles/change', () => {
         }
         response = await request(server).post("/accounts/create").send(newUser2);
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
-        accessToken = response.body.message.accessToken;
+        accessToken = response.body.data.accessToken;
         response = await request(server).post("/data/region/").send({ "region": "XALAPA" });
         response = await request(server).post("/data/faculty/").send({ "idRegion": "1", "faculty": "FACULTAD_DE_ARQUITECTURA" });
         response = await request(server).post("/data/educationalProgram/").send({ "educationalProgram": "NUTRICION", "idFaculty": "1" });
@@ -2089,7 +2089,7 @@ describe('POST /accounts/users/roles/change', () => {
 
     beforeEach(async () => {
         let response = await request(server).post("/authentication/login").send({ "emailOrUsername": "uvgram2", "password": "hola1234" });
-        accessToken = response.body.message.accessToken;
+        accessToken = response.body.data.accessToken;
     })
 
     test('POST /accounts/users/roles/change 200 OK Change to administrator', async () => {
@@ -2152,7 +2152,6 @@ describe('POST /accounts/users/roles/change', () => {
     });
 });
 
-
 describe('POST /accounts/users/change-privacy and GET /accounts/data', () => {
     let adminToken;
     let moderatorToken;
@@ -2185,7 +2184,7 @@ describe('POST /accounts/users/change-privacy and GET /accounts/data', () => {
         }
         response = await request(server).post("/accounts/create").send(admin);
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "admin", "password": "hola1234" });
-        adminToken = response.body.message.accessToken;
+        adminToken = response.body.data.accessToken;
 
         response = await request(server).post("/accounts/create/verification").send({ "username": "moderator", "email": "moderator@uvgram.com" });
         verificationCode = await getVerificationCodeFromEmail("moderator@uvgram.com");
@@ -2201,7 +2200,7 @@ describe('POST /accounts/users/change-privacy and GET /accounts/data', () => {
         }
         response = await request(server).post("/accounts/create").send(moderator);
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "moderator", "password": "hola1234" });
-        moderatorToken = response.body.message.accessToken;
+        moderatorToken = response.body.data.accessToken;
 
 
         response = await request(server).post("/accounts/create/verification").send({ "username": "business", "email": "business@uvgram.com" });
@@ -2218,7 +2217,7 @@ describe('POST /accounts/users/change-privacy and GET /accounts/data', () => {
         }
         response = await request(server).post("/accounts/create").send(business);
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "business", "password": "hola1234" });
-        businessToken = response.body.message.accessToken;
+        businessToken = response.body.data.accessToken;
 
 
         response = await request(server).post("/accounts/create/verification").send({ "username": "personal", "email": "personal@uvgram.com" });
@@ -2235,7 +2234,7 @@ describe('POST /accounts/users/change-privacy and GET /accounts/data', () => {
         }
         response = await request(server).post("/accounts/create").send(personal);
         response = await request(server).post("/authentication/login").send({ "emailOrUsername": "personal", "password": "hola1234" });
-        personalToken = response.body.message.accessToken;
+        personalToken = response.body.data.accessToken;
     });
 
     test('POST /accounts/users/change-privacy 200 OK Change privacy of personal user', async () => {

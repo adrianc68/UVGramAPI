@@ -2,8 +2,8 @@
   "version": 1,
   "accesses": [
     {
-      "user": "admin",
-      "pass": "admin",
+      "user": "test",
+      "pass": "test",
       "fs": "os",
       "params": {
         "basePath": "/tmp"

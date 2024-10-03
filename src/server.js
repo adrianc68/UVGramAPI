@@ -2,7 +2,6 @@ const axios = require('axios');
 const { app, connetionToServers } = require("./app");
 const { sequelize } = require("./database/connectionDatabaseSequelize");
 const { redisClient } = require("./database/connectionRedis");
-const { fileServerClient } = require('./database/connetionFtpServer');
 const { logger } = require("./helpers/logger");
 
 const server = app.listen({
@@ -34,7 +33,6 @@ const clearDatabase = async () => {
     await sequelize.query("ALTER SEQUENCE comment_id_seq RESTART WITH 1");
     await sequelize.query("ALTER SEQUENCE post_id_seq RESTART WITH 1");
     await redisClient.flushAll("ASYNC");
-    await fileServerClient.removeDir("/");
     await clearMessagesMailHog();
 }
 

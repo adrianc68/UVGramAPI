@@ -1,30 +1,45 @@
-const { httpResponseValidation } = require('../../helpers/httpResponses');
-const { validateFileData, validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed, validatePostUUID } = require('./formatValidator');
+const {validateError} = require('../../middleware/validationFormatMiddleware');
+const {validateFilesData, validatePostDescriptionData, validatePostCommentsAllowed, validatePostLikesAllowed, validatePostUUID, validateOptionalFileData, validateFileData} = require('./formatValidator');
 
-const formatValidationPostData = [
-    validateFileData,
-    validatePostDescriptionData,
-    validatePostCommentsAllowed,
-    validatePostLikesAllowed,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+const validatePostDataFormat = [
+	validateFilesData,
+	validatePostDescriptionData,
+	validatePostCommentsAllowed,
+	validatePostLikesAllowed,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
-const formatValidationFileData = [
-    validateFileData,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+const validateFilesDataFormat = [
+	validateFilesData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ]
 
-const formatValidationUUIDPostData = [
-    validatePostUUID,
-    (request, response, next) => {
-        return httpResponseValidation(request, response, next);
-    }
+const validateFileDataFormat = [
+	validateFileData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
+]
+
+const validateOptionalFileDataFormat = [
+	validateOptionalFileData,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
+];
+
+const validateUUIDPostDataFormat = [
+	validatePostUUID,
+	(request, response, next) => {
+		validateError(request, response, next);
+	}
 ];
 
 module.exports = {
-    formatValidationPostData, formatValidationUUIDPostData, formatValidationFileData
+	validatePostDataFormat, validateUUIDPostDataFormat, validateFilesDataFormat, 
+	validateOptionalFileDataFormat, validateFileDataFormat
 }

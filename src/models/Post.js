@@ -28,6 +28,9 @@ const Post = sequelize.define("Post", {
         type: DataTypes.STRING,
         allowNull: false
     },
+		created_time: {
+				type: DataTypes.STRING
+		}
 }, {
     timestamps: false,
     freezeTableName: true

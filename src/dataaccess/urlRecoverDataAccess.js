@@ -1,25 +1,26 @@
-const { sequelize } = require("../database/connectionDatabaseSequelize");
-const { URLRecover } = require("../models/URLRecover");
-const { v4: uuidv4 } = require("uuid");
-const { ActionURLRecoverType } = require("../models/enum/ActionURLRecoverType");
-const { encryptAES, decryptAES } = require("../helpers/aes-encryption");
+const {sequelize} = require("../database/connectionDatabaseSequelize");
+const {URLRecover} = require("../models/URLRecover");
+const {v4: uuidv4} = require("uuid");
+const {ActionURLRecoverType} = require("../models/enum/ActionURLRecoverType");
+const {encryptAES, decryptAES} = require("../helpers/aes-encryption");
+const {getExtensionFromMimeType, getMimeTypeFromFilename, getFilenameFromPath} = require("../helpers/fileHelper");
 
 const decryptURI = async (uri) => {
-    let parameters;
-    let uuid;
-    let idUser;
-    let data;
-    try {
-        uuid = (uri.uuid) ? decryptAES(decodeURIComponent(uri.uuid)) : null;
-        idUser = (uri.id) ? decodeURIComponent(uri.id) : null;
-        data = (uri.data) ? JSON.parse(decryptAES(decodeURIComponent(uri.data))) : null;
-    } catch (error) {
-        throw new Error(error);
-    }
-    parameters = {
-        uuid, idUser, data
-    }
-    return parameters;
+	let parameters;
+	let uuid;
+	let idUser;
+	let data;
+	try {
+		uuid = (uri.uuid) ? decryptAES(decodeURIComponent(uri.uuid)) : null;
+		idUser = (uri.id) ? decodeURIComponent(uri.id) : null;
+		data = (uri.data) ? JSON.parse(decryptAES(decodeURIComponent(uri.data))) : null;
+	} catch (error) {
+		throw new Error(error);
+	}
+	parameters = {
+		uuid, idUser, data
+	}
+	return parameters;
 }
 
 /**
@@ -31,23 +32,23 @@ const decryptURI = async (uri) => {
  * @returns URL or null
  */
 const generateURLToChangeEmailOnConfirmation = async (id_user, newEmail) => {
-    let url;
-    const t = await sequelize.transaction();
-    let data;
-    try {
-        data = await URLRecover.create({
-            uuid: uuidv4(),
-            action: ActionURLRecoverType.CONFIRM_EMAIL,
-            id_user,
-        }, { transaction: t });
-        let payload = { newEmail: newEmail }
-        url = `${getServerURLAddress()}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CONFIRM_EMAIL.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
-        await t.commit();
-    } catch (error) {
-        await t.rollback();
-        throw new Error(error);
-    }
-    return url;
+	let url;
+	const t = await sequelize.transaction();
+	let data;
+	try {
+		data = await URLRecover.create({
+			uuid: uuidv4(),
+			action: ActionURLRecoverType.CONFIRM_EMAIL,
+			id_user,
+		}, {transaction: t});
+		let payload = {newEmail: newEmail}
+		url = `${getServerURLAddress()}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CONFIRM_EMAIL.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+		await t.commit();
+	} catch (error) {
+		await t.rollback();
+		throw new Error(error);
+	}
+	return url;
 }
 
 /**
@@ -57,23 +58,23 @@ const generateURLToChangeEmailOnConfirmation = async (id_user, newEmail) => {
  * @returns URL or null
  */
 const generateURLToUpdatePasswordOnConfirmation = async (id_user, emailOrUsername) => {
-    let url;
-    const t = await sequelize.transaction();
-    let data;
-    try {
-        data = await URLRecover.create({
-            uuid: uuidv4(),
-            action: ActionURLRecoverType.CHANGE_PASSWORD,
-            id_user,
-        }, { transaction: t });
-        let payload = { emailOrUsername: emailOrUsername }
-        url = `${getServerWebAddress()}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CHANGE_PASSWORD.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
-        await t.commit();
-    } catch (error) {
-        await t.rollback();
-        throw new Error(error);
-    }
-    return url;
+	let url;
+	const t = await sequelize.transaction();
+	let data;
+	try {
+		data = await URLRecover.create({
+			uuid: uuidv4(),
+			action: ActionURLRecoverType.CHANGE_PASSWORD,
+			id_user,
+		}, {transaction: t});
+		let payload = {emailOrUsername: emailOrUsername}
+		url = `${getServerWebAddress()}/accounts/verification/url/${encodeURIComponent(ActionURLRecoverType.CHANGE_PASSWORD.toLowerCase())}?uuid=${encodeURIComponent(encryptAES(data.uuid))}&id=${encodeURIComponent(id_user)}&data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+		await t.commit();
+	} catch (error) {
+		await t.rollback();
+		throw new Error(error);
+	}
+	return url;
 }
 
 /**
@@ -83,13 +84,13 @@ const generateURLToUpdatePasswordOnConfirmation = async (id_user, emailOrUsernam
  * @returns url or null
  */
 const createURLRedirectionToChangePasswordRoute = (uuid, id_user) => {
-    let url;
-    try {
-        url = `${getServerURLAddress()}/accounts/password/reset/confirmation?uuid=${encodeURIComponent(encryptAES(uuid))}&id=${encodeURIComponent(id_user)}`;
-    } catch (error) {
-        throw new Error(error);
-    }
-    return url;
+	let url;
+	try {
+		url = `${getServerURLAddress()}/accounts/password/reset/confirmation?uuid=${encodeURIComponent(encryptAES(uuid))}&id=${encodeURIComponent(id_user)}`;
+	} catch (error) {
+		throw new Error(error);
+	}
+	return url;
 }
 
 /**
@@ -98,21 +99,21 @@ const createURLRedirectionToChangePasswordRoute = (uuid, id_user) => {
  * @returns true if was removed otherwise false
  */
 const removeURLVerification = async (id_user) => {
-    let isRemoved = false;
-    const t = await sequelize.transaction();
-    try {
-        let data = await URLRecover.destroy({
-            where: { id_user }
-        }, { transaction: t });
-        await t.commit();
-        if (data === 1) {
-            isRemoved = true;
-        }
-    } catch (error) {
-        await t.rollback();
-        throw new Error(error);
-    }
-    return isRemoved;
+	let isRemoved = false;
+	const t = await sequelize.transaction();
+	try {
+		let data = await URLRecover.destroy({
+			where: {id_user}
+		}, {transaction: t});
+		await t.commit();
+		if (data === 1) {
+			isRemoved = true;
+		}
+	} catch (error) {
+		await t.rollback();
+		throw new Error(error);
+	}
+	return isRemoved;
 }
 
 /**
@@ -121,22 +122,22 @@ const removeURLVerification = async (id_user) => {
  * @returns JSON that contains uuid, idUser, data from URI and URLRecover attributes.
  */
 const getDataURLRecover = async (uri) => {
-    let dataURL;
-    try {
-        let uriData = await decryptURI(uri);
-        let result = await URLRecover.findOne({
-            where: {
-                uuid: uriData.uuid,
-                id_user: uriData.idUser
-            }, raw: true
-        });
-        if (result) {
-            dataURL = { uuid: result.uuid, idUser: result.id_user, data: uriData.data };
-        }
-    } catch (error) {
-        throw new Error(error);
-    }
-    return dataURL;
+	let dataURL;
+	try {
+		let uriData = await decryptURI(uri);
+		let result = await URLRecover.findOne({
+			where: {
+				uuid: uriData.uuid,
+				id_user: uriData.idUser
+			}, raw: true
+		});
+		if (result) {
+			dataURL = {uuid: result.uuid, idUser: result.id_user, data: uriData.data};
+		}
+	} catch (error) {
+		throw new Error(error);
+	}
+	return dataURL;
 }
 
 /**
@@ -145,16 +146,16 @@ const getDataURLRecover = async (uri) => {
  * @returns JSON that contains uuid, id_user, action and token
  */
 const getDataURLRecoverByUUID = async (uuid) => {
-    let dataURL;
-    try {
-        let result = await URLRecover.findOne({ where: { uuid }, raw: true });
-        if (result) {
-            dataURL = { ...result };
-        }
-    } catch (error) {
-        throw new Error(error);
-    }
-    return dataURL;
+	let dataURL;
+	try {
+		let result = await URLRecover.findOne({where: {uuid}, raw: true});
+		if (result) {
+			dataURL = {...result};
+		}
+	} catch (error) {
+		throw new Error(error);
+	}
+	return dataURL;
 }
 
 /**
@@ -163,16 +164,16 @@ const getDataURLRecoverByUUID = async (uuid) => {
  * @returns JSON that contains uuid, id_user, action and token
  */
 const getDataURLByIdUser = async (id_user) => {
-    let dataURL;
-    try {
-        let result = await URLRecover.findOne({ where: { id_user }, raw: true });
-        if (result) {
-            dataURL = { ...result };
-        }
-    } catch (error) {
-        throw new Error(error);
-    }
-    return dataURL;
+	let dataURL;
+	try {
+		let result = await URLRecover.findOne({where: {id_user}, raw: true});
+		if (result) {
+			dataURL = {...result};
+		}
+	} catch (error) {
+		throw new Error(error);
+	}
+	return dataURL;
 }
 
 /**
@@ -181,80 +182,73 @@ const getDataURLByIdUser = async (id_user) => {
  * @returns true is already generated otherwise false.
  */
 const doesURLVerificationAlreadyGenerated = async (id_user) => {
-    let isAlreadyGenerated = false;
-    try {
-        let result = await URLRecover.findOne({ where: { id_user }, raw: true });
-        isAlreadyGenerated = (result != null);
-    } catch (error) {
-        throw new Error(error);
-    }
-    return isAlreadyGenerated;
+	let isAlreadyGenerated = false;
+	try {
+		let result = await URLRecover.findOne({where: {id_user}, raw: true});
+		isAlreadyGenerated = (result != null);
+	} catch (error) {
+		throw new Error(error);
+	}
+	return isAlreadyGenerated;
 }
 
 
-const createURLResource = async (id_user, id_post, filename) => {
-    let url;
+const createURLResource = async (filename) => {
+	let url = null
+	if (!filename) {
+		return null;
+	}
 
-    let fileExtension = filename.split(".")[1];
-    let contentType;
-    if (fileExtension === "mp4" || fileExtension === "quicktime") {
-        contentType = `video/${fileExtension}`;
-    } else {
-        contentType = `image/${fileExtension}`;
-    }
-    let payload = {
-        idUser: id_user,
-        filename: filename,
-        idPost: id_post,
-        contentType: contentType
-    }
-    try {
-        url = `${getServerURLAddress()}/resources/post-files?data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
-    } catch (error) {
-        throw error;
-    }
-    return url;
+	let payload = {
+		filename: filename,
+	}
+	try {
+		// url = `${getServerURLAddress()}/resources/post-files?data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+		url = `/resources/post-files?data=${encodeURIComponent(encryptAES(JSON.stringify(payload)))}`;
+	} catch (error) {
+		throw error;
+	}
+	return url;
 }
 
 const getURLResourceData = async (url) => {
-    let result;
-    try {
-        let data = (url.data) ? JSON.parse(decryptAES(decodeURIComponent(url.data))) : null;
-        result = {
-            ...data
-        }
-    } catch (error) {
-        throw new Error(error);
-    }
-
-    return result;
+	let result;
+	try {
+		let data = (url.data) ? JSON.parse(decryptAES(decodeURIComponent(url.data))) : null;
+		result = {
+			...data
+		}
+	} catch (error) {
+		throw new Error(error);
+	}
+	return result;
 }
 
 const getServerURLAddress = () => {
-    let address = `${process.env.SV_ADDRESS}`;
-    if (address) {
-        if (address.charAt(address.length - 1) == "/") {
-            address = address.slice(0, address.length - 1);
-        }
-    }
-    return address;
+	let address = `${process.env.SV_ADDRESS}`;
+	if (address) {
+		if (address.charAt(address.length - 1) == "/") {
+			address = address.slice(0, address.length - 1);
+		}
+	}
+	return address;
 }
 
 const getServerWebAddress = () => {
-    let address = `${process.env.WEB_SV_ADDRESS}`;
-    if (address) {
-        if (address.charAt(address.length - 1) == "/") {
-            address = address.slice(0, address.length - 1);
-        }
-    }
-    return address;
+	let address = `${process.env.WEB_SV_ADDRESS}`;
+	if (address) {
+		if (address.charAt(address.length - 1) == "/") {
+			address = address.slice(0, address.length - 1);
+		}
+	}
+	return address;
 }
 
 
 
 module.exports = {
-    generateURLToChangeEmailOnConfirmation, getDataURLRecover, doesURLVerificationAlreadyGenerated,
-    removeURLVerification, generateURLToUpdatePasswordOnConfirmation, getDataURLByIdUser, getDataURLRecoverByUUID,
-    createURLRedirectionToChangePasswordRoute, createURLResource, getURLResourceData, getServerURLAddress,
-    getServerWebAddress
+	generateURLToChangeEmailOnConfirmation, getDataURLRecover, doesURLVerificationAlreadyGenerated,
+	removeURLVerification, generateURLToUpdatePasswordOnConfirmation, getDataURLByIdUser, getDataURLRecoverByUUID,
+	createURLRedirectionToChangePasswordRoute, createURLResource, getURLResourceData, getServerURLAddress,
+	getServerWebAddress
 }
